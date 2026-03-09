@@ -1,7 +1,5 @@
 #include "Window.h"
 
-#include "../Models/Camera.h"
-
 Window::Window() {}
 
 

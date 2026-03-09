@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef BASESHADER_H
 #define BASESHADER_H
 
@@ -9,6 +7,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
+#include "Log.h"
 #include "../Utilities.h"
 
 using std::string;
@@ -16,18 +15,23 @@ using std::string;
 class BaseShader
 {
 public:
-	BaseShader(string shaderSourcePath)
-	{
+	BaseShader() {
+		Log::Info("Created blank shader");
+	}
+
+	BaseShader(string shaderSourcePath) {
 		using std::vector, std::filesystem::directory_entry;
 		m_sourcePath = shaderSourcePath;
-		mDebugPrint(m_sourcePath);
+		m_name = shaderSourcePath.substr(shaderSourcePath.find_last_of("\\")+1);
+		//Log::Info(m_sourcePath);
+		Log::Info("Creating shader " + m_name);
 
 		// Get all shader files (.vert and .frag) in the folder
 		directory_entry vertShader = Utilities::getFirstFileOfExtInFolder(m_sourcePath, ".vert");
 		directory_entry fragShader = Utilities::getFirstFileOfExtInFolder(m_sourcePath, ".frag");
 
 		if (!(vertShader.exists() && fragShader.exists())) {
-			mDebugPrint("Skipping shader creation, missing source files");
+			Log::Info("Skipping shader creation, missing source files");
 			return;
 		}
 
@@ -45,20 +49,20 @@ public:
 		glShaderSource(vert, 1, &pVertSource, NULL);
 		glCompileShader(vert);
 		checkLogErrors(vert, "VERTEX");
-		mDebugPrint("Compiled vertex shader");
+		Log::Info("Compiled vertex shader");
 
 		frag = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(frag, 1, &pFragSource, NULL);
 		glCompileShader(frag);
 		checkLogErrors(frag, "FRAGMENT");
-		mDebugPrint("Compiled fragment shader");
+		Log::Info("Compiled fragment shader");
 
 		m_ID = glCreateProgram();
 		glAttachShader(m_ID, vert);
 		glAttachShader(m_ID, frag);
 		glLinkProgram(m_ID);
 		checkLogErrors(m_ID, "PROGRAM");
-		mDebugPrint("Linked shader program");
+		Log::Info("Linked shader program");
 
 		glDeleteShader(vert);
 		glDeleteShader(frag);
@@ -66,6 +70,7 @@ public:
 
 	unsigned int m_ID = 0;
 	string m_sourcePath;
+	string m_name;
 
 
 	void activate() {
@@ -120,14 +125,14 @@ private:
 			glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 			if (!success) {
 				glGetShaderInfoLog(shader, 1024, NULL, log);
-				mDebugPrint("SHADER COMPILATION FAILED | " + type + "\n" + log + "\n--- COMPILE ERROR LOG END ---");
+				Log::Info("SHADER COMPILATION FAILED | " + type + "\n" + log + "\n--- COMPILE ERROR LOG END ---");
 			}
 		}
 		else {
 			glGetProgramiv(shader, GL_LINK_STATUS, &success);
 			if (!success) {
 				glGetProgramInfoLog(shader, 1024, NULL, log);
-				mDebugPrint("PROGRAM LINK FAILED | " + type + "\n" + log + "\n--- LINK ERROR LOG END ---");
+				Log::Info("PROGRAM LINK FAILED | " + type + "\n" + log + "\n--- LINK ERROR LOG END ---");
 			}
 		}
 	}

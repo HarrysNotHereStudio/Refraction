@@ -8,19 +8,24 @@
 
 Settings *settings = new Settings();
 
-bool keyW = false;
-bool keyA = false;
-bool keyS = false;
-bool keyD = false;
-double lastMouseX = settings->window.windowWidth / 2;
-double lastMouseY = settings->window.windowHeight / 2;
+struct sInput {
+	bool keyW = false;
+	bool keyA = false;
+	bool keyS = false;
+	bool keyD = false;
+	bool keyQ = false;
+	bool keyE = false;
+	double lastMouseX = settings->window.windowWidth / 2;
+	double lastMouseY = settings->window.windowHeight / 2;
+};
+sInput input;
 bool firstMouseInput = true;
 
 void enableInputProcessing(OpenGLRenderer* pRenderer)
 {
 	Window* pWindow = pRenderer->getWindow();
 	GLFWwindow* pGLFWWindow = pWindow->getWindow();
-	Camera* pCamera = pRenderer->getCamera();
+	BaseCamera* pCamera = pRenderer->getCamera();
 
 	glfwSetInputMode(pGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -30,34 +35,35 @@ void enableInputProcessing(OpenGLRenderer* pRenderer)
 			glfwSetWindowShouldClose(pGLFWWindow, GLFW_TRUE);
 		}
 
-		if (glfwGetKey(pGLFWWindow, GLFW_KEY_W) == GLFW_PRESS) keyW = true;
-		if (glfwGetKey(pGLFWWindow, GLFW_KEY_W) == GLFW_RELEASE) keyW = false;
-		if (glfwGetKey(pGLFWWindow, GLFW_KEY_A) == GLFW_PRESS) keyA = true;
-		if (glfwGetKey(pGLFWWindow, GLFW_KEY_A) == GLFW_RELEASE) keyA = false;
-		if (glfwGetKey(pGLFWWindow, GLFW_KEY_S) == GLFW_PRESS) keyS = true;
-		if (glfwGetKey(pGLFWWindow, GLFW_KEY_S) == GLFW_RELEASE) keyS = false;
-		if (glfwGetKey(pGLFWWindow, GLFW_KEY_D) == GLFW_PRESS) keyD = true;
-		if (glfwGetKey(pGLFWWindow, GLFW_KEY_D) == GLFW_RELEASE) keyD = false;
+		input.keyW = (glfwGetKey(pGLFWWindow, GLFW_KEY_W) == GLFW_PRESS);
+		input.keyA = (glfwGetKey(pGLFWWindow, GLFW_KEY_A) == GLFW_PRESS);
+		input.keyS = (glfwGetKey(pGLFWWindow, GLFW_KEY_S) == GLFW_PRESS);
+		input.keyD = (glfwGetKey(pGLFWWindow, GLFW_KEY_D) == GLFW_PRESS);
+		input.keyQ = (glfwGetKey(pGLFWWindow, GLFW_KEY_Q) == GLFW_PRESS);
+		input.keyE = (glfwGetKey(pGLFWWindow, GLFW_KEY_E) == GLFW_PRESS);
 
 		glm::vec3 dirInput = glm::vec3(0.0f);
-		if (keyW) dirInput.z = 1;
-		if (keyA) dirInput.x = -1;
-		if (keyS) dirInput.z = -1;
-		if (keyD) dirInput.x = 1;
+		if (input.keyW) dirInput.z = 1;
+		if (input.keyA) dirInput.x = -1;
+		if (input.keyS) dirInput.z = -1;
+		if (input.keyD) dirInput.x = 1;
+		if (input.keyQ) dirInput.y = -1;
+		if (input.keyE) dirInput.y = 1;
 
 		glm::vec3 angInput = glm::vec3(0.0f);
 		double currentMouseX, currentMouseY;
 		glfwGetCursorPos(pGLFWWindow, &currentMouseX, &currentMouseY);
 		if (firstMouseInput) {
-			lastMouseX = currentMouseX;
-			lastMouseY = currentMouseY;
+			input.lastMouseX = currentMouseX;
+			input.lastMouseY = currentMouseY;
 			firstMouseInput = false;
 		}
 
-		angInput.y = (float)(currentMouseX - lastMouseX);
-		angInput.x = (float)(lastMouseY - currentMouseY);
-		lastMouseX = currentMouseX;
-		lastMouseY = currentMouseY;
+		glm::vec2 mouseDelta = glm::vec2(currentMouseX - input.lastMouseX, input.lastMouseY - currentMouseY);
+
+		angInput = glm::vec3(mouseDelta.y, mouseDelta.x, 0.0f);
+		input.lastMouseX = currentMouseX;
+		input.lastMouseY = currentMouseY;
 
 		pCamera->move(dirInput, angInput);
 
@@ -81,12 +87,13 @@ void runRenderer(OpenGLRenderer* pRenderer) {
 }
 
 int main() {
-	OpenGLRenderer* pOpenGLRenderer = OpenGLRenderer::getInstance();
+	std::cout << "Initialising Refraction...\n";
 
 	settings->window.windowWidth = 1920;
 	settings->window.windowHeight = 1080;
 
 	std::cout << "Starting render thread...\n";
+	OpenGLRenderer* pOpenGLRenderer = OpenGLRenderer::getInstance();
 	std::thread renderThread(runRenderer, pOpenGLRenderer);
 	
 	// Wait for rendering engine to start running
@@ -106,7 +113,8 @@ int main() {
 	renderThread.join();
 	inputThread.join();
 	
-	std::cout << "Program ended successfully.\n";
+	std::cout << "\n\n--------------------------------" << std::endl;
+	std::cout << "Refraction shut down successfully.\n\n";
 	system("pause");
 	
 	return EXIT_SUCCESS;

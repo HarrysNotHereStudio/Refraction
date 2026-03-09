@@ -20,7 +20,7 @@ public:
 	Window window;
 	class Controls {
 	public:
-		float cameraSensitivity = 2.0f;
+		float cameraSensitivity = 0.5f;
 		float cameraSpeed = 0.05f;
 	};
 	Controls controls;

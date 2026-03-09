@@ -3,25 +3,39 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
-#include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 #include "../Utilities.h"
 #include "../Graphics/BaseShader.h"
 #include "../Graphics/BaseTexture.h"
+#include "Transform.h"
+#include "Mesh.h"
 
 class BaseModel
 {
 public:
-	BaseModel(BaseShader shaderToUse, BaseTexture textureToUse, unsigned int modelVAO) : m_shader(shaderToUse), m_texture(textureToUse), m_VAO(modelVAO) {
-		m_shader.activate();
-		m_shader.setUniformInt("ourTexture", 0);
+	Transform* m_pTransform;
+	BaseShader* m_pShader;
+	std::string sourcePath;
+
+	BaseModel() = default;
+	BaseModel(std::string modelSourcePath) {
+		m_pTransform = new Transform();
+		m_pShader = new BaseShader();
+		loadModel(modelSourcePath);
 	};
 
 	void DrawModel();
 private:
-	BaseShader m_shader;
-	BaseTexture m_texture;
-	unsigned int m_VAO;
+	std::vector<Mesh> m_meshes;
+	std::vector<BaseTexture> m_textures;
 
-	glm::mat4 m_modelTransform = glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	void loadModel(std::string path);
+	void processNode(aiNode *node, const aiScene *scene);
+	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
+	vector<BaseTexture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
 };

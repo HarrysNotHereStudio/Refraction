@@ -5,15 +5,21 @@
 #include <thread>
 #include <vector>
 
-#include <glad/glad.h>
+#include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "Log.h"
 #include "Utilities.h"
 #include "Settings.h"
 #include "Graphics/Window.h"
 #include "Graphics/BaseShader.h"
 #include "Models/BaseModel.h"
-#include "Models/Camera.h"
+#include "Models/BaseCamera.h"
+#include "Models/BaseLight.h"
+#include "Models/PointLight.h"
+#include "Graphics/Buffers/UniformBufferObject.h"
+#include "Graphics/Buffers/GBuffer.h"
+
 
 enum class OpenGLRendererState
 {
@@ -31,11 +37,6 @@ struct sSettings {
 	} control;
 };
 
-struct sVertexData {
-	glm::vec3 pos;
-	glm::vec3 color;
-	glm::vec2 texCoord;
-};
 
 class OpenGLRenderer
 {
@@ -44,7 +45,7 @@ public:
 	static void destroyInstance();
 	OpenGLRendererState getState() { return m_state; }
 	Window* getWindow() { return m_pWindow; }
-	Camera* getCamera() { return m_pCamera; }
+	BaseCamera* getCamera() { return m_pCamera; }
 	int init(Settings* initSettings);
 private:
 	OpenGLRenderer();
@@ -53,16 +54,29 @@ private:
 	void updateUniformBuffers();
 	void cleanup();
 
+	// Deferred shading functions
+	void DSPassGeometry();
+	void DSPassStencil(PointLight* pPointLight);
+	void DSPassPointLight(PointLight* pPointLight);
+	void DSPassDirectionalLight();
+	void DSPassFinal();
+
 	static OpenGLRenderer* m_pInstance;
 	OpenGLRendererState m_state = OpenGLRendererState::NONE;
 	Settings m_currentSettings;
 	Window* m_pWindow = nullptr;
-	Camera* m_pCamera = nullptr;
+
+	UniformBufferObject* m_pUBO = nullptr;
+	BaseShader* m_pLightingPassShader = nullptr;
+	GBuffer* m_pGBuffer = nullptr;
+
+	BaseCamera* m_pCamera = nullptr;
+	vector<PointLight*> m_pScenePointLights = {};
+
 	bool m_shouldRender = true;
 	double m_startRenderTime = 0.0f;
 	double m_elapsedRenderTime = 0.0f;
 	double m_deltaRenderTime = 0.0f;
-	unsigned int m_defaultUBO = 0;
 };
 
 inline void nativeDebugPrint(std::string message, bool newLine = false) { std::cout << (newLine ? "\n" : "") << "OpenGLRenderer DEBUG - " << message << std::endl; }
