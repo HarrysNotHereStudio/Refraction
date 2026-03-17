@@ -14,14 +14,12 @@
 #include "Settings.h"
 #include "Graphics/Window.h"
 #include "Graphics/BaseShader.h"
-#include "Models/Pipeline.h"
 #include "Models/BaseModel.h"
 #include "Models/BaseCamera.h"
 #include "Models/BaseLight.h"
 #include "Models/PointLight.h"
 #include "Graphics/Buffers/UniformBufferObject.h"
 #include "Graphics/Buffers/GBuffer.h"
-#include "Graphics/Techniques/GeomPassTech.h"
 
 
 enum class OpenGLRendererState
@@ -67,9 +65,9 @@ private:
 	Window* m_pWindow = nullptr;
 
 	UniformBufferObject* m_pUBO = nullptr;
+	BaseShader* m_pGeomPassShader = nullptr;
 	BaseShader* m_pLightingPassShader = nullptr;
 	GBuffer* m_pGBuffer = nullptr;
-	GeomPassTech m_GeomPassTech;
 
 	BaseCamera* m_pCamera = nullptr;
 	vector<PointLight*> m_pScenePointLights = {};

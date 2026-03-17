@@ -7,12 +7,11 @@
 
 #define VIEW_WIDTH this->m_currentSettings.window.windowWidth
 #define VIEW_HEIGHT this->m_currentSettings.window.windowHeight
+constexpr auto FPS_INTERVAL = 300;
 
 OpenGLRenderer* OpenGLRenderer::m_pInstance = nullptr;
 
-OpenGLRenderer::OpenGLRenderer() {
-	m_GeomPassTech = GeomPassTech();
-}
+OpenGLRenderer::OpenGLRenderer() {}
 
 OpenGLRenderer* OpenGLRenderer::GetInstance()
 {
@@ -85,17 +84,11 @@ int OpenGLRenderer::Init(Settings* initSettings) {
 	m_pCamera->setCameraSpeed(m_currentSettings.controls.cameraSpeed);
 	m_pCamera->setCameraSensitivity(m_currentSettings.controls.cameraSensitivity);
 
-	//Log::Info("Preparing techniques...");
-	//if (!m_GeomPassTech.Init()) {
-	//	throw std::runtime_error("Failed to initialise geometry pass technique");
-	//}
-
-	//m_GeomPassTech.Enable();
-	//m_GeomPassTech.SetColorTexUnit(COLOR_TEXTURE_UNIT_INDEX);
-
 	Log::Info("Loading shaders...");
 	// Prepare shaders
 	LoadShaders();
+
+	m_pGeomPassShader = getShaderByName("gbufferShader");
 
 	Log::Info("Creating G-Buffer...");
 	m_pGBuffer = new GBuffer();
@@ -114,11 +107,12 @@ int OpenGLRenderer::Init(Settings* initSettings) {
 
 	Log::Info("Creating test model...");
 	BaseModel* testModel = new BaseModel("./Rendering/Resources/models/survivalBackpack/backpack.obj");
-	testModel->m_pShader = getShaderByName("baseShader");
+	testModel->m_pShader = m_pGeomPassShader;
+	testModel->m_pTransform->Translate(glm::vec3(0.0f, 0.0f, 10.0f));
 	LoadedModels.push_back(testModel);
 
 	BaseModel* groundPlane = new BaseModel("./Rendering/Resources/models/Primitives/primitivePlane.obj");
-	groundPlane->m_pShader = getShaderByName("baseShader");
+	groundPlane->m_pShader = m_pGeomPassShader;
 	groundPlane->m_pTransform->Translate(glm::vec3(0.0f, -10.0f, 0.0f));
 	groundPlane->m_pTransform->Scale(glm::vec3(10.0f));
 	LoadedModels.push_back(groundPlane);
@@ -169,19 +163,20 @@ void OpenGLRenderer::MainLoop() {
 	{
 		m_deltaRenderTime = glfwGetTime() - m_elapsedRenderTime;
 		m_elapsedRenderTime = glfwGetTime() - m_startRenderTime;
-		if (fpsPrintDelta > 100) {
+		if (fpsPrintDelta > FPS_INTERVAL) {
 			fpsPrintDelta = 0;
 			Log::Info(std::to_string(m_elapsedRenderTime) + " elapsed | " + std::to_string(m_deltaRenderTime) + " delta | " + Utilities::calculateFPS(m_deltaRenderTime, 2) + "FPS");
 		};
 		fpsPrintDelta += m_deltaRenderTime;
 
 		if (m_shouldRender) {
-			LoadedShaders[0]->setUniformVec4("ourColor", 1.0f, static_cast<float>(sin(m_elapsedRenderTime)), 1.0f, 1.0f);
 			UpdateUniformBuffers();
 
-			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+			// TODO: models currently use their own shaders which are built on forward shading (i think) but to implement deferred shading i think we need a single global shader to render each buffer so uhh yea figure that out ty <3
+			// hi ok
 
 			// [Geometry Pass] //
 			//-----------------//
@@ -219,31 +214,10 @@ void OpenGLRenderer::Cleanup() {
 
 // Deferred Shading
 
-//PerspectiveProperties defaultPersProps = {
-//	.FOV = 70.0f,
-//	.Width = 1280,
-//	.Height = 720,
-//	.zNear = 0.1f,
-//	.zFar = 100
-//};
-
 void OpenGLRenderer::DSPassGeometry() {
-	//m_GeomPassTech.Enable();
-
-	m_pGBuffer->BindForWrite();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//Pipeline p;
-	//p.Scale(glm::vec3(0.1f));
-	//p.Rotate(0.0f, 0.0f, 0.0f);
-	//p.WorldPos(-0.8f, -1.0f, 12.0f);
-	//p.SetCamera(m_pCamera);
-	//p.SetPerspectiveProperties(defaultPersProps);
-	//sUBO newData = {
-	//	.viewMatrix = p.GetViewTransform(),
-	//	.viewPosition = m_pCamera->m_Transform.position,
-	//	.perspectiveMatrix = p.GetProjTransform()
-	//};
-	//m_pUBO->UploadNewData(newData);
+	m_pGBuffer->BindAny();
+	m_pGeomPassShader->Activate();
 
 	// Draw models
 	for (int i = 0; i < LoadedModels.size(); i++) {
@@ -260,10 +234,8 @@ void OpenGLRenderer::DSPassLighting() {
 	GLsizei halfHeight = (GLsizei)(VIEW_HEIGHT / 2.0f);
 	m_pGBuffer->SetReadBuffer(GBuffer::GBUFFER_TEXTURE_POSITION);
 	glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0, 0, halfWidth, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	m_pGBuffer->SetReadBuffer(GBuffer::GBUFFER_TEXTURE_DIFFUSE);
-	glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0, halfHeight, halfWidth, VIEW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	m_pGBuffer->SetReadBuffer(GBuffer::GBUFFER_TEXTURE_NORMAL);
+	glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0, halfHeight, halfWidth, VIEW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	m_pGBuffer->SetReadBuffer(GBuffer::GBUFFER_TEXTURE_COLORSPECULAR);
 	glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, halfWidth, halfHeight, VIEW_WIDTH, VIEW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	m_pGBuffer->SetReadBuffer(GBuffer::GBUFFER_TEXTURE_TEXCOORD);
-	glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, halfWidth, 0, VIEW_WIDTH, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }

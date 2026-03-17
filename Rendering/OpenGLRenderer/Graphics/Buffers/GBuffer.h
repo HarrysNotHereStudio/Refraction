@@ -6,9 +6,8 @@ class GBuffer : public BaseBuffer {
 public:
 	enum GBUFFER_TEXTURE_TYPE {
 		GBUFFER_TEXTURE_POSITION,
-		GBUFFER_TEXTURE_DIFFUSE,
 		GBUFFER_TEXTURE_NORMAL,
-		GBUFFER_TEXTURE_TEXCOORD,
+		GBUFFER_TEXTURE_COLORSPECULAR,
 		GBUFFER_iTEXTURECOUNT
 	};
 
@@ -19,10 +18,12 @@ public:
 
 	void BindForWrite();
 	void BindForRead();
+	void BindAny();
 	void SetReadBuffer(GBUFFER_TEXTURE_TYPE texType);
 private:
 	GLuint m_fbo;
 	GLuint m_textures[GBUFFER_iTEXTURECOUNT];
+	GLuint m_rboDepth;
 	GLuint m_depthTexture;
 	GLuint m_finalTexture;
 };

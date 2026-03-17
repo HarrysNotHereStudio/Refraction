@@ -21,8 +21,11 @@ void Transform::Scale(vec3 delta) {
 }
 
 mat4 Transform::GetTransform() const {
-	mat4 translationMatrix = glm::translate(mat4(1.0f), position);
-	mat4 rotationMatrix = glm::toMat4(orientation);
-	mat4 scaleMatrix = glm::scale(mat4(1.0f), scale);
-	return translationMatrix * rotationMatrix * scaleMatrix;
+	glm::mat4 transform = glm::mat4(1.0f);
+	transform = glm::translate(transform, position);
+	transform = glm::rotate(transform, glm::radians(orientation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	transform = glm::rotate(transform, glm::radians(orientation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	transform = glm::rotate(transform, glm::radians(orientation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	transform = glm::scale(transform, scale);
+	return transform;
 }

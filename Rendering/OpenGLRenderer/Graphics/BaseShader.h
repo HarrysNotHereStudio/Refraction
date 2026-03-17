@@ -16,7 +16,7 @@ class BaseShader
 {
 public:
 	BaseShader() {
-		Log::Info("Created blank shader");
+		//Log::Info("Created blank shader");
 	}
 
 	BaseShader(string shaderSourcePath) {
