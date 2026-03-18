@@ -13,10 +13,11 @@ BaseCamera::BaseCamera() {
 	m_cameraSensitivity = 1.0f;
 }
 
-void BaseCamera::move(glm::vec3 dirInput, glm::vec3 angInput) {
+void BaseCamera::Move(glm::vec3 dirInput, glm::vec3 angInput) {
 	// Normalize inputs
 	if (dirInput != glm::vec3(0.0f)) dirInput = glm::normalize(dirInput);
 	//if (angInput != glm::vec3(0.0f)) angInput = glm::normalize(angInput);
+
 
 	// Move camera
 	glm::vec3 translateDelta = glm::vec3();
@@ -32,6 +33,9 @@ void BaseCamera::move(glm::vec3 dirInput, glm::vec3 angInput) {
 	rotateDelta.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
 	rotateDelta.y = sin(glm::radians(m_pitch));
 	rotateDelta.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+
+	m_yaw = 0;
+	m_pitch = 0;
 
 	m_Transform.Translate(translateDelta);
 	//m_Transform.Rotate(rotateDelta);

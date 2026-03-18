@@ -87,3 +87,23 @@ void Log::Info(string message) {
 	m_lastMessagePrinted = vformat(ANSI24RGB(64, 255, 255) + "[{}]" + separator + ANSI24RGB(255, 64, 64) + "DEBUG " + ANSI24RGB(255, 210, 64) + "{}" + separator + "{}\n", make_format_args(timestamp, functionName, message));
 	clog << m_lastMessagePrinted;
 }
+
+string Log::ToString(glm::vec3 vector) {
+	return ("x" + std::to_string(vector.x) + " y" + std::to_string(vector.y) + " z" + std::to_string(vector.z));
+}
+
+string Log::ToString(glm::mat4 matrix, bool pretty) {
+	string out = "";
+	if (pretty) {
+		out += ("x0: " + std::to_string(matrix[0].x) + " y0: " + std::to_string(matrix[0].y) + " z0: " + std::to_string(matrix[0].z) + "\n");
+		out += ("x1: " + std::to_string(matrix[1].x) + " y1: " + std::to_string(matrix[1].y) + " z1: " + std::to_string(matrix[1].z) + "\n");
+		out += ("x2: " + std::to_string(matrix[2].x) + " y2: " + std::to_string(matrix[2].y) + " z2: " + std::to_string(matrix[2].z) + "\n");
+		out += ("x3: " + std::to_string(matrix[3].x) + " y3: " + std::to_string(matrix[3].y) + " z3: " + std::to_string(matrix[3].z) + "\n");
+	} else {
+		out += ("x0: " + std::to_string(matrix[0].x) + " y0: " + std::to_string(matrix[0].y) + " z0: " + std::to_string(matrix[0].z));
+		out += (" x1: " + std::to_string(matrix[1].x) + " y1: " + std::to_string(matrix[1].y) + " z1: " + std::to_string(matrix[1].z));
+		out += (" x2: " + std::to_string(matrix[2].x) + " y2: " + std::to_string(matrix[2].y) + " z2: " + std::to_string(matrix[2].z));
+		out += (" x3: " + std::to_string(matrix[3].x) + " y3: " + std::to_string(matrix[3].y) + " z3: " + std::to_string(matrix[3].z));
+	}
+	return out;
+}

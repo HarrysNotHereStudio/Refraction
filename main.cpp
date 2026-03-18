@@ -65,7 +65,7 @@ void enableInputProcessing(OpenGLRenderer* pRenderer)
 		input.lastMouseX = currentMouseX;
 		input.lastMouseY = currentMouseY;
 
-		pCamera->move(dirInput, angInput);
+		pCamera->Move(dirInput, angInput);
 
 		// Sleep for a bit to reduce CPU usage
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -89,8 +89,8 @@ void runRenderer(OpenGLRenderer* pRenderer) {
 int main() {
 	std::cout << "Initialising Refraction...\n";
 
-	settings->window.windowWidth = 1920;
-	settings->window.windowHeight = 1080;
+	settings->window.windowWidth = 1280;
+	settings->window.windowHeight = 720;
 
 	std::cout << "Starting render thread...\n";
 	OpenGLRenderer* pOpenGLRenderer = OpenGLRenderer::GetInstance();

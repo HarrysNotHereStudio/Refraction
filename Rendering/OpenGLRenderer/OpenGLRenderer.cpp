@@ -7,7 +7,7 @@
 
 #define VIEW_WIDTH this->m_currentSettings.window.windowWidth
 #define VIEW_HEIGHT this->m_currentSettings.window.windowHeight
-constexpr auto FPS_INTERVAL = 300;
+constexpr auto FPS_INTERVAL = 50;
 
 OpenGLRenderer* OpenGLRenderer::m_pInstance = nullptr;
 
@@ -82,8 +82,8 @@ int OpenGLRenderer::Init(Settings* initSettings) {
 
 	Log::Info("Instantiating camera...");
 	m_pCamera = new BaseCamera();
-	m_pCamera->setCameraSpeed(m_currentSettings.controls.cameraSpeed);
-	m_pCamera->setCameraSensitivity(m_currentSettings.controls.cameraSensitivity);
+	m_pCamera->SetCameraSpeed(m_currentSettings.controls.cameraSpeed);
+	m_pCamera->SetCameraSensitivity(m_currentSettings.controls.cameraSensitivity);
 
 	Log::Info("Loading shaders...");
 	// Prepare shaders
@@ -100,8 +100,7 @@ int OpenGLRenderer::Init(Settings* initSettings) {
 	float aspectRatio = VIEW_WIDTH / static_cast<float>(VIEW_HEIGHT);
 	projectionMatrix = glm::perspective(glm::radians(m_pCamera->FOVy), aspectRatio, m_currentSettings.graphics.clipPlaneNear, m_currentSettings.graphics.clipPlaneFar);
 	sUBO initData = {
-		m_pCamera->m_Transform.GetTransform(),
-		m_pCamera->m_Transform.position,
+		m_pCamera->GetViewMatrix(),
 		projectionMatrix
 	};
 	m_pUBO = new UniformBufferObject(initData);
@@ -109,13 +108,12 @@ int OpenGLRenderer::Init(Settings* initSettings) {
 	Log::Info("Creating test model...");
 	BaseModel* testModel = new BaseModel("./Rendering/Resources/models/survivalBackpack/backpack.obj");
 	testModel->m_pShader = m_pGeomPassShader;
-	testModel->m_pTransform->Translate(glm::vec3(0.0f, 0.0f, 10.0f));
+	testModel->m_pTransform->Translate(glm::vec3(0.0f, 0.0f, -30.0f));
 	LoadedModels.push_back(testModel);
 
 	BaseModel* testModel2 = new BaseModel("./Rendering/Resources/models/survivalBackpack/backpack.obj");
 	testModel2->m_pShader = m_pGeomPassShader;
-	testModel2->m_pTransform->Translate(glm::vec3(0.0f, -10.0f, 0.0f));
-	testModel2->m_pTransform->Scale(glm::vec3(10.0f));
+	testModel2->m_pTransform->Translate(glm::vec3(0.0f, 0.0f, 30.0f));
 	LoadedModels.push_back(testModel2);
 	
 	Log::Info("Initialisation complete");
@@ -167,14 +165,18 @@ void OpenGLRenderer::MainLoop() {
 		if (fpsPrintDelta > FPS_INTERVAL) {
 			fpsPrintDelta = 0;
 			Log::Info(std::to_string(m_elapsedRenderTime) + " elapsed | " + std::to_string(m_deltaRenderTime) + " delta | " + Utilities::calculateFPS(m_deltaRenderTime, 2) + "FPS");
+			auto cameraPos = m_pCamera->m_Transform.position;
+			Log::Info("Camera pos: " + Log::ToString(cameraPos));
+			auto cameraForward = m_pCamera->m_Transform.GetForwardVector();
+			Log::Info("Camera forward: " + Log::ToString(cameraForward));
 		};
 		fpsPrintDelta += m_deltaRenderTime;
 
 		if (m_shouldRender) {
 			UpdateUniformBuffers();
-
-			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 			// TODO: models currently use their own shaders which are built on forward shading (i think) but to implement deferred shading i think we need a single global shader to render each buffer so uhh yea figure that out ty <3
 			// hi ok
@@ -183,14 +185,8 @@ void OpenGLRenderer::MainLoop() {
 			//-----------------//
 			DSPassGeometry();
 			//renderQuad();
-			//DSPassLighting();
-
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			
-			m_pGBuffer->BindForRead();
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-			glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0, 0, VIEW_WIDTH, VIEW_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			DSPassLighting();
+			DSPassFinal();
 
 			// [Finalise Tick] //
 			//-----------------//
@@ -204,8 +200,7 @@ void OpenGLRenderer::MainLoop() {
 
 void OpenGLRenderer::UpdateUniformBuffers() {
 	sUBO newData{};
-	newData.viewMatrix = m_pCamera->m_Transform.GetTransform();
-	newData.viewPosition = m_pCamera->m_Transform.position;
+	newData.viewMatrix = m_pCamera->GetViewMatrix();
 	newData.perspectiveMatrix = projectionMatrix;
 	m_pUBO->UploadNewData(newData);
 }
@@ -220,8 +215,8 @@ void OpenGLRenderer::Cleanup() {
 // Deferred Shading
 
 void OpenGLRenderer::DSPassGeometry() {
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_pGBuffer->BindAny();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_pGeomPassShader->Activate();
 
 	// Draw models
@@ -232,9 +227,13 @@ void OpenGLRenderer::DSPassGeometry() {
 }
 
 void OpenGLRenderer::DSPassLighting() {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_pGBuffer->BindTextures();
+}
+
+void OpenGLRenderer::DSPassFinal() {
 	m_pGBuffer->BindForRead();
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	GLsizei halfWidth = (GLsizei)(VIEW_WIDTH / 2.0f);
 	GLsizei halfHeight = (GLsizei)(VIEW_HEIGHT / 2.0f);
@@ -244,4 +243,5 @@ void OpenGLRenderer::DSPassLighting() {
 	glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0, halfHeight, halfWidth, VIEW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	m_pGBuffer->SetReadBuffer(GBuffer::GBUFFER_TEXTURE_COLORSPECULAR);
 	glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, halfWidth, halfHeight, VIEW_WIDTH, VIEW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

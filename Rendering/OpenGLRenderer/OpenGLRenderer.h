@@ -58,6 +58,7 @@ private:
 	// Deferred shading functions
 	void DSPassGeometry();
 	void DSPassLighting();
+	void DSPassFinal();
 
 	static OpenGLRenderer* m_pInstance;
 	OpenGLRendererState m_state = OpenGLRendererState::NONE;

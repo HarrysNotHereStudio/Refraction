@@ -16,17 +16,27 @@ bool GBuffer::Init(unsigned int viewWidth, unsigned int viewHeight) {
 	// Init textures
 	glGenTextures(GBUFFER_iTEXTURECOUNT, m_textures);
 
-	std::vector<GLenum> drawBuffers = {};
-	// Generate RGB textures
-	for (unsigned int i = 0; i < GBUFFER_iTEXTURECOUNT; i++) {
-		glBindTexture(GL_TEXTURE_2D, m_textures[i]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, viewWidth, viewHeight, 0, GL_RGBA, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_textures[i], 0);
-		drawBuffers.push_back(GL_COLOR_ATTACHMENT0 + i);
-	}
-	glDrawBuffers(GBUFFER_iTEXTURECOUNT, drawBuffers.data());
+	// position color buffer
+	glBindTexture(GL_TEXTURE_2D, m_textures[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, viewWidth, viewHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textures[0], 0);
+	// normal color buffer
+	glBindTexture(GL_TEXTURE_2D, m_textures[1]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, viewWidth, viewHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_textures[1], 0);
+	// color + specular color buffer
+	glBindTexture(GL_TEXTURE_2D, m_textures[2]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, viewWidth, viewHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_textures[2], 0);
+
+	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, attachments);
 
 	// Depth texture
 	glGenRenderbuffers(1, &m_rboDepth);
@@ -41,7 +51,7 @@ bool GBuffer::Init(unsigned int viewWidth, unsigned int viewHeight) {
 		return false;
 	}
 
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	return true;
 }
 
@@ -59,4 +69,13 @@ void GBuffer::BindAny() {
 
 void GBuffer::SetReadBuffer(GBUFFER_TEXTURE_TYPE texType) {
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + texType);
+}
+
+void GBuffer::BindTextures() {
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_textures[0]);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_textures[1]);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, m_textures[2]);
 }

@@ -20,9 +20,10 @@ public:
 
 	BaseCamera();
 
-	void move(glm::vec3 dirInput, glm::vec3 angInput);
-	void setCameraSpeed(float newSpeed) { m_cameraSpeed = newSpeed; };
-	void setCameraSensitivity(float newSensitivity) { m_cameraSensitivity = newSensitivity; };
+	void Move(glm::vec3 dirInput, glm::vec3 angInput);
+	void SetCameraSpeed(float newSpeed) { m_cameraSpeed = newSpeed; };
+	void SetCameraSensitivity(float newSensitivity) { m_cameraSensitivity = newSensitivity; };
+	glm::mat4 GetViewMatrix() const { return glm::lookAt(m_Transform.position, m_Transform.position + m_Transform.GetForwardVector(), m_Transform.GetUpVector()); };
 
 private:
 	friend class Window;

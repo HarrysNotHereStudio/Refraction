@@ -4,8 +4,8 @@
 
 struct sUBO {
 	glm::mat4 viewMatrix;
-	glm::vec3 viewPosition;
 	glm::mat4 perspectiveMatrix;
+	glm::uint padding;
 };
 
 class UniformBufferObject : public BaseBuffer {

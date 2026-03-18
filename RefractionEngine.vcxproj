@@ -125,7 +125,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>XCOPY "M:\_lib\.OpenGL-Resources\Libs"\*.DLL "$(TargetDir)" /D /K /Y
+      <Command>XCOPY "$(ProjectDir)Libs\Build\x64_Debug"\*.DLL "$(TargetDir)" /D /K /Y
 XCOPY "$(ProjectDir)Rendering\Resources\shaders" "$(TargetDir)Rendering\Resources" /D /K /Y</Command>
     </PostBuildEvent>
     <PostBuildEvent>
