@@ -15,7 +15,7 @@ void main() {
 
     float mdf = 0.4; // increase for noise amount 
     float noise = (fract(sin(dot(uv, vec2(12.9898,78.233)*2.0)) * 43758.5453));
-    vec4 tex = texture(iChannel0, uv);
+    vec4 tex = texture(texSampler, uv);
     
     mdf *= sin(time) + .1; // animate the effect's strength
     

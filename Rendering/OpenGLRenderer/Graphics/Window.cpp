@@ -12,13 +12,13 @@ int Window::Init(Settings::Window windowSettings) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	m_pWindow = glfwCreateWindow(windowSettings.windowWidth, windowSettings.windowHeight, windowSettings.windowTitle, NULL, NULL);
-	if (m_pWindow == NULL) {
+	mWindow = glfwCreateWindow(windowSettings.windowWidth, windowSettings.windowHeight, windowSettings.windowTitle, NULL, NULL);
+	if (mWindow == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
-	glfwMakeContextCurrent(m_pWindow);
+	glfwMakeContextCurrent(mWindow);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cout << "Failed to initialize GLAD" << std::endl;
@@ -26,7 +26,7 @@ int Window::Init(Settings::Window windowSettings) {
 	}
 
 	glViewport(0, 0, windowSettings.windowWidth, windowSettings.windowHeight);
-	glfwSetFramebufferSizeCallback(m_pWindow, framebufferResizeCallback);
+	glfwSetFramebufferSizeCallback(mWindow, framebufferResizeCallback);
 	return 0;
 }
 

@@ -12,8 +12,10 @@
 #include "Log.h"
 #include "Utilities.h"
 #include "Settings.h"
+#include "ShaderManager.h"
 #include "Graphics/Window.h"
 #include "Graphics/BaseShader.h"
+#include "Models/BaseScene.h"
 #include "Models/BaseModel.h"
 #include "Models/InstancedModel.h"
 #include "Models/BaseCamera.h"
@@ -45,13 +47,12 @@ class OpenGLRenderer
 public:
 	static OpenGLRenderer* GetInstance();
 	static void DestroyInstance();
-	OpenGLRendererState GetState() { return m_state; }
-	Window* GetWindow() { return m_pWindow; }
-	BaseCamera* GetCamera() { return m_pCamera; }
+	OpenGLRendererState GetState() { return mState; }
+	Window* GetWindow() { return mWindow; }
+	BaseCamera* GetCamera() { return mCamera; }
 	int Init(Settings* initSettings);
 private:
 	OpenGLRenderer();
-	void LoadShaders();
 	void MainLoop();
 	void UpdateUniformBuffers();
 	void Cleanup();
@@ -61,23 +62,21 @@ private:
 	void DSPassLighting();
 	void DSPassFinal();
 
-	static OpenGLRenderer* m_pInstance;
-	OpenGLRendererState m_state = OpenGLRendererState::NONE;
-	Settings m_currentSettings;
-	Window* m_pWindow = nullptr;
+	static OpenGLRenderer* mInstance;
+	OpenGLRendererState mState = OpenGLRendererState::NONE;
+	Settings mCurrentSettings;
+	Window* mWindow = nullptr;
 
-	UniformBufferObject* m_pUBO = nullptr;
-	BaseShader* m_pGeomPassShader = nullptr;
-	BaseShader* m_pLightingPassShader = nullptr;
-	GBuffer* m_pGBuffer = nullptr;
+	UniformBufferObject* mUBO = nullptr;
+	BaseShader* mGeomPassShader = nullptr;
+	BaseShader* mLightingPassShader = nullptr;
+	GBuffer* mGBuffer = nullptr;
 
-	BaseCamera* m_pCamera = nullptr;
-	vector<PointLight*> m_pScenePointLights = {};
+	BaseCamera* mCamera = nullptr;
+	BaseScene* mLoadedScene = nullptr;
 
-	bool m_shouldRender = true;
-	double m_startRenderTime = 0.0f;
-	double m_elapsedRenderTime = 0.0f;
-	double m_deltaRenderTime = 0.0f;
+	bool mShouldRender = true;
+	double mStartRenderTime = 0.0f;
+	double mElapsedRenderTime = 0.0f;
+	double mDeltaRenderTime = 0.0f;
 };
-
-inline void nativeDebugPrint(std::string message, bool newLine = false) { std::cout << (newLine ? "\n" : "") << "OpenGLRenderer DEBUG - " << message << std::endl; }

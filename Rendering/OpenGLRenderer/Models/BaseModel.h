@@ -18,16 +18,12 @@
 class BaseModel
 {
 public:
-	Transform* m_pTransform;
-	BaseShader* m_pShader;
-	std::string sourcePath;
+	Transform* mTransform;
+	BaseShader* mShader;
+	std::string mSourcePath;
 
 	BaseModel() = default;
-	BaseModel(std::string modelSourcePath) {
-		m_pTransform = new Transform();
-		m_pShader = new BaseShader();
-		LoadModel(modelSourcePath);
-	};
+	BaseModel(std::string modelSourcePath);
 
 	virtual void DrawModel();
 
@@ -35,8 +31,8 @@ protected:
 	void DrawMeshesRaw();
 
 private:
-	std::vector<Mesh> m_meshes;
-	std::vector<BaseTexture*> m_textures;
+	std::vector<Mesh> mMeshes;
+	std::vector<BaseTexture*> mTextures;
 
 	void LoadModel(std::string path);
 	void ProcessNode(aiNode *node, const aiScene *scene);

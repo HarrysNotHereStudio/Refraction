@@ -12,13 +12,12 @@ void InstancedModel::AddInstance(glm::vec3 relativePos) {
 
 void InstancedModel::DrawModel() {
 
-	m_pShader->Activate();
+	mShader->Activate();
 	for (auto& transform : mTransforms) {
 		auto matrix = transform.GetTransform();
-		matrix *= m_pTransform->GetTransform();
-		m_pShader->setUniformMat4("modelTransform", matrix);
+		matrix *= mTransform->GetTransform();
+		mShader->setUniformMat4("modelTransform", matrix);
 
 		DrawMeshesRaw();
-		Log::Info("Drew instance of model");
 	}
 }

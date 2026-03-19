@@ -18,7 +18,7 @@ class Mesh
 public:
 	vector<sVertex> m_vertices;
 	vector<unsigned int> m_indices;
-	vector<BaseTexture*> m_textures;
+	vector<BaseTexture*> mTextures;
 
 	Mesh(vector<sVertex> vertices, vector<unsigned int> indices, vector<BaseTexture*> textures);
 	void Draw(BaseShader &shader);

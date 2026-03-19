@@ -24,13 +24,13 @@ public:
 	void Activate(unsigned int unitOffset);
 
 	std::string GetTextureType() { return m_textureType; };
-	std::string GetSourcePath() { return m_sourcePath; };
+	std::string GetSourcePath() { return mSourcePath; };
 
 private:
 	BaseTexture(std::string texturePath, std::string textureType);
 
 	unsigned int m_texture;
-	std::string m_sourcePath;
+	std::string mSourcePath;
 	std::string m_textureType;
 };
 

@@ -3,7 +3,7 @@
 Mesh::Mesh(vector<sVertex> vertices, vector<unsigned int> indices, vector<BaseTexture*> textures) {
 	m_vertices = vertices;
 	m_indices = indices;
-	m_textures = textures;
+	mTextures = textures;
 
 	SetupMesh();
 }
@@ -11,10 +11,10 @@ Mesh::Mesh(vector<sVertex> vertices, vector<unsigned int> indices, vector<BaseTe
 void Mesh::Draw(BaseShader& shader) {
 	unsigned int diffuseIndex = 1;
 	unsigned int specularIndex = 1;
-	for (unsigned int i = 0; i < m_textures.size(); i++) {
-		m_textures[i]->Activate(i);
+	for (unsigned int i = 0; i < mTextures.size(); i++) {
+		mTextures[i]->Activate(i);
 		std::string number;
-		std::string name = m_textures[i]->GetTextureType();
+		std::string name = mTextures[i]->GetTextureType();
 		if (name == REFRACT_TEXTURE_TYPE_DIFFUSE)
 			number = std::to_string(diffuseIndex++);
 		else if (name == REFRACT_TEXTURE_TYPE_SPECULAR)

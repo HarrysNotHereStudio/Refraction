@@ -11,5 +11,5 @@
 class BaseBuffer {
 public:
 protected:
-	GLuint m_ID;
+	GLuint mID;
 };

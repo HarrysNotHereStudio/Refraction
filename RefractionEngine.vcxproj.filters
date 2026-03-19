@@ -69,6 +69,12 @@
     <ClCompile Include="Rendering\OpenGLRenderer\Models\InstancedModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Rendering\OpenGLRenderer\Models\BaseScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\OpenGLRenderer\ShaderManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Rendering\OpenGLRenderer\OpenGLRenderer.h">
@@ -128,15 +134,20 @@
     <ClInclude Include="Rendering\OpenGLRenderer\Models\InstancedModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Rendering\OpenGLRenderer\Models\BaseScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\OpenGLRenderer\ShaderManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Rendering\Resources\shaders\postprocessing\filmGrain.frag" />
     <None Include="Rendering\Resources\shaders\baseShader\fragBase.frag" />
     <None Include="Rendering\Resources\shaders\baseShader\vertBase.vert" />
-    <None Include="Rendering\Resources\shaders\fragLighting.frag" />
     <None Include="Rendering\Resources\shaders\gbufferShader\gbuffer.frag" />
     <None Include="Rendering\Resources\shaders\gbufferShader\gbuffer.vert" />
-    <None Include="Rendering\Resources\shaders\lightShader\light.frag" />
-    <None Include="Rendering\Resources\shaders\lightShader\light.vert" />
+    <None Include="Rendering\Resources\shaders\lightingShader\lighting.frag" />
+    <None Include="Rendering\Resources\shaders\lightingShader\lighting.vert" />
   </ItemGroup>
 </Project>

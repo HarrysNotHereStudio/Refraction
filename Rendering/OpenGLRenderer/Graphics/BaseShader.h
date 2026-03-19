@@ -21,14 +21,14 @@ public:
 
 	BaseShader(string shaderSourcePath) {
 		using std::vector, std::filesystem::directory_entry;
-		m_sourcePath = shaderSourcePath;
-		m_name = shaderSourcePath.substr(shaderSourcePath.find_last_of("\\")+1);
-		//Log::Info(m_sourcePath);
-		Log::Info("Creating shader " + m_name);
+		mSourcePath = shaderSourcePath;
+		mName = shaderSourcePath.substr(shaderSourcePath.find_last_of("\\")+1);
+		//Log::Info(mSourcePath);
+		Log::Info("Creating shader " + mName);
 
 		// Get all shader files (.vert and .frag) in the folder
-		directory_entry vertShader = Utilities::getFirstFileOfExtInFolder(m_sourcePath, ".vert");
-		directory_entry fragShader = Utilities::getFirstFileOfExtInFolder(m_sourcePath, ".frag");
+		directory_entry vertShader = Utilities::getFirstFileOfExtInFolder(mSourcePath, ".vert");
+		directory_entry fragShader = Utilities::getFirstFileOfExtInFolder(mSourcePath, ".frag");
 
 		if (!(vertShader.exists() && fragShader.exists())) {
 			Log::Info("Skipping shader creation, missing source files");
@@ -57,64 +57,64 @@ public:
 		checkLogErrors(frag, "FRAGMENT");
 		Log::Info("Compiled fragment shader");
 
-		m_ID = glCreateProgram();
-		glAttachShader(m_ID, vert);
-		glAttachShader(m_ID, frag);
-		glLinkProgram(m_ID);
-		checkLogErrors(m_ID, "PROGRAM");
+		mID = glCreateProgram();
+		glAttachShader(mID, vert);
+		glAttachShader(mID, frag);
+		glLinkProgram(mID);
+		checkLogErrors(mID, "PROGRAM");
 		Log::Info("Linked shader program");
 
 		glDeleteShader(vert);
 		glDeleteShader(frag);
 	};
 
-	unsigned int m_ID = 0;
-	string m_sourcePath;
-	string m_name;
+	unsigned int mID = 0;
+	string mSourcePath;
+	string mName;
 
 
-	void Activate() {
-		glUseProgram(m_ID);
+	void Activate() const {
+		glUseProgram(mID);
 	}
 
 
 	// Uniform update functions
 
 	void setUniformBool(const string& name, bool value) const {
-		glUniform1i(glGetUniformLocation(m_ID, name.c_str()), (int)value);
+		glUniform1i(glGetUniformLocation(mID, name.c_str()), (int)value);
 	}
 	void setUniformInt(const string& name, int value) const {
-		glUniform1i(glGetUniformLocation(m_ID, name.c_str()), value);
+		glUniform1i(glGetUniformLocation(mID, name.c_str()), value);
 	}
 	void setUniformFloat(const string& name, float value) const {
-		glUniform1f(glGetUniformLocation(m_ID, name.c_str()), value);
+		glUniform1f(glGetUniformLocation(mID, name.c_str()), value);
 	}
 	void setUniformVec2(const string& name, const glm::vec2 &value) const {
-		glUniform2fv(glGetUniformLocation(m_ID, name.c_str()), 1, &value[0]);
+		glUniform2fv(glGetUniformLocation(mID, name.c_str()), 1, &value[0]);
 	}
 	void setUniformVec2(const string& name, float x, float y) const {
-		glUniform2f(glGetUniformLocation(m_ID, name.c_str()), x, y);
+		glUniform2f(glGetUniformLocation(mID, name.c_str()), x, y);
 	}
 	void setUniformVec3(const string& name, const glm::vec3& value) const {
-		glUniform3fv(glGetUniformLocation(m_ID, name.c_str()), 1, &value[0]);
+		glUniform3fv(glGetUniformLocation(mID, name.c_str()), 1, &value[0]);
 	}
 	void setUniformVec3(const string& name, float x, float y, float z) const {
-		glUniform3f(glGetUniformLocation(m_ID, name.c_str()), x, y, z);
+		glUniform3f(glGetUniformLocation(mID, name.c_str()), x, y, z);
 	}
 	void setUniformVec4(const string& name, const glm::vec4& value) const {
-		glUniform4fv(glGetUniformLocation(m_ID, name.c_str()), 1, &value[0]);
+		glUniform4fv(glGetUniformLocation(mID, name.c_str()), 1, &value[0]);
 	}
 	void setUniformVec4(const string& name, float x, float y, float z, float w) const {
-		glUniform4f(glGetUniformLocation(m_ID, name.c_str()), x, y, z, w);
+		glUniform4f(glGetUniformLocation(mID, name.c_str()), x, y, z, w);
 	}
 	void setUniformMat2(const string& name, const glm::mat2& matrix) const {
-		glUniformMatrix2fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
+		glUniformMatrix2fv(glGetUniformLocation(mID, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
 	}
 	void setUniformMat3(const string& name, const glm::mat3& matrix) const {
-		glUniformMatrix3fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
+		glUniformMatrix3fv(glGetUniformLocation(mID, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
 	}
 	void setUniformMat4(const string& name, const glm::mat4& matrix) const {
-		glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(mID, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
 	}
 
 private:

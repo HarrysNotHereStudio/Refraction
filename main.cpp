@@ -91,24 +91,26 @@ int main() {
 
 	settings->window.windowWidth = 1280;
 	settings->window.windowHeight = 720;
-	settings->controls.cameraSensitivity = 3.0f;
-	settings->controls.cameraSpeed = 0.2f;
+	settings->graphics.viewportWidth = 1280;
+	settings->graphics.viewportHeight = 720;
+	settings->controls.cameraSensitivity = 0.5f;
+	settings->controls.cameraSpeed = 0.5f;
 
 	std::cout << "Starting render thread...\n";
-	OpenGLRenderer* pOpenGLRenderer = OpenGLRenderer::GetInstance();
-	std::thread renderThread(runRenderer, pOpenGLRenderer);
+	OpenGLRenderer* renderer = OpenGLRenderer::GetInstance();
+	std::thread renderThread(runRenderer, renderer);
 	
 	// Wait for rendering engine to start running
-	while (pOpenGLRenderer->GetState() != OpenGLRendererState::RUNNING) {
+	while (renderer->GetState() != OpenGLRendererState::RUNNING) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 
 	std::cout << "Starting input thread...\n";
 	// Allow inputs to be processed
-	std::thread inputThread(enableInputProcessing, pOpenGLRenderer);
+	std::thread inputThread(enableInputProcessing, renderer);
 	
 	// Wait for rendering engine to clean up before exiting
-	while (pOpenGLRenderer->GetState() != OpenGLRendererState::EXIT) {
+	while (renderer->GetState() != OpenGLRendererState::EXIT) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 	

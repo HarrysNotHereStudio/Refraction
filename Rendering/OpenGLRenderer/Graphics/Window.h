@@ -25,7 +25,7 @@ public:
 
 	void Cleanup();
 
-	GLFWwindow* GetWindow() { return m_pWindow; }
+	GLFWwindow* GetWindow() { return mWindow; }
 	Camera* GetCurrentCamera() { return m_pCurrentCamera; }
 	void SetCurrentCamera(Camera* pNewCamera) { m_pCurrentCamera = pNewCamera; }
 
@@ -33,7 +33,7 @@ public:
 private:
 	Camera* m_pCurrentCamera = nullptr;
 
-	GLFWwindow* m_pWindow = nullptr;
+	GLFWwindow* mWindow = nullptr;
 
 	void DrawFrame();
 };

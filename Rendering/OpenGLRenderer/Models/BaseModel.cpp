@@ -1,11 +1,19 @@
+#include "../ShaderManager.h"
+
 #include "BaseModel.h"
 
+BaseModel::BaseModel(std::string modelSourcePath) {
+	mTransform = new Transform();
+	mShader = ShaderManager::GetShaderByName("gbufferShader");
+	LoadModel(modelSourcePath);
+};
+
 void BaseModel::DrawModel() {
-	m_pShader->Activate();
-	m_pShader->setUniformMat4("modelTransform", m_pTransform->GetTransform());
+	mShader->Activate();
+	mShader->setUniformMat4("modelTransform", mTransform->GetTransform());
 
 	DrawMeshesRaw();
-	//Log::Info("Drawn for model" + sourcePath);
+	//Log::Info("Drawn for model" + mSourcePath);
 }
 
 void BaseModel::LoadModel(std::string path) {
@@ -18,7 +26,7 @@ void BaseModel::LoadModel(std::string path) {
 		Log::Info("MODEL LOAD FAILED | " + std::string(import.GetErrorString()));
 		return;
 	}
-	sourcePath = path.substr(0, path.find_last_of("/"));
+	mSourcePath = path.substr(0, path.find_last_of("/"));
 	Log::Info("Parsing scene data...");
 	ProcessNode(scene->mRootNode, scene);
 }
@@ -26,7 +34,7 @@ void BaseModel::LoadModel(std::string path) {
 void BaseModel::ProcessNode(aiNode* node, const aiScene* scene) {
 	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		m_meshes.push_back(ProcessMesh(mesh, scene));
+		mMeshes.push_back(ProcessMesh(mesh, scene));
 	}
 
 	for (unsigned int i = 0; i < node->mNumChildren; i++) {
@@ -79,19 +87,16 @@ Mesh BaseModel::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
 
 vector<BaseTexture*> BaseModel::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {
 	vector<BaseTexture*> textures;
-	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
-	{
+	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString str;
 		mat->GetTexture(type, i, &str);
 
-		std::string fullPath = sourcePath + "/" + str.C_Str();
+		std::string fullPath = mSourcePath + "/" + str.C_Str();
 
 		bool skip = false;
-		for (unsigned int j = 0; j < m_textures.size(); j++)
-		{
-			if (std::strcmp(m_textures[j]->GetSourcePath().data(), fullPath.data()) == 0)
-			{
-				textures.push_back(m_textures[j]);
+		for (unsigned int j = 0; j < mTextures.size(); j++) {
+			if (std::strcmp(mTextures[j]->GetSourcePath().data(), fullPath.data()) == 0) {
+				textures.push_back(mTextures[j]);
 				skip = true;
 				break;
 			}
@@ -100,13 +105,13 @@ vector<BaseTexture*> BaseModel::LoadMaterialTextures(aiMaterial* mat, aiTextureT
 		if (!skip) {
 			BaseTexture* texture = BaseTexture::LoadTexture(fullPath, typeName);
 			textures.push_back(texture);
-			m_textures.push_back(texture);
+			mTextures.push_back(texture);
 		}
 	}
 	return textures;
 }
 
 void BaseModel::DrawMeshesRaw() {
-	for (auto& mesh : m_meshes)
-		mesh.Draw(*m_pShader);
+	for (auto& mesh : mMeshes)
+		mesh.Draw(*mShader);
 }

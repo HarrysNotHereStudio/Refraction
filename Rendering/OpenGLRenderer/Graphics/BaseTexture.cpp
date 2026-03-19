@@ -7,7 +7,7 @@ using std::string;
 std::unordered_map<string, BaseTexture*> LoadedTextures;
 
 BaseTexture::BaseTexture(string texturePath, string textureType) {
-	m_sourcePath = texturePath;
+	mSourcePath = texturePath;
 	m_textureType = textureType;
 
 	glGenTextures(1, &m_texture);
@@ -20,13 +20,13 @@ BaseTexture::BaseTexture(string texturePath, string textureType) {
 
 	int width, height, nrChannels;
 	stbi_set_flip_vertically_on_load(true);
-	unsigned char* data = stbi_load(m_sourcePath.c_str(), &width, &height, &nrChannels, 0);
+	unsigned char* data = stbi_load(mSourcePath.c_str(), &width, &height, &nrChannels, 0);
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
-		Log::Info("Created texture from path " + m_sourcePath);
+		Log::Info("Created texture from path " + mSourcePath);
 	} else {
-		Log::Info("Failed to create texture from path " + m_sourcePath);
+		Log::Info("Failed to create texture from path " + mSourcePath);
 	}
 	stbi_image_free(data);
 };

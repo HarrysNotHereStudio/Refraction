@@ -19,10 +19,9 @@ public:
 	void BindForWrite();
 	void BindForRead();
 	void BindAny();
-	void SetReadBuffer(GBUFFER_TEXTURE_TYPE texType);
 	void BindTextures();
 private:
-	GLuint m_fbo = 0;
-	GLuint m_textures[GBUFFER_iTEXTURECOUNT];
-	GLuint m_rboDepth = 0;
+	GLuint mGBuffer = 0;
+	GLuint mTextures[GBUFFER_iTEXTURECOUNT];
+	GLuint mRBODepth = 0;
 };

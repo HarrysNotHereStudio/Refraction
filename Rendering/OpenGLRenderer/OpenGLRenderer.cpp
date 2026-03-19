@@ -5,123 +5,91 @@
 #include "STB/stb_image.h"
 #pragma warning(pop)
 
-#define VIEW_WIDTH this->m_currentSettings.window.windowWidth
-#define VIEW_HEIGHT this->m_currentSettings.window.windowHeight
+#define VIEW_WIDTH this->mCurrentSettings.window.windowWidth
+#define VIEW_HEIGHT this->mCurrentSettings.window.windowHeight
 constexpr auto FPS_INTERVAL = 500;
 
-OpenGLRenderer* OpenGLRenderer::m_pInstance = nullptr;
+OpenGLRenderer* OpenGLRenderer::mInstance = nullptr;
 
 OpenGLRenderer::OpenGLRenderer() {}
 
 OpenGLRenderer* OpenGLRenderer::GetInstance()
 {
-	if (m_pInstance == nullptr)
+	if (mInstance == nullptr)
 	{
-		m_pInstance = new OpenGLRenderer();
+		mInstance = new OpenGLRenderer();
 		Log::Info("Instance created");
 	}
-	return m_pInstance;
+	return mInstance;
 }
 
 void OpenGLRenderer::DestroyInstance()
 {
 	Log::Info("Instance destruction requested");
-	if (m_pInstance != nullptr)
+	if (mInstance != nullptr)
 	{
-		if (m_pInstance->GetState() != OpenGLRendererState::CLEANUP) {
-			m_pInstance->Cleanup();
+		if (mInstance->GetState() != OpenGLRendererState::CLEANUP) {
+			mInstance->Cleanup();
 		}
 
 		Log::Info("Exiting...");
-		m_pInstance->m_state = OpenGLRendererState::EXIT;
+		mInstance->mState = OpenGLRendererState::EXIT;
 	}
-}
-
-std::string shadersPath = "Rendering/Resources/shaders";
-std::vector<BaseShader*> LoadedShaders = {};
-
-void OpenGLRenderer::LoadShaders() {
-	using std::string, std::vector, std::filesystem::directory_entry;
-
-	vector<directory_entry> shaderSources = Utilities::getFoldersInFolder(shadersPath);
-
-	for (const auto& shaderSource : shaderSources) {
-		string shaderSourcePath = shaderSource.path().string();
-		Log::Info("Loading shader source: " + shaderSourcePath);
-		BaseShader* newShader = new BaseShader(shaderSourcePath);
-		LoadedShaders.push_back(newShader);
-	}
-}
-
-BaseShader* getShaderByName(const std::string name) {
-	for (const auto& shader : LoadedShaders) {
-		if (shader->m_name == name) {
-			return shader;
-		}
-	}
-	throw std::runtime_error("Could not get shader of name " + name);
 }
 
 std::vector<unsigned int> VAOs = {};
 std::vector<unsigned int> VBOs = {};
-std::vector<BaseModel*> LoadedModels = {};
 
 glm::mat4 projectionMatrix;
 
 int OpenGLRenderer::Init(Settings* initSettings) {
-	m_state = OpenGLRendererState::INIT;
+	mState = OpenGLRendererState::INIT;
 	Log::Info("Initializing...");
-	m_currentSettings = *initSettings;
+	mCurrentSettings = *initSettings;
 
 	Log::Info("Instantiating window...");
 	glfwInit();
-	m_pWindow = new Window();
-	m_pWindow->Init(initSettings->window);
+	mWindow = new Window();
+	mWindow->Init(initSettings->window);
 
 	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
 
 	Log::Info("Instantiating camera...");
-	m_pCamera = new BaseCamera();
-	m_pCamera->SetCameraSpeed(m_currentSettings.controls.cameraSpeed);
-	m_pCamera->SetCameraSensitivity(m_currentSettings.controls.cameraSensitivity);
+	mCamera = new BaseCamera();
+	mCamera->SetCameraSpeed(mCurrentSettings.controls.cameraSpeed);
+	mCamera->SetCameraSensitivity(mCurrentSettings.controls.cameraSensitivity);
 
 	Log::Info("Loading shaders...");
-	// Prepare shaders
-	LoadShaders();
+	ShaderManager::LoadAllShaders();
 
-	m_pGeomPassShader = getShaderByName("gbufferShader");
+	mGeomPassShader = ShaderManager::GetShaderByName("gbufferShader");
+	mLightingPassShader = ShaderManager::GetShaderByName("lightingShader");
+
+	mLightingPassShader->Activate();
+	mLightingPassShader->setUniformInt("gPosition", 0);
+	mLightingPassShader->setUniformInt("gNormal", 1);
+	mLightingPassShader->setUniformInt("gAlbedoSpec", 2);
 
 	Log::Info("Creating G-Buffer...");
-	m_pGBuffer = new GBuffer();
-	m_pGBuffer->Init(VIEW_WIDTH, VIEW_HEIGHT);
-
+	mGBuffer = new GBuffer();
+	mGBuffer->Init(VIEW_WIDTH, VIEW_HEIGHT);
 
 	Log::Info("Creating uniform buffer object...");
 	float aspectRatio = VIEW_WIDTH / static_cast<float>(VIEW_HEIGHT);
-	projectionMatrix = glm::perspective(glm::radians(m_pCamera->FOVy), aspectRatio, m_currentSettings.graphics.clipPlaneNear, m_currentSettings.graphics.clipPlaneFar);
+	projectionMatrix = glm::perspective(glm::radians(mCamera->FOVy), aspectRatio, mCurrentSettings.graphics.clipPlaneNear, mCurrentSettings.graphics.clipPlaneFar);
 	sUBO initData = {
-		m_pCamera->GetViewMatrix(),
+		mCamera->GetViewMatrix(),
 		projectionMatrix
 	};
-	m_pUBO = new UniformBufferObject(initData);
+	mUBO = new UniformBufferObject(initData);
 
-	Log::Info("Creating test model...");
-	BaseModel* testModel = new BaseModel("./Rendering/Resources/models/survivalBackpack/backpack.obj");
-	testModel->m_pShader = m_pGeomPassShader;
-	testModel->m_pTransform->Translate(glm::vec3(0.0f, 0.0f, -10.0f));
-	LoadedModels.push_back(testModel);
-
-	InstancedModel* testModel2 = new InstancedModel("./Rendering/Resources/models/survivalBackpack/backpack.obj");
-	testModel2->m_pShader = m_pGeomPassShader;
-	testModel2->m_pTransform->Translate(glm::vec3(0.0f, 0.0f, 10.0f));
-	testModel2->AddInstance(glm::vec3(0.0f, 5.0f, 0.0f));
-	testModel2->AddInstance(glm::vec3(0.0f, 10.0f, 0.0f));
-	testModel2->AddInstance(glm::vec3(0.0f, -5.0f, 0.0f));
-	LoadedModels.push_back(testModel2);
+	Log::Info("Loading test scene...");
+	mLoadedScene = new BaseScene();
 	
 	Log::Info("Initialisation complete");
 
-	m_startRenderTime = glfwGetTime();
+	mStartRenderTime = glfwGetTime();
 	MainLoop();
 
 	return 0;
@@ -135,10 +103,10 @@ void renderQuad()
 	{
 		float quadVertices[] = {
 			// positions        // texture Coords
-			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
-			 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
 		};
 		// setup plane VAO
 		glGenVertexArrays(1, &quadVAO);
@@ -157,32 +125,31 @@ void renderQuad()
 }
 
 void OpenGLRenderer::MainLoop() {
-	m_state = OpenGLRendererState::RUNNING;
+	mState = OpenGLRendererState::RUNNING;
 	double fpsPrintDelta = 0;
-	GLFWwindow* windowInstance = m_pWindow->GetWindow();
+	double frameCounter = 0;
+	GLFWwindow* windowInstance = mWindow->GetWindow();
 
 	while (!glfwWindowShouldClose(windowInstance))
 	{
-		m_deltaRenderTime = glfwGetTime() - m_elapsedRenderTime;
-		m_elapsedRenderTime = glfwGetTime() - m_startRenderTime;
+		mDeltaRenderTime = glfwGetTime() - mElapsedRenderTime;
+		mElapsedRenderTime = glfwGetTime() - mStartRenderTime;
 		if (fpsPrintDelta > FPS_INTERVAL) {
 			fpsPrintDelta = 0;
-			Log::Info(std::to_string(m_elapsedRenderTime) + " elapsed | " + std::to_string(m_deltaRenderTime) + " delta | " + Utilities::calculateFPS(m_deltaRenderTime, 2) + "FPS");
-			//auto cameraPos = m_pCamera->m_Transform.position;
+			Log::Info(std::to_string(mElapsedRenderTime) + " elapsed | " + std::to_string(mDeltaRenderTime) + " delta | " + Utilities::calculateFPS(frameCounter/FPS_INTERVAL, 2) + "FPS");
+			frameCounter = 0;
+			//auto cameraPos = mCamera->m_Transform.position;
 			//Log::Info("Camera pos: " + Log::ToString(cameraPos));
-			//auto cameraForward = m_pCamera->m_Transform.GetForwardVector();
+			//auto cameraForward = mCamera->m_Transform.GetForwardVector();
 			//Log::Info("Camera forward: " + Log::ToString(cameraForward));
 		};
-		fpsPrintDelta += m_deltaRenderTime;
+		fpsPrintDelta += mDeltaRenderTime;
+		frameCounter++;
 
-		if (m_shouldRender) {
+		if (mShouldRender) {
 			UpdateUniformBuffers();
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
-			// TODO: models currently use their own shaders which are built on forward shading (i think) but to implement deferred shading i think we need a single global shader to render each buffer so uhh yea figure that out ty <3
-			// hi ok
 
 			// [Geometry Pass] //
 			//-----------------//
@@ -197,18 +164,18 @@ void OpenGLRenderer::MainLoop() {
 		glfwPollEvents();
 	}
 
-	m_pInstance->Cleanup();
+	mInstance->Cleanup();
 }
 
 void OpenGLRenderer::UpdateUniformBuffers() {
 	sUBO newData{};
-	newData.viewMatrix = m_pCamera->GetViewMatrix();
+	newData.viewMatrix = mCamera->GetViewMatrix();
 	newData.perspectiveMatrix = projectionMatrix;
-	m_pUBO->UploadNewData(newData);
+	mUBO->UploadNewData(newData);
 }
 
 void OpenGLRenderer::Cleanup() {
-	m_state = OpenGLRendererState::CLEANUP;
+	mState = OpenGLRendererState::CLEANUP;
 	Log::Info("Cleaning up...");
 	glfwTerminate();
 }
@@ -217,33 +184,35 @@ void OpenGLRenderer::Cleanup() {
 // Deferred Shading
 
 void OpenGLRenderer::DSPassGeometry() {
-	m_pGBuffer->BindAny();
+	mGBuffer->BindAny();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	m_pGeomPassShader->Activate();
+	mGeomPassShader->Activate();
 
 	// Draw models
-	for (int i = 0; i < LoadedModels.size(); i++) {
-		LoadedModels[i]->DrawModel();
+	for (int i = 0; i < mLoadedScene->mModels.size(); i++) {
+		mLoadedScene->mModels[i]->DrawModel();
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void OpenGLRenderer::DSPassLighting() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	m_pGBuffer->BindTextures();
+	mGBuffer->BindTextures();
+
+	mLightingPassShader->Activate();
+	for (auto i = 0; i < mLoadedScene->mLights.size(); i++) {
+		auto light = mLoadedScene->mLights[i];
+		light->UpdateShaderUniforms(i);
+	}
+	mLightingPassShader->setUniformVec3("viewPos", mCamera->m_Transform.position);
+	// finally render quad
+	renderQuad();
 }
 
 void OpenGLRenderer::DSPassFinal() {
-	m_pGBuffer->BindForRead();
+	mGBuffer->BindForRead();
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-	GLsizei halfWidth = (GLsizei)(VIEW_WIDTH / 2.0f);
-	GLsizei halfHeight = (GLsizei)(VIEW_HEIGHT / 2.0f);
-	m_pGBuffer->SetReadBuffer(GBuffer::GBUFFER_TEXTURE_POSITION);
-	glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0, 0, halfWidth, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	m_pGBuffer->SetReadBuffer(GBuffer::GBUFFER_TEXTURE_NORMAL);
-	glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0, halfHeight, halfWidth, VIEW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	m_pGBuffer->SetReadBuffer(GBuffer::GBUFFER_TEXTURE_COLORSPECULAR);
-	glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, halfWidth, halfHeight, VIEW_WIDTH, VIEW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0, 0, VIEW_WIDTH, VIEW_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
