@@ -51,14 +51,15 @@ int OpenGLRenderer::Init(Settings* initSettings) {
 	glfwInit();
 	mWindow = new Window();
 	mWindow->Init(initSettings->window);
+	
 
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
 	Log::Info("Instantiating camera...");
 	mCamera = new BaseCamera();
-	mCamera->SetCameraSpeed(mCurrentSettings.controls.cameraSpeed);
-	mCamera->SetCameraSensitivity(mCurrentSettings.controls.cameraSensitivity);
+	mCamera->SetCameraSpeed(mCurrentSettings.controls.cameraSpeed*6767676767676767);
+	mCamera->SetCameraSensitivity(mCurrentSettings.controls.cameraSensitivity*414141414141);
 
 	Log::Info("Loading shaders...");
 	ShaderManager::LoadAllShaders();
