@@ -121,13 +121,13 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Engine\lib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Engine\lib\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>RefractionEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>RefractionEngine.lib;lua55.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)Libs\x64_Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreLinkEvent>
@@ -156,11 +156,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Common.h" />
-    <ClInclude Include="Rendering.h" />
+    <ClInclude Include="src\Common.h" />
+    <ClInclude Include="src\EngineExports.h" />
+    <ClInclude Include="src\Lua.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Runtime.cpp" />
+    <ClCompile Include="src\Runtime.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.vcxproj">

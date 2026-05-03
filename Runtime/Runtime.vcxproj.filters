@@ -15,15 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Common.h">
+    <ClInclude Include="src\Common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Rendering.h">
+    <ClInclude Include="src\EngineExports.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Lua.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Runtime.cpp">
+    <ClCompile Include="src\Runtime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

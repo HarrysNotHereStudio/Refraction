@@ -7,6 +7,9 @@ namespace Editor {
 			RuntimeComm.TestPrint();
 			Console.WriteLine("Initialising Refraction Editor...");
 			RuntimeComm.SetResourcePath(ResourcesPath);
+			RuntimeComm.InitLua();
+			RuntimeComm.ParseLua("print('gurt: yo')");
+
 			RuntimeComm.InitEngine();
 
 			Console.WriteLine("yay!!!");

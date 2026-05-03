@@ -2,7 +2,8 @@
 
 #include "Common.h"
 
-#include "Rendering.h"
+#include "EngineExports.h"
+#include "Lua.h"
 
 #pragma unmanaged
 
