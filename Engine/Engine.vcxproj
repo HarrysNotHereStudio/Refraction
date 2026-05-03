@@ -150,6 +150,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h" />
+    <ClInclude Include="lib\include\imgui\imconfig.h" />
+    <ClInclude Include="lib\include\imgui\imgui.h" />
+    <ClInclude Include="lib\include\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="lib\include\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="lib\include\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="lib\include\imgui\imgui_internal.h" />
+    <ClInclude Include="lib\include\imgui\imstb_rectpack.h" />
+    <ClInclude Include="lib\include\imgui\imstb_textedit.h" />
+    <ClInclude Include="lib\include\imgui\imstb_truetype.h" />
     <ClInclude Include="src\Log.h" />
     <ClInclude Include="src\Rendering\Constants.h" />
     <ClInclude Include="src\Rendering\Graphics\BaseShader.h" />
@@ -174,6 +183,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="lib\include\imgui\imgui.cpp" />
+    <ClCompile Include="lib\include\imgui\imgui_demo.cpp" />
+    <ClCompile Include="lib\include\imgui\imgui_draw.cpp" />
+    <ClCompile Include="lib\include\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="lib\include\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="lib\include\imgui\imgui_tables.cpp" />
+    <ClCompile Include="lib\include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\Log.cpp" />
     <ClCompile Include="src\Rendering\glad.c" />
     <ClCompile Include="src\Rendering\Graphics\BaseTexture.cpp" />

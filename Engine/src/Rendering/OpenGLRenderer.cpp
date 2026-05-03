@@ -89,6 +89,13 @@ int OpenGLRenderer::Init(Settings* initSettings) {
 
 	Log::Info("Loading test scene...");
 	mLoadedScene = new BaseScene(mCurrentSettings.graphics.resourcePath);
+
+	Log::Info("Initialising ImGui...");
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGui::StyleColorsDark();
 	
 	Log::Info("Initialisation complete");
 
@@ -133,6 +140,9 @@ void OpenGLRenderer::MainLoop() {
 	double frameCounter = 0;
 	GLFWwindow* windowInstance = mWindow->GetWindow();
 
+	ImGui_ImplGlfw_InitForOpenGL(windowInstance, true);
+	ImGui_ImplOpenGL3_Init("#version 330");
+
 	while (!glfwWindowShouldClose(windowInstance))
 	{
 		mDeltaRenderTime = glfwGetTime() - mElapsedRenderTime;
@@ -166,6 +176,21 @@ void OpenGLRenderer::MainLoop() {
 		}
 		glfwPollEvents();
 		mLoadedScene->Tick((float)mDeltaRenderTime/1000);
+
+		// GUI
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		ImGui::Begin("new window");
+		ImGui::Text("gurt: yo");
+		ImGui::End();
+
+		ImGui::ShowDemoWindow();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 
 	mInstance->Cleanup();
@@ -185,7 +210,13 @@ void OpenGLRenderer::ToggleWireframe() {
 
 void OpenGLRenderer::Cleanup() {
 	mState = OpenGLRendererState::CLEANUP;
+
 	Log::Info("Cleaning up...");
+
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
 	glfwTerminate();
 }
 
