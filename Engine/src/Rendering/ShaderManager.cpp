@@ -1,14 +1,16 @@
+#include "Constants.h"
+
 #include "ShaderManager.h"
 
 
-std::string shadersPath = "Rendering/Resources/shaders";
+std::string shadersSubPath = "/shaders";
 std::vector<BaseShader*> LoadedShaders = {};
 
-void ShaderManager::LoadAllShaders() {
+void ShaderManager::LoadAllShaders(std::string resourcesPath) {
 	using std::string, std::vector, std::filesystem::directory_entry;
 
 	Log::Info("Loading all shaders");
-	vector<directory_entry> shaderSources = Utilities::getFoldersInFolder(shadersPath);
+	vector<directory_entry> shaderSources = Utilities::getFoldersInFolder(resourcesPath + shadersSubPath);
 
 	for (const auto& shaderSource : shaderSources) {
 		string shaderSourcePath = shaderSource.path().string();

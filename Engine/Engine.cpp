@@ -3,8 +3,10 @@
 #include <thread>
 #include <string>
 
-#include "Rendering/OpenGLRenderer.h"
+#include <Rendering/OpenGLRenderer.h>
+#include <Rendering/Constants.h>
 
+#include "Engine.h"
 
 Settings* settings = new Settings();
 
@@ -82,6 +84,7 @@ void enableInputProcessing(OpenGLRenderer* pRenderer) {
 	}
 }
 
+
 void runRenderer(OpenGLRenderer* pRenderer) {
 	try {
 		pRenderer->Init(settings);
@@ -95,7 +98,10 @@ void runRenderer(OpenGLRenderer* pRenderer) {
 	OpenGLRenderer::DestroyInstance();
 }
 
-int Init() {
+// Very janky method of telling the engine where to find resources for now
+std::string ResourcePath = "";
+
+int RefractionEngine::Init() {
 	std::cout << "Initialising Refraction Engine...\n";
 
 	settings->window.windowWidth = 1280;
@@ -104,6 +110,7 @@ int Init() {
 	settings->graphics.viewportHeight = 720;
 	settings->controls.cameraSensitivity = 0.5f;
 	settings->controls.cameraSpeed = 0.5f;
+	settings->graphics.resourcePath = ResourcePath;
 
 	std::thread renderThread;
 	std::thread inputThread;
@@ -135,7 +142,10 @@ int Init() {
 
 	std::cout << "\n\n--------------------------------" << std::endl;
 	std::cout << "Refraction shut down successfully.\n\n";
-	system("pause");
 
 	return EXIT_SUCCESS;
+}
+
+void RefractionEngine::SetResourcePath(std::string path) {
+	ResourcePath = path;
 }

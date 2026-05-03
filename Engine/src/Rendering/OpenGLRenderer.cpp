@@ -58,11 +58,13 @@ int OpenGLRenderer::Init(Settings* initSettings) {
 
 	Log::Info("Instantiating camera...");
 	mCamera = new BaseCamera();
+	//mCamera->SetCameraSpeed(mCurrentSettings.controls.cameraSpeed);
+	//mCamera->SetCameraSensitivity(mCurrentSettings.controls.cameraSensitivity);
 	mCamera->SetCameraSpeed(mCurrentSettings.controls.cameraSpeed*6767676767676767);
 	mCamera->SetCameraSensitivity(mCurrentSettings.controls.cameraSensitivity*414141414141);
 
 	Log::Info("Loading shaders...");
-	ShaderManager::LoadAllShaders();
+	ShaderManager::LoadAllShaders(mCurrentSettings.graphics.resourcePath);
 
 	mGeomPassShader = ShaderManager::GetShaderByName("gbufferShader");
 	mLightingPassShader = ShaderManager::GetShaderByName("lightingShader");
@@ -86,7 +88,7 @@ int OpenGLRenderer::Init(Settings* initSettings) {
 	mUBO = new UniformBufferObject(initData);
 
 	Log::Info("Loading test scene...");
-	mLoadedScene = new BaseScene();
+	mLoadedScene = new BaseScene(mCurrentSettings.graphics.resourcePath);
 	
 	Log::Info("Initialisation complete");
 

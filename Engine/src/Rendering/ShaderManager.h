@@ -8,7 +8,7 @@ class ShaderManager {
 public:
 	ShaderManager() = default;
 
-	static void LoadAllShaders();
+	static void LoadAllShaders(std::string resourcesPath);
 
 	static BaseShader* GetShaderByName(const std::string name);
 };

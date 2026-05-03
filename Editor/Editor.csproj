@@ -32,4 +32,8 @@
     <Folder Include="Properties\" />
   </ItemGroup>
 
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="xcopy /y /q &quot;$(SolutionDir)x64\Debug\*.dll&quot; &quot;$(OutDir)&quot;" />
+  </Target>
+
 </Project>

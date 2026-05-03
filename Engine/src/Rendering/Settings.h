@@ -9,6 +9,7 @@ public:
 		float clipPlaneNear = 0.1f;
 		float clipPlaneFar = 1000.0f;
 		int maxFrameRate = 0;
+		std::string resourcePath = "";
 	};
 	Graphics graphics;
 	class Window {

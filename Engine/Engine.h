@@ -1,4 +1,7 @@
 // Functions exposed for Runtime DLL
 #pragma once
 
-int Init();
+namespace RefractionEngine {
+	int Init();
+	void SetResourcePath(std::string path);
+}

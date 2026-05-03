@@ -2,12 +2,12 @@
 
 using glm::vec3;
 
-BaseScene::BaseScene() {
+BaseScene::BaseScene(std::string resourcesPath) {
 	Log::Info("Creating test model...");
-	mNyen = new BaseModel("./Rendering/Resources/models/nyen/nyen plush.obj");
+	mNyen = new BaseModel(resourcesPath + "/models/nyen/nyen plush.obj");
 	mModels.push_back(mNyen);
 
-	InstancedModel* testModel2 = new InstancedModel("./Rendering/Resources/models/survivalBackpack/backpack.obj");
+	InstancedModel* testModel2 = new InstancedModel(resourcesPath + "/models/survivalBackpack/backpack.obj");
 	testModel2->mTransform->Translate(vec3(0.0f, 0.0f, 10.0f));
 	testModel2->AddInstance(vec3(0.0f, 5.0f, 0.0f));
 	testModel2->AddInstance(vec3(5.0f, 10.0f, 0.0f));
