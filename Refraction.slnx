@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Editor/Editor.csproj">
+    <Platform Solution="Debug|x64" Project="x64" />
+  </Project>
+  <Project Path="Engine/Engine.vcxproj" Id="6414aa4a-f9f1-4cd7-88df-baadba8b8029" />
+  <Project Path="Runtime/Runtime.vcxproj" Id="a3c49e0b-8fd8-4a6d-8634-1ffa9c9a809a" />
+</Solution>
