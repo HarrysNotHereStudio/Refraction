@@ -1,3 +1,11 @@
+
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
+#include <Log.h>
+
 #include "Window.h"
 
 Window::Window() {}
@@ -31,13 +39,53 @@ int Window::Init(Settings::Window windowSettings) {
 }
 
 void Window::UpdateLoop() {
-	DrawFrame();
+	// We handle input focus outside of this class.
+	// Do not allow to regain input focus if the user clicks on GUI while the cursor is free.
+	if (ImGui::GetIO().WantCaptureMouse && mInputState != VIEWPORT) {
+		mInputState = GUI;
+	} else if (mInputState == GUI) {
+		mInputState = NONE;
+	}
+
+	if (mInputState != mInputStateLast) {
+		switch (mInputState) {
+			case VIEWPORT:
+				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				Log::Info("Cursor locked for viewport");
+				break;
+			case GUI:
+				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				Log::Info("Cursor free for GUI");
+				break;
+			case NONE:
+			default:
+				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				Log::Info("Cursor free from application");
+				break;
+		}
+		mInputStateLast = mInputState;
+	}
+	if (mInputState == VIEWPORT) {
+		ImGui::GetIO().MousePos = ImVec2(-FLT_MAX,-FLT_MAX); // Hide mouse from ImGui
+	}
+	//ImGui::SetNextFrameWantCaptureMouse(mInputState != VIEWPORT);
+}
+
+void Window::DrawGUI() {
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	ImGui::Begin("new window");
+	ImGui::Text("gurt: yo");
+	ImGui::End();
+
+	ImGui::ShowDemoWindow();
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void Window::Cleanup() {
 	glfwTerminate();
-}
-
-
-void Window::DrawFrame() {
 }

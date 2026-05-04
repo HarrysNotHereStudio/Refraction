@@ -82,7 +82,7 @@ void Log::Info(string message) {
 	if (m_lastClassPrinted != className)
 	{
 		m_lastClassPrinted = className;
-		clog << vformat("OpenGLRenderer - " + ANSI24RGB(64, 255, 64) + "{}" + separator + "\n", make_format_args(m_lastClassPrinted));
+		clog << vformat("Renderer - " + ANSI24RGB(64, 255, 64) + "{}" + separator + "\n", make_format_args(m_lastClassPrinted));
 	};
 
 	m_lastMessagePrinted = vformat(ANSI24RGB(64, 255, 255) + "[{}]" + separator + ANSI24RGB(255, 64, 64) + "DEBUG " + ANSI24RGB(255, 210, 64) + "{}" + separator + "{}\n", make_format_args(timestamp, functionName, message));

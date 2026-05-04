@@ -11,8 +11,7 @@ string Utilities::m_lastMessagePrinted = "";
 // Needs a NUL terminator, otherwise operations like shader compilation will find junk characters at the end of the file
 const char* fileTerminator = "\0";
 
-vector<char> Utilities::ReadFile(const string& filename)
-{
+vector<char> Utilities::ReadFile(const string& filename) {
 	std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
 	if (!file.is_open()) {
@@ -41,45 +40,35 @@ bool Utilities::ReadFile(const string& filename, string& buffer) {
 	return true;
 }
 
-vector<directory_entry> Utilities::getFilesInFolder(path folderPath)
-{
+vector<directory_entry> Utilities::getFilesInFolder(path folderPath) {
 	vector<directory_entry> files;
-	for (const auto& file : directory_iterator(folderPath))
-	{
+	for (const auto& file : directory_iterator(folderPath)) {
 		files.push_back(file);
 	};
 	return files;
 };
 
-vector<directory_entry> Utilities::getFilesOfExtInFolder(path folderPath, string ext)
-{
+vector<directory_entry> Utilities::getFilesOfExtInFolder(path folderPath, string ext) {
 	vector<directory_entry> files;
-	for (const auto& file : directory_iterator(folderPath))
-	{
-		if (file.path().extension() == ext)
-		{
+	for (const auto& file : directory_iterator(folderPath)) {
+		if (file.path().extension() == ext) {
 			files.push_back(file);
 		};
 	};
 	return files;
 }
-directory_entry Utilities::getFirstFileOfExtInFolder(path folderPath, string ext)
-{
-	for (const auto& file : directory_iterator(folderPath))
-	{
-		if (file.path().extension() == ext)
-		{
+directory_entry Utilities::getFirstFileOfExtInFolder(path folderPath, string ext) {
+	for (const auto& file : directory_iterator(folderPath)) {
+		if (file.path().extension() == ext) {
 			return file;
 		};
 	};
 	return directory_entry();
 };
 
-vector<directory_entry> Utilities::getFoldersInFolder(path folderPath)
-{
+vector<directory_entry> Utilities::getFoldersInFolder(path folderPath) {
 	vector<directory_entry> folders;
-	for (const auto& folder : fs::recursive_directory_iterator(folderPath))
-	{
+	for (const auto& folder : fs::recursive_directory_iterator(folderPath)) {
 		if (!folder.is_directory()) continue;
 		folders.push_back(folder);
 	};
@@ -87,7 +76,7 @@ vector<directory_entry> Utilities::getFoldersInFolder(path folderPath)
 };
 
 string Utilities::calculateFPS(double deltaTime, int precision) {
-	double fps = 100 / deltaTime;
+	double fps = 1.0 / deltaTime;
 	if (precision < 0) return std::to_string(fps);
 	if (precision == 0) return std::to_string(trunc(fps));
 

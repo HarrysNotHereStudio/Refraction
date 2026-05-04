@@ -12,16 +12,26 @@
 
 #include "../Settings.h"
 
+enum WindowInputState {
+	VIEWPORT,
+	GUI,
+	NONE
+};
+
 class Camera;
 
 class Window
 {
 public:
+	bool mCursorFree = true;
+	WindowInputState mInputState = NONE;
+
 	Window();
 
 	int Init(Settings::Window windowSettings);
 
 	void UpdateLoop();
+	void DrawGUI();
 
 	void Cleanup();
 
@@ -31,9 +41,9 @@ public:
 
 	bool m_framebufferResized = false;
 private:
+	WindowInputState mInputStateLast = NONE;
+	bool mCursorFreeLast = true;
 	Camera* m_pCurrentCamera = nullptr;
 
 	GLFWwindow* mWindow = nullptr;
-
-	void DrawFrame();
 };
