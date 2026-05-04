@@ -23,7 +23,7 @@ public:
 	static fs::directory_entry getFirstFileOfExtInFolder(fs::path folderPath, std::string ext);
 	static std::vector<fs::directory_entry> getFoldersInFolder(fs::path folderPath);
 
-	static std::string calculateFPS(double deltaTime, int precision = -1);
+	static std::string CalculateFPS(double deltaTime, int precision = -1);
 private:
 	static std::string m_lastFilePrinted;
 	static std::string m_lastMessagePrinted;

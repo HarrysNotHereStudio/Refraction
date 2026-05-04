@@ -75,7 +75,7 @@ vector<directory_entry> Utilities::getFoldersInFolder(path folderPath) {
 	return folders;
 };
 
-string Utilities::calculateFPS(double deltaTime, int precision) {
+string Utilities::CalculateFPS(double deltaTime, int precision) {
 	double fps = 1.0 / deltaTime;
 	if (precision < 0) return std::to_string(fps);
 	if (precision == 0) return std::to_string(trunc(fps));

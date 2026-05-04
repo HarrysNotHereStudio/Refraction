@@ -117,10 +117,10 @@ std::string ResourcePath = "";
 int RefractionEngine::Init() {
 	std::cout << "Initialising Refraction Engine...\n";
 
-	settings->window.windowWidth = 1280;
-	settings->window.windowHeight = 720;
-	settings->graphics.viewportWidth = 1280;
-	settings->graphics.viewportHeight = 720;
+	settings->window.windowWidth = 1920;
+	settings->window.windowHeight = 1080;
+	settings->graphics.viewportWidth = 1920;
+	settings->graphics.viewportHeight = 1080;
 	settings->controls.cameraSensitivity = 0.5f;
 	settings->controls.cameraSpeed = 0.5f;
 	settings->graphics.resourcePath = ResourcePath;

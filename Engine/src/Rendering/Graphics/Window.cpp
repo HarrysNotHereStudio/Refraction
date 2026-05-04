@@ -39,8 +39,7 @@ int Window::Init(Settings::Window windowSettings) {
 }
 
 void Window::UpdateLoop() {
-	// We handle input focus outside of this class.
-	// Do not allow to regain input focus if the user clicks on GUI while the cursor is free.
+	// The actual focus signal is handled outside, but here we decide whether to give it to the viewport or the GUI
 	if (ImGui::GetIO().WantCaptureMouse && mInputState != VIEWPORT) {
 		mInputState = GUI;
 	} else if (mInputState == GUI) {
@@ -68,7 +67,6 @@ void Window::UpdateLoop() {
 	if (mInputState == VIEWPORT) {
 		ImGui::GetIO().MousePos = ImVec2(-FLT_MAX,-FLT_MAX); // Hide mouse from ImGui
 	}
-	//ImGui::SetNextFrameWantCaptureMouse(mInputState != VIEWPORT);
 }
 
 void Window::DrawGUI() {
@@ -78,6 +76,10 @@ void Window::DrawGUI() {
 
 	ImGui::Begin("new window");
 	ImGui::Text("gurt: yo");
+	ImGui::Text(std::format("Elapsed: {:.3f}s", mDebugValues.elapsedTime).c_str());
+	ImGui::Text(std::format("Delta: {:.3f}ms", mDebugValues.deltaTime*1000).c_str());
+	ImGui::Text(std::format("FPS: {:.0f}", mDebugValues.fps).c_str());
+	ImGui::Checkbox("Wireframe", &mWireframeToggle);
 	ImGui::End();
 
 	ImGui::ShowDemoWindow();

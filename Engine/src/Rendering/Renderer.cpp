@@ -33,6 +33,31 @@ void Renderer::DestroyInstance() {
 	}
 }
 
+ImGuiStyle GetDefaultStyle() {
+	ImGuiStyle style = ImGuiStyle();
+	style.WindowPadding = ImVec2(6, 6);
+	style.FramePadding = ImVec2(2, 2);
+	style.ItemSpacing = ImVec2(8, 2);
+	style.ItemInnerSpacing = ImVec2(4, 2);
+	style.WindowBorderSize = 1;
+	style.ChildBorderSize = 1;
+	style.PopupBorderSize = 1;
+	style.FrameBorderSize = 0;
+	style.WindowRounding = 1;
+	style.ChildRounding = 0;
+	style.FrameRounding = 0;
+	style.PopupRounding = 0;
+	style.GrabRounding = 0;
+	style.ScrollbarSize = 8;
+	style.ScrollbarRounding = 0;
+	style.ScrollbarPadding = 2;
+	style.TabBorderSize = 0;
+	style.TabBarBorderSize = 1;
+	style.TabRounding = 0;
+
+	return style;
+}
+
 std::vector<unsigned int> VAOs = {};
 std::vector<unsigned int> VBOs = {};
 
@@ -92,6 +117,7 @@ int Renderer::Init(Settings* initSettings) {
 
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	ImGui::StyleColorsDark();
+	ImGui::GetStyle() = GetDefaultStyle();
 
 	Log::Info("Initialisation complete");
 
@@ -130,8 +156,6 @@ void renderQuad() {
 
 void Renderer::MainLoop() {
 	mState = RendererState::RUNNING;
-	double fpsPrintDelta = 0;
-	double frameCounter = 0;
 	GLFWwindow* windowInstance = mWindow->GetWindow();
 
 	if (!ImGui_ImplGlfw_InitForOpenGL(windowInstance, true)) throw std::runtime_error("Failed to init ImGui for GLFW");
@@ -140,14 +164,10 @@ void Renderer::MainLoop() {
 	while (!glfwWindowShouldClose(windowInstance)) {
 		mDeltaRenderTime = (glfwGetTime() - mElapsedRenderTime) / 1000.0;
 		mElapsedRenderTime = glfwGetTime() - mStartRenderTime;
-		if (fpsPrintDelta > FPS_INTERVAL) {
-			fpsPrintDelta = 0;
-			Log::Info(std::format("{:.3f}s elapsed | {:.3f}ms delta | ", mElapsedRenderTime, mDeltaRenderTime * 1000) + Utilities::calculateFPS(mDeltaRenderTime, 2) + "FPS");
-			frameCounter = 0;
-		};
-		fpsPrintDelta += mDeltaRenderTime;
-		frameCounter++;
 
+		mWindow->mDebugValues.elapsedTime = mElapsedRenderTime;
+		mWindow->mDebugValues.deltaTime = mDeltaRenderTime;
+		mWindow->mDebugValues.fps = 1.0 / mDeltaRenderTime;
 		mWindow->UpdateLoop();
 
 		if (mShouldRender) {
@@ -183,8 +203,8 @@ void Renderer::UpdateUniformBuffers() {
 }
 
 void Renderer::ToggleWireframe() {
-	mWireframeMode = !mWireframeMode;
-	Log::Info("Toggled wireframe mode");
+	//mWireframeMode = !mWireframeMode;
+	//Log::Info("Toggled wireframe mode");
 }
 
 void Renderer::Cleanup() {
@@ -207,7 +227,7 @@ void Renderer::DSPassGeometry() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	mGeomPassShader->Activate();
 
-	if (mWireframeMode) {
+	if (mWindow->mWireframeToggle) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
 
@@ -217,7 +237,7 @@ void Renderer::DSPassGeometry() {
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	if (mWireframeMode) {
+	if (mWindow->mWireframeToggle) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 }

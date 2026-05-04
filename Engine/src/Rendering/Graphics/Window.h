@@ -23,8 +23,13 @@ class Camera;
 class Window
 {
 public:
-	bool mCursorFree = true;
 	WindowInputState mInputState = NONE;
+	struct {
+		float fps;
+		float deltaTime;
+		float elapsedTime;
+	} mDebugValues;
+	bool mWireframeToggle = false;
 
 	Window();
 
@@ -42,7 +47,6 @@ public:
 	bool m_framebufferResized = false;
 private:
 	WindowInputState mInputStateLast = NONE;
-	bool mCursorFreeLast = true;
 	Camera* m_pCurrentCamera = nullptr;
 
 	GLFWwindow* mWindow = nullptr;
