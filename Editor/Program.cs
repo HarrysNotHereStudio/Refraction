@@ -9,7 +9,7 @@ namespace Editor {
 			RuntimeComm.SetResourcePath(ResourcesPath);
 			RuntimeComm.InitLua();
 			RuntimeComm.ParseLua("print('gurt: yo')");
-			RuntimeComm.ParseLua("--sumi if you see this fuck you; print(':3')");
+			RuntimeComm.ParseLua("--sumi if you see this fuck you \nprint(':3')");
 
 			RuntimeComm.InitEngine();
 
