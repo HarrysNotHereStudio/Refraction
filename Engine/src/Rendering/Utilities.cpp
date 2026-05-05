@@ -1,15 +1,27 @@
+#include <random>
+
 #include "Utilities.h"
 
 
 using std::string, std::vector, fs::directory_entry, fs::directory_iterator, fs::path;
 
-string Utilities::m_lastFilePrinted = "";
-string Utilities::m_lastMessagePrinted = "";
 
-
-
-// Needs a NUL terminator, otherwise operations like shader compilation will find junk characters at the end of the file
+// Needs a NULL terminator, otherwise operations like shader compilation will find junk characters at the end of the file
 const char* fileTerminator = "\0";
+
+std::random_device randDevice;
+std::mt19937 randGen(randDevice());
+
+
+int Utilities::RandomI(const int max, const int min) {
+	std::uniform_int_distribution<> dist(min, max);
+	return dist(randGen);
+}
+
+float Utilities::RandomF(const float max, const float min) {
+	std::uniform_real_distribution<> dist(min, max);
+	return (float)dist(randGen);
+}
 
 vector<char> Utilities::ReadFile(const string& filename) {
 	std::ifstream file(filename, std::ios::ate | std::ios::binary);
@@ -40,7 +52,7 @@ bool Utilities::ReadFile(const string& filename, string& buffer) {
 	return true;
 }
 
-vector<directory_entry> Utilities::getFilesInFolder(path folderPath) {
+vector<directory_entry> Utilities::GetFilesInFolder(path folderPath) {
 	vector<directory_entry> files;
 	for (const auto& file : directory_iterator(folderPath)) {
 		files.push_back(file);
@@ -48,7 +60,7 @@ vector<directory_entry> Utilities::getFilesInFolder(path folderPath) {
 	return files;
 };
 
-vector<directory_entry> Utilities::getFilesOfExtInFolder(path folderPath, string ext) {
+vector<directory_entry> Utilities::GetFilesOfExtInFolder(path folderPath, string ext) {
 	vector<directory_entry> files;
 	for (const auto& file : directory_iterator(folderPath)) {
 		if (file.path().extension() == ext) {
@@ -57,7 +69,7 @@ vector<directory_entry> Utilities::getFilesOfExtInFolder(path folderPath, string
 	};
 	return files;
 }
-directory_entry Utilities::getFirstFileOfExtInFolder(path folderPath, string ext) {
+directory_entry Utilities::GetFirstFileOfExtInFolder(path folderPath, string ext) {
 	for (const auto& file : directory_iterator(folderPath)) {
 		if (file.path().extension() == ext) {
 			return file;
@@ -66,7 +78,7 @@ directory_entry Utilities::getFirstFileOfExtInFolder(path folderPath, string ext
 	return directory_entry();
 };
 
-vector<directory_entry> Utilities::getFoldersInFolder(path folderPath) {
+vector<directory_entry> Utilities::GetFoldersInFolder(path folderPath) {
 	vector<directory_entry> folders;
 	for (const auto& folder : fs::recursive_directory_iterator(folderPath)) {
 		if (!folder.is_directory()) continue;

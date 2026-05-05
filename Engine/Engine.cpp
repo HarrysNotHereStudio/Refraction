@@ -17,7 +17,6 @@ struct sInput {
 	bool keyD = false;
 	bool keyQ = false;
 	bool keyE = false;
-	bool keyP = false;
 	double lastMouseX = settings->window.windowWidth / 2;
 	double lastMouseY = settings->window.windowHeight / 2;
 };
@@ -45,7 +44,6 @@ void enableInputProcessing(Renderer* pRenderer) {
 		input.keyD = (glfwGetKey(pGLFWWindow, GLFW_KEY_D) == GLFW_PRESS);
 		input.keyQ = (glfwGetKey(pGLFWWindow, GLFW_KEY_Q) == GLFW_PRESS);
 		input.keyE = (glfwGetKey(pGLFWWindow, GLFW_KEY_E) == GLFW_PRESS);
-		input.keyP = (glfwGetKey(pGLFWWindow, GLFW_KEY_P) == GLFW_PRESS);
 		escapeDown = (glfwGetKey(pGLFWWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS);
 		lmbDown = (glfwGetMouseButton(pGLFWWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
 
@@ -73,14 +71,6 @@ void enableInputProcessing(Renderer* pRenderer) {
 		if (input.keyD) dirInput.x = 1;
 		if (input.keyQ) dirInput.y = -1;
 		if (input.keyE) dirInput.y = 1;
-
-		// Wireframe mode
-		if (!pKeyDebounce && input.keyP) {
-			pRenderer->ToggleWireframe();
-			pKeyDebounce = true;
-		} else if (pKeyDebounce && !input.keyP) {
-			pKeyDebounce = false;
-		}
 
 		// Camera rotation
 		if (inputFocus) {

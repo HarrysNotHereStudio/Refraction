@@ -26,8 +26,8 @@ public:
 		Log::Info("Creating shader " + mName);
 
 		// Get all shader files (.vert and .frag) in the folder
-		directory_entry vertShader = Utilities::getFirstFileOfExtInFolder(mSourcePath, ".vert");
-		directory_entry fragShader = Utilities::getFirstFileOfExtInFolder(mSourcePath, ".frag");
+		directory_entry vertShader = Utilities::GetFirstFileOfExtInFolder(mSourcePath, ".vert");
+		directory_entry fragShader = Utilities::GetFirstFileOfExtInFolder(mSourcePath, ".frag");
 
 		if (!(vertShader.exists() && fragShader.exists())) {
 			Log::Info("Skipping shader creation, missing source files");

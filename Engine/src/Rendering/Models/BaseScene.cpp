@@ -16,6 +16,12 @@ BaseScene::BaseScene(std::string resourcesPath) {
 	mModels.push_back(testModel2);
 
 	Log::Info("Instantiating lights...");
+	for (int i = 0; i < 200; i++) {
+		auto light = new PointLight();
+		light->mTransform->Translate(vec3(Utilities::RandomI(20,-20), Utilities::RandomI(20, -20), Utilities::RandomI(20, -20)));
+		light->mLightColor = vec3(1.0f, 1.0f, 1.0f);
+		mLights.push_back(light);
+	}
 	auto light1 = new PointLight();
 	light1->mTransform->Translate(vec3(3.0f, 1.0f, 3.0f));
 	light1->mLightColor = vec3(1.0f, 1.0f, 1.0f);
@@ -38,14 +44,13 @@ BaseScene::BaseScene(std::string resourcesPath) {
 	mLights.push_back(light5);
 }
 
-void BaseScene::LoadFromFile(std::string path) {}
+// TODO: Implement file loading
+void BaseScene::LoadFromFile(std::string path) {
+}
 
 void BaseScene::Tick(float deltaTime) {
 	auto yawDiff = 64.0f * deltaTime;
-	//Log::Info("Yaw diff: " + std::to_string(yawDiff));
-	//Log::Info("Nyen orientation: " + Log::ToString(mNyen->mTransform->orientation));
+
+	// rotate nyen.
 	mNyen->mTransform->orientation.y += yawDiff;
-	//mNyen->mTransform->Rotate(vec3(0.0f,yawDiff,0.0f));
-	
-	//Log::Info("Scene delta time: " + std::to_string(deltaTime));
 }

@@ -4,6 +4,7 @@
 #include <map>
 #include <thread>
 #include <vector>
+#include <chrono>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui/imgui.h>
@@ -53,7 +54,6 @@ public:
 	Window* GetWindow() { return mWindow; }
 	BaseCamera* GetCamera() { return mCamera; }
 	int Init(Settings* initSettings);
-	void ToggleWireframe();
 private:
 	Renderer();
 	void MainLoop();
@@ -80,7 +80,7 @@ private:
 
 	bool mShouldRender = true;
 	bool mWireframeMode = false;
-	double mStartRenderTime = 0.0f;
-	double mElapsedRenderTime = 0.0f;
-	double mDeltaRenderTime = 0.0f;
+	std::chrono::steady_clock::time_point mStartRenderTime;
+	double mElapsedRenderTime = 0;
+	double mDeltaRenderTime = 0;
 };

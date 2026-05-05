@@ -62,6 +62,7 @@ std::vector<unsigned int> VAOs = {};
 std::vector<unsigned int> VBOs = {};
 
 glm::mat4 projectionMatrix;
+std::chrono::steady_clock::time_point timeLast;
 
 int Renderer::Init(Settings* initSettings) {
 	mState = RendererState::INIT;
@@ -121,7 +122,8 @@ int Renderer::Init(Settings* initSettings) {
 
 	Log::Info("Initialisation complete");
 
-	mStartRenderTime = glfwGetTime();
+	mStartRenderTime = std::chrono::steady_clock::now();
+	timeLast = mStartRenderTime;
 	MainLoop();
 
 	return 0;
@@ -162,12 +164,16 @@ void Renderer::MainLoop() {
 	if (!ImGui_ImplOpenGL3_Init("#version 330")) throw std::runtime_error("Failed to init ImGui for OpenGL");
 
 	while (!glfwWindowShouldClose(windowInstance)) {
-		mDeltaRenderTime = (glfwGetTime() - mElapsedRenderTime) / 1000.0;
-		mElapsedRenderTime = glfwGetTime() - mStartRenderTime;
+		auto timeNow = std::chrono::steady_clock::now();
+		mDeltaRenderTime = std::chrono::duration<double>(timeNow - timeLast).count();
+		mElapsedRenderTime = std::chrono::duration<double>(timeNow - mStartRenderTime).count();
+		timeLast = timeNow;
 
-		mWindow->mDebugValues.elapsedTime = mElapsedRenderTime;
-		mWindow->mDebugValues.deltaTime = mDeltaRenderTime;
-		mWindow->mDebugValues.fps = 1.0 / mDeltaRenderTime;
+		mLoadedScene->Tick((float)mDeltaRenderTime);
+
+		mWindow->mDebugValues.elapsedTime = (float)mElapsedRenderTime;
+		mWindow->mDebugValues.deltaTime = (float)mDeltaRenderTime;
+		mWindow->mDebugValues.fps = (float)(1.0 / mDeltaRenderTime);
 		mWindow->UpdateLoop();
 
 		if (mShouldRender) {
@@ -189,7 +195,6 @@ void Renderer::MainLoop() {
 			glfwSwapBuffers(windowInstance);
 		}
 		glfwPollEvents();
-		mLoadedScene->Tick((float)mDeltaRenderTime);
 	}
 
 	mInstance->Cleanup();
@@ -200,11 +205,6 @@ void Renderer::UpdateUniformBuffers() {
 	newData.viewMatrix = mCamera->GetViewMatrix();
 	newData.perspectiveMatrix = projectionMatrix;
 	mUBO->UploadNewData(newData);
-}
-
-void Renderer::ToggleWireframe() {
-	//mWireframeMode = !mWireframeMode;
-	//Log::Info("Toggled wireframe mode");
 }
 
 void Renderer::Cleanup() {

@@ -1,3 +1,4 @@
+#include <deque>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui/imgui.h>
@@ -8,7 +9,11 @@
 
 #include "Window.h"
 
-Window::Window() {}
+std::deque<float> deltaHistory = {};
+const int deltaHistoryMax = 90;
+Window::Window() {
+	deltaHistory.resize(deltaHistoryMax);
+}
 
 
 void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
@@ -50,16 +55,16 @@ void Window::UpdateLoop() {
 		switch (mInputState) {
 			case VIEWPORT:
 				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-				Log::Info("Cursor locked for viewport");
+				//Log::Info("Cursor locked for viewport");
 				break;
 			case GUI:
 				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-				Log::Info("Cursor free for GUI");
+				//Log::Info("Cursor free for GUI");
 				break;
 			case NONE:
 			default:
 				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-				Log::Info("Cursor free from application");
+				//Log::Info("Cursor free from application");
 				break;
 		}
 		mInputStateLast = mInputState;
@@ -74,11 +79,39 @@ void Window::DrawGUI() {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
+	std::string inputStateStr = "";
+	switch (mInputState) {
+		case VIEWPORT:
+			inputStateStr = "Viewport";
+			break;
+		case GUI:
+			inputStateStr = "GUI";
+			break;
+		case NONE:
+			inputStateStr = "None";
+			break;
+	}
+
+	deltaHistory.push_back(mDebugValues.deltaTime * 1000);
+	if (deltaHistory.size() > deltaHistoryMax) {
+		deltaHistory.pop_front();
+		deltaHistory.shrink_to_fit();
+	}
+	float values[deltaHistoryMax] = {};
+	float average = 0.0f;
+	for (int i = 0; i < deltaHistory.size(); i++) {
+		values[i] = deltaHistory[i];
+		average += deltaHistory[i];
+	}
+	average /= deltaHistory.size();
+
 	ImGui::Begin("new window");
 	ImGui::Text("gurt: yo");
+	ImGui::PlotLines("Lines", values, deltaHistoryMax, 0, std::format("Avg {:.3f}ms", average).c_str(), 0, 100.0f, ImVec2(0, 80.0f));
 	ImGui::Text(std::format("Elapsed: {:.3f}s", mDebugValues.elapsedTime).c_str());
 	ImGui::Text(std::format("Delta: {:.3f}ms", mDebugValues.deltaTime*1000).c_str());
 	ImGui::Text(std::format("FPS: {:.0f}", mDebugValues.fps).c_str());
+	ImGui::Text(std::format("Mouse focus: {}", inputStateStr).c_str());
 	ImGui::Checkbox("Wireframe", &mWireframeToggle);
 	ImGui::End();
 

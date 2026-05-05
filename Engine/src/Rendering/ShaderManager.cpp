@@ -10,7 +10,7 @@ void ShaderManager::LoadAllShaders(std::string resourcesPath) {
 	using std::string, std::vector, std::filesystem::directory_entry;
 
 	Log::Info("Loading all shaders");
-	vector<directory_entry> shaderSources = Utilities::getFoldersInFolder(resourcesPath + shadersSubPath);
+	vector<directory_entry> shaderSources = Utilities::GetFoldersInFolder(resourcesPath + shadersSubPath);
 
 	for (const auto& shaderSource : shaderSources) {
 		string shaderSourcePath = shaderSource.path().string();

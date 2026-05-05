@@ -23,5 +23,5 @@ public:
 
 private:
 	static string m_lastClassPrinted;
-	static string m_lastMessagePrinted;
+	static string mLastMessagePrinted;
 };

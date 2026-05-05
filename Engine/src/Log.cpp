@@ -2,7 +2,7 @@
 
 
 std::string Log::m_lastClassPrinted = "";
-std::string Log::m_lastMessagePrinted = "";
+std::string Log::mLastMessagePrinted = "";
 
 string GetCallerFunctionName();
 
@@ -85,8 +85,8 @@ void Log::Info(string message) {
 		clog << vformat("Renderer - " + ANSI24RGB(64, 255, 64) + "{}" + separator + "\n", make_format_args(m_lastClassPrinted));
 	};
 
-	m_lastMessagePrinted = vformat(ANSI24RGB(64, 255, 255) + "[{}]" + separator + ANSI24RGB(255, 64, 64) + "DEBUG " + ANSI24RGB(255, 210, 64) + "{}" + separator + "{}\n", make_format_args(timestamp, functionName, message));
-	clog << m_lastMessagePrinted;
+	mLastMessagePrinted = vformat(ANSI24RGB(64, 255, 255) + "[{}]" + separator + ANSI24RGB(255, 64, 64) + "DEBUG " + ANSI24RGB(255, 210, 64) + "{}" + separator + "{}\n", make_format_args(timestamp, functionName, message));
+	clog << mLastMessagePrinted;
 }
 
 string Log::ToString(glm::vec3 vector) {
