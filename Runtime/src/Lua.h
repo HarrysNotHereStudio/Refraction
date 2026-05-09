@@ -12,10 +12,14 @@ extern "C" {
 		std::cout << "initialising lua\n";
 		lua.open_libraries(sol::lib::base);
 
-		lua.script("print('Hello, moon!')");
+		lua.script("print('hello moon!')");
 	}
 
 	Exported void ParseLua(const char* source) {
-		lua.script(source);
+		try {
+			lua.script(source);
+		} catch (sol::error e) {
+			std::cout << "Error while parsing lua: " << e.what() << std::endl;
+		}
 	}
 }

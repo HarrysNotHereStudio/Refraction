@@ -24,6 +24,9 @@
     <ClInclude Include="src\Lua.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Engine\Engine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Runtime.cpp">

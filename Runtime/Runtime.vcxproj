@@ -134,11 +134,27 @@
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)Libs\x64_Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreLinkEvent>
-      <Command>xcopy /y /q "$(SolutionDir)Libs\x64_Debug\*.dll" "$(OutDir)"</Command>
+      <Command>
+      </Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>Copy dependency DLLs</Message>
+      <Message>
+      </Message>
     </PreLinkEvent>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>
+      </Message>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>xcopy /y /q "$(SolutionDir)Libs\x64_Debug\*.dll" "$(OutDir)"</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Copy dependency DLLs</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -159,6 +175,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Engine\Engine.h" />
     <ClInclude Include="src\Common.h" />
     <ClInclude Include="src\EngineExports.h" />
     <ClInclude Include="src\Lua.h" />

@@ -1,38 +1,13 @@
 #include "Log.h"
 
+#include <cpptrace/cpptrace.hpp>
 
 std::string Log::m_lastClassPrinted = "";
 std::string Log::mLastMessagePrinted = "";
 
-string GetCallerFunctionName();
-
-#ifdef _WIN32
-#include <Windows.h>
-#include <DbgHelp.h>
-string GetCallerFunctionName() {
-	HANDLE process = GetCurrentProcess();
-	SymInitialize(process, NULL, TRUE);
-
-	// Verify if there is a caller function
-	void* stack[3];
-	unsigned short frames = CaptureStackBackTrace(0, 3, stack, NULL);
-	if (frames < 2) return "UNKNOWN";
-
-	SYMBOL_INFO* symbol = (SYMBOL_INFO*)calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1);
-	symbol->MaxNameLen = 255;
-	symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-
-	SymFromAddr(process, (DWORD64)(stack[2]), 0, symbol);
-	string name = symbol->Name;
-
-	free(symbol);
-	return name;
-}
-#endif
 
 
-std::string ANSI24RGB(int R, int G, int B)
-{
+std::string ANSI24RGB(int R, int G, int B) {
 	return std::format("\033[38;2;{};{};{}m", R, G, B);
 };
 
@@ -66,10 +41,9 @@ string Log::GenerateTimestamp() {
 
 void Log::Info(string message) {
 	using std::vformat, std::make_format_args, std::clog;
-
+	
 	string timestamp = GenerateTimestamp();
-
-	string fullFunctionName = GetCallerFunctionName();
+	string fullFunctionName = cpptrace::prune_symbol(cpptrace::generate_trace().frames[1].symbol);
 	string functionName = fullFunctionName;
 	string className = "???";
 	auto symbolPos = fullFunctionName.find(':');
@@ -79,8 +53,7 @@ void Log::Info(string message) {
 	}
 
 	// Print class name only once
-	if (m_lastClassPrinted != className)
-	{
+	if (m_lastClassPrinted != className) {
 		m_lastClassPrinted = className;
 		clog << vformat("Renderer - " + ANSI24RGB(64, 255, 64) + "{}" + separator + "\n", make_format_args(m_lastClassPrinted));
 	};

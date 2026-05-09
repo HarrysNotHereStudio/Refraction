@@ -10,30 +10,32 @@
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <AssemblyName>Refraction$(MSBuildProjectName)</AssemblyName>
 	<UseCommonOutputDirectory>true</UseCommonOutputDirectory>
+	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+	<BaseOutputPath>$(SolutionDir)</BaseOutputPath>
+	<GenerateDocumentationFile>False</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IsPublishable>False</IsPublishable>
+    <Deterministic>True</Deterministic>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IsPublishable>False</IsPublishable>
+    <Deterministic>True</Deterministic>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Runtime\Runtime.vcxproj">
-      <Private>True</Private>
-      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
-    </ProjectReference>
+    <Compile Include="Program.cs" />
+    <Compile Include="RuntimeComm.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <None Include="Properties\launchSettings.json" />
+    <None Include="Resources\RefractionEngine.lib" />
+    <None Include="Resources\test.lua" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="xcopy /y /q &quot;$(SolutionDir)x64\Debug\*.dll&quot; &quot;$(OutDir)&quot;" />
-  </Target>
 
 </Project>
