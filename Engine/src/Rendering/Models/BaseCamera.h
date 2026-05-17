@@ -10,29 +10,25 @@
 #include <algorithm>
 
 #include "Transform.h"
-#include "Log.h"
+#include <EngineLog.h>
 
 class BaseCamera
 {
 public:
-	Transform m_Transform;
-	float FOVy = 70.0f;
+	static BaseCamera* ActiveCamera;
+
+	Transform mTransform;
+	float mFOVy = 70.0f;
 
 	BaseCamera();
 
 	void Move(glm::vec3 dirInput, glm::vec3 angInput);
-	void SetCameraSpeed(float newSpeed) { m_cameraSpeed = newSpeed; };
-	void SetCameraSensitivity(float newSensitivity) { m_cameraSensitivity = newSensitivity; };
-	glm::mat4 GetViewMatrix() const { return glm::lookAt(m_Transform.position, m_Transform.position + m_Transform.GetForwardVector(), m_Transform.GetUpVector()); };
+	glm::mat4 GetViewMatrix() const { return glm::lookAt(mTransform.position, mTransform.position + mTransform.GetForwardVector(), mTransform.GetUpVector()); };
 
 private:
-	friend class Window;
-
-	glm::vec3 m_cameraTarget;
-
-	float m_yaw;
-	float m_pitch;
-
-	float m_cameraSpeed;
-	float m_cameraSensitivity;
+	glm::vec3 mCameraTarget;
+	float mYaw = 0;
+	float mPitch = 0;
+	float mCameraSpeed = 1;
+	float mCameraSensitivity = 1;
 };

@@ -1,13 +1,15 @@
+#include <EngineConstants.h>
+
 #include "BaseScene.h"
 
 using glm::vec3;
 
-BaseScene::BaseScene(std::string resourcesPath) {
+BaseScene::BaseScene() {
 	Log::Info("Creating test model...");
-	mNyen = new BaseModel(resourcesPath + "/models/nyen/nyen plush.obj");
+	mNyen = new BaseModel(EngineConstants::GetResourcePath() + "/models/nyen/nyen plush.obj");
 	mModels.push_back(mNyen);
 
-	InstancedModel* testModel2 = new InstancedModel(resourcesPath + "/models/survivalBackpack/backpack.obj");
+	InstancedModel* testModel2 = new InstancedModel(EngineConstants::GetResourcePath() + "/models/survivalBackpack/backpack.obj");
 	testModel2->mTransform->Translate(vec3(0.0f, 0.0f, 10.0f));
 	testModel2->AddInstance(vec3(0.0f, 5.0f, 0.0f));
 	testModel2->AddInstance(vec3(5.0f, 10.0f, 0.0f));
@@ -16,7 +18,7 @@ BaseScene::BaseScene(std::string resourcesPath) {
 	mModels.push_back(testModel2);
 
 	Log::Info("Instantiating lights...");
-	for (int i = 0; i < 200; i++) {
+	for (int i = 0; i < 27; i++) {
 		auto light = new PointLight();
 		light->mTransform->Translate(vec3(Utilities::RandomI(20,-20), Utilities::RandomI(20, -20), Utilities::RandomI(20, -20)));
 		light->mLightColor = vec3(1.0f, 1.0f, 1.0f);

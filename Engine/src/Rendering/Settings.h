@@ -2,34 +2,24 @@
 
 class Settings {
 public:
-	class Graphics {
-	public:
-		int viewportWidth = 1280;
-		int viewportHeight = 720;
-		float clipPlaneNear = 0.1f;
-		float clipPlaneFar = 1000.0f;
-		int maxFrameRate = 0;
-		std::string resourcePath = "";
-	};
-	Graphics graphics;
-	class Window {
-	public:
-		const char* windowTitle = "Game";
-		int windowWidth = 1280;
-		int windowHeight = 720;
-	};
-	Window window;
-	class Controls {
-	public:
-		float cameraSensitivity = 0.5f;
-		float cameraSpeed = 0.05f;
-	};
-	Controls controls;
+	static Settings* CurrentSettings;
 
+	struct {
+		int ViewportWidth = 1280;
+		int ViewportHeight = 720;
+		float ClipPlaneNear = 0.1f;
+		float ClipPlaneFar = 1000.0f;
+		int MaxFrameRate = 0;
+	} Graphics;
 
-	Settings() {
-		graphics = Graphics();
-		window = Window();
-		controls = Controls();
-	}
+	struct {
+		const char* Title = "Game";
+		int Width = 1280;
+		int Height = 720;
+	} Window;
+
+	struct {
+		float CameraSensitivity = 0.5f;
+		float CameraSpeed = 0.05f;
+	} Controls;
 };

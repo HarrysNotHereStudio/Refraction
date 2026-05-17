@@ -5,7 +5,8 @@
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
 
-#include <Log.h>
+#include <EngineLog.h>
+#include <EngineUtilities.h>
 
 #include "Window.h"
 
@@ -20,12 +21,12 @@ void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-int Window::Init(Settings::Window windowSettings) {
+int Window::Init() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	mWindow = glfwCreateWindow(windowSettings.windowWidth, windowSettings.windowHeight, windowSettings.windowTitle, NULL, NULL);
+	mWindow = glfwCreateWindow(Settings::CurrentSettings->Window.Width, Settings::CurrentSettings->Window.Height, Settings::CurrentSettings->Window.Title, NULL, NULL);
 	if (mWindow == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -38,7 +39,7 @@ int Window::Init(Settings::Window windowSettings) {
 		return -1;
 	}
 
-	glViewport(0, 0, windowSettings.windowWidth, windowSettings.windowHeight);
+	glViewport(0, 0, Settings::CurrentSettings->Window.Width, Settings::CurrentSettings->Window.Height);
 	glfwSetFramebufferSizeCallback(mWindow, framebufferResizeCallback);
 	return 0;
 }
@@ -107,11 +108,12 @@ void Window::DrawGUI() {
 
 	ImGui::Begin("new window");
 	ImGui::Text("gurt: yo");
-	ImGui::PlotLines("Lines", values, deltaHistoryMax, 0, std::format("Avg {:.3f}ms", average).c_str(), 0, 100.0f, ImVec2(0, 80.0f));
+	ImGui::PlotLines("FPS", values, deltaHistoryMax, 0, std::format("Avg {:.3f}ms", average).c_str(), 0, 100.0f, ImVec2(0, 80.0f));
 	ImGui::Text(std::format("Elapsed: {:.3f}s", mDebugValues.elapsedTime).c_str());
 	ImGui::Text(std::format("Delta: {:.3f}ms", mDebugValues.deltaTime*1000).c_str());
 	ImGui::Text(std::format("FPS: {:.0f}", mDebugValues.fps).c_str());
 	ImGui::Text(std::format("Mouse focus: {}", inputStateStr).c_str());
+	ImGui::Text(std::format("Camera speed: {}", Settings::CurrentSettings->Controls.CameraSpeed).c_str());
 	ImGui::Checkbox("Wireframe", &mWireframeToggle);
 	ImGui::End();
 

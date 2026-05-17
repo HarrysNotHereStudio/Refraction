@@ -1,3 +1,6 @@
+
+#include "Models/Billboard.h"
+
 #include "Renderer.h"
 
 #pragma warning(push, 0)
@@ -5,30 +8,29 @@
 #include "STB/stb_image.h"
 #pragma warning(pop)
 
-#define VIEW_WIDTH this->mCurrentSettings.window.windowWidth
-#define VIEW_HEIGHT this->mCurrentSettings.window.windowHeight
-constexpr auto FPS_INTERVAL = 1;
+#define VIEW_WIDTH Settings::CurrentSettings->Window.Width
+#define VIEW_HEIGHT Settings::CurrentSettings->Window.Height
 
 Renderer* Renderer::mInstance = nullptr;
 
-Renderer::Renderer() {}
+Renderer::Renderer() = default;
 
 Renderer* Renderer::GetInstance() {
 	if (mInstance == nullptr) {
 		mInstance = new Renderer();
-		Log::Info("Instance created");
+		RenderLog::Info("Instance created");
 	}
 	return mInstance;
 }
 
 void Renderer::DestroyInstance() {
-	Log::Info("Instance destruction requested");
+	RenderLog::Warn("Instance destruction requested");
 	if (mInstance != nullptr) {
 		if (mInstance->GetState() != RendererState::CLEANUP) {
 			mInstance->Cleanup();
 		}
 
-		Log::Info("Exiting...");
+		RenderLog::Info("Exiting...");
 		mInstance->mState = RendererState::EXIT;
 	}
 }
@@ -64,55 +66,55 @@ std::vector<unsigned int> VBOs = {};
 glm::mat4 projectionMatrix;
 std::chrono::steady_clock::time_point timeLast;
 
-int Renderer::Init(Settings* initSettings) {
+int Renderer::Init() {
 	mState = RendererState::INIT;
-	Log::Info("Initializing...");
-	mCurrentSettings = *initSettings;
+	RenderLog::Info("Initializing...");
+	RenderLog::Info("Resource path: " + EngineConstants::GetResourcePath());
 
-	Log::Info("Instantiating window...");
+	RenderLog::Info("Instantiating window...");
 	glfwInit();
 	mWindow = new Window();
-	mWindow->Init(initSettings->window);
+	mWindow->Init();
 
 
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
-	Log::Info("Instantiating camera...");
+	RenderLog::Info("Instantiating camera...");
 	mCamera = new BaseCamera();
-	mCamera->SetCameraSpeed(mCurrentSettings.controls.cameraSpeed);
-	mCamera->SetCameraSensitivity(mCurrentSettings.controls.cameraSensitivity);
 	//mCamera->SetCameraSpeed(mCurrentSettings.controls.cameraSpeed*6767676767676767);
 	//mCamera->SetCameraSensitivity(mCurrentSettings.controls.cameraSensitivity*414141414141);
 
-	Log::Info("Loading shaders...");
-	ShaderManager::LoadAllShaders(mCurrentSettings.graphics.resourcePath);
+	EngineAssets::Texture::EngineTexturesPath = EngineConstants::GetResourcePath() + "textures/";
+
+	RenderLog::Info("Loading shaders...");
+	ShaderManager::LoadAllShaders();
 
 	mGeomPassShader = ShaderManager::GetShaderByName("gbufferShader");
 	mLightingPassShader = ShaderManager::GetShaderByName("lightingShader");
 
 	mLightingPassShader->Activate();
-	mLightingPassShader->setUniformInt("gPosition", 0);
-	mLightingPassShader->setUniformInt("gNormal", 1);
-	mLightingPassShader->setUniformInt("gAlbedoSpec", 2);
+	mLightingPassShader->SetUniformInt("gPosition", 0);
+	mLightingPassShader->SetUniformInt("gNormal", 1);
+	mLightingPassShader->SetUniformInt("gAlbedoSpec", 2);
 
-	Log::Info("Creating G-Buffer...");
+	RenderLog::Info("Creating G-Buffer...");
 	mGBuffer = new GBuffer();
 	mGBuffer->Init(VIEW_WIDTH, VIEW_HEIGHT);
 
-	Log::Info("Creating uniform buffer object...");
+	RenderLog::Info("Creating uniform buffer object...");
 	float aspectRatio = VIEW_WIDTH / static_cast<float>(VIEW_HEIGHT);
-	projectionMatrix = glm::perspective(glm::radians(mCamera->FOVy), aspectRatio, mCurrentSettings.graphics.clipPlaneNear, mCurrentSettings.graphics.clipPlaneFar);
+	projectionMatrix = glm::perspective(glm::radians(mCamera->mFOVy), aspectRatio, Settings::CurrentSettings->Graphics.ClipPlaneNear, Settings::CurrentSettings->Graphics.ClipPlaneFar);
 	sUBO initData = {
 		mCamera->GetViewMatrix(),
 		projectionMatrix
 	};
 	mUBO = new UniformBufferObject(initData);
 
-	Log::Info("Loading test scene...");
-	mLoadedScene = new BaseScene(mCurrentSettings.graphics.resourcePath);
+	RenderLog::Info("Loading test scene...");
+	mLoadedScene = new BaseScene();
 
-	Log::Info("Initialising ImGui...");
+	RenderLog::Info("Initialising ImGui...");
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -120,7 +122,7 @@ int Renderer::Init(Settings* initSettings) {
 	ImGui::StyleColorsDark();
 	ImGui::GetStyle() = GetDefaultStyle();
 
-	Log::Info("Initialisation complete");
+	RenderLog::Info("Initialisation complete");
 
 	mStartRenderTime = std::chrono::steady_clock::now();
 	timeLast = mStartRenderTime;
@@ -147,7 +149,7 @@ void renderQuad() {
 		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)nullptr);
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	}
@@ -187,6 +189,7 @@ void Renderer::MainLoop() {
 			DSPassLighting();
 			DSPassFinal();
 
+
 			// GUI
 			mWindow->DrawGUI();
 
@@ -200,7 +203,7 @@ void Renderer::MainLoop() {
 	mInstance->Cleanup();
 }
 
-void Renderer::UpdateUniformBuffers() {
+void Renderer::UpdateUniformBuffers() const {
 	sUBO newData{};
 	newData.viewMatrix = mCamera->GetViewMatrix();
 	newData.perspectiveMatrix = projectionMatrix;
@@ -210,7 +213,7 @@ void Renderer::UpdateUniformBuffers() {
 void Renderer::Cleanup() {
 	mState = RendererState::CLEANUP;
 
-	Log::Info("Cleaning up...");
+	RenderLog::Info("Cleaning up...");
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
@@ -222,7 +225,7 @@ void Renderer::Cleanup() {
 
 // Deferred Shading
 
-void Renderer::DSPassGeometry() {
+void Renderer::DSPassGeometry() const {
 	mGBuffer->BindAny();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	mGeomPassShader->Activate();
@@ -232,9 +235,13 @@ void Renderer::DSPassGeometry() {
 	}
 
 	// Draw models
-	for (int i = 0; i < mLoadedScene->mModels.size(); i++) {
-		mLoadedScene->mModels[i]->DrawModel();
+	for (const auto& mModel : mLoadedScene->mModels) {
+		mModel->DrawModel();
 	}
+
+	// Draw billboards
+	Billboard::DrawAll();
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	if (mWindow->mWireframeToggle) {
@@ -242,21 +249,21 @@ void Renderer::DSPassGeometry() {
 	}
 }
 
-void Renderer::DSPassLighting() {
+void Renderer::DSPassLighting() const {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	mGBuffer->BindTextures();
 
 	mLightingPassShader->Activate();
 	for (auto i = 0; i < mLoadedScene->mLights.size(); i++) {
-		auto light = mLoadedScene->mLights[i];
+		const auto light = mLoadedScene->mLights[i];
 		light->UpdateShaderUniforms(i);
 	}
-	mLightingPassShader->setUniformVec3("viewPos", mCamera->m_Transform.position);
+	mLightingPassShader->SetUniformVec3("viewPos", mCamera->mTransform.position);
 	// finally render quad
 	renderQuad();
 }
 
-void Renderer::DSPassFinal() {
+void Renderer::DSPassFinal() const {
 	mGBuffer->BindForRead();
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 

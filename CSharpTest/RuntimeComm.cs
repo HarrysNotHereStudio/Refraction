@@ -10,6 +10,12 @@ namespace Editor {
 		[DllImport(RuntimeDLLPath, CallingConvention = CallingConvention.Cdecl)]
 		public static extern void TestPrint();
 		[DllImport(RuntimeDLLPath, CallingConvention = CallingConvention.Cdecl)]
+		public static extern void Print(string message);
+		[DllImport(RuntimeDLLPath, CallingConvention = CallingConvention.Cdecl)]
+		public static extern void Warn(string message);
+		[DllImport(RuntimeDLLPath, CallingConvention = CallingConvention.Cdecl)]
+		public static extern void Error(string message);
+		[DllImport(RuntimeDLLPath, CallingConvention = CallingConvention.Cdecl)]
 		public static extern void InitEngine();
 		[DllImport(RuntimeDLLPath, CallingConvention = CallingConvention.Cdecl)]
 		public static extern void SetResourcePath(string path);

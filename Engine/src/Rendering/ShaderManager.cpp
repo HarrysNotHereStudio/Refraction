@@ -1,28 +1,32 @@
-#include "Constants.h"
+#include <vector>
+
+#include <EngineConstants.h>
+#include <EngineLog.h>
+#include <EngineUtilities.h>
 
 #include "ShaderManager.h"
 
 
-std::string shadersSubPath = "/shaders";
-std::vector<BaseShader*> LoadedShaders = {};
+std::string shadersSubPath = "shaders/";
+std::vector<EngineAssets::Shader*> LoadedShaders = {};
 
-void ShaderManager::LoadAllShaders(std::string resourcesPath) {
+void ShaderManager::LoadAllShaders() {
 	using std::string, std::vector, std::filesystem::directory_entry;
 
-	Log::Info("Loading all shaders");
-	vector<directory_entry> shaderSources = Utilities::GetFoldersInFolder(resourcesPath + shadersSubPath);
+	RenderLog::Info("Loading all shaders");
+	vector<directory_entry> shaderSources = Utilities::GetFoldersInFolder(EngineConstants::GetResourcePath() + shadersSubPath);
 
 	for (const auto& shaderSource : shaderSources) {
 		string shaderSourcePath = shaderSource.path().string();
-		Log::Info("Loading shader source: " + shaderSourcePath);
-		BaseShader* newShader = new BaseShader(shaderSourcePath);
+		RenderLog::Info("Loading shader source: " + shaderSourcePath);
+		EngineAssets::Shader* newShader = new EngineAssets::Shader(shaderSourcePath);
 		LoadedShaders.push_back(newShader);
 	}
 }
 
-BaseShader* ShaderManager::GetShaderByName(const std::string name) {
+EngineAssets::Shader* ShaderManager::GetShaderByName(const std::string name) {
 	for (const auto& shader : LoadedShaders) {
-		if (shader->mName == name) {
+		if (shader->GetName() == name) {
 			return shader;
 		}
 	}

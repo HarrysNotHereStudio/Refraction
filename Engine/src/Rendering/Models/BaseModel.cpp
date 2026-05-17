@@ -13,7 +13,7 @@ BaseModel::BaseModel(std::string modelSourcePath) {
 
 void BaseModel::DrawModel() {
 	mShader->Activate();
-	mShader->setUniformMat4("modelTransform", mTransform->GetTransform());
+	mShader->SetUniformMat4("modelTransform", mTransform->GetTransform());
 
 	DrawMeshesRaw();
 	//Log::Info("Drawn for model" + mSourcePath);
@@ -48,7 +48,8 @@ void BaseModel::ProcessNode(aiNode* node, const aiScene* scene) {
 Mesh BaseModel::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
 	std::vector<sVertex> vertices;
 	std::vector<unsigned int> indices;
-	std::vector<BaseTexture*> textures;
+	vector<EngineAssets::Texture*> diffuseMaps;
+	vector<EngineAssets::Texture*> specularMaps;
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
 		sVertex vertex;
@@ -77,19 +78,22 @@ Mesh BaseModel::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
 
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		vector<BaseTexture*> diffuseMaps = LoadMaterialTextures(material,
-			aiTextureType_DIFFUSE, REFRACT_TEXTURE_TYPE_DIFFUSE);
-		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-		vector<BaseTexture*> specularMaps = LoadMaterialTextures(material,
-			aiTextureType_SPECULAR, REFRACT_TEXTURE_TYPE_SPECULAR);
-		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+		diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, REFRACT_TEXTURE_TYPE_DIFFUSE);
+		specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, REFRACT_TEXTURE_TYPE_SPECULAR);
 	}
 
-	return Mesh(vertices, indices, textures);
+	EngineAssets::Material* newMat = new EngineAssets::Material();
+	if (diffuseMaps.size() > 0) newMat->mDiffuse = diffuseMaps[0];
+	else Log::Warn("Imported mesh does not contain any diffuse textures. There may be undefined behaviour.");
+	if (specularMaps.size() > 0) newMat->mSpecular = specularMaps[0];
+	else Log::Warn("Imported mesh does not contain any specular textures. There may be undefined behaviour.");
+	newMat->mShader = mShader;
+
+	return Mesh(vertices, indices, newMat);
 }
 
-vector<BaseTexture*> BaseModel::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {
-	vector<BaseTexture*> textures;
+vector<EngineAssets::Texture*> BaseModel::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {
+	vector<EngineAssets::Texture*> textures;
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString str;
 		mat->GetTexture(type, i, &str);
@@ -106,7 +110,7 @@ vector<BaseTexture*> BaseModel::LoadMaterialTextures(aiMaterial* mat, aiTextureT
 		}
 
 		if (!skip) {
-			BaseTexture* texture = BaseTexture::LoadTexture(fullPath, typeName);
+			EngineAssets::Texture* texture = EngineAssets::Texture::GetTexture(fullPath, typeName);
 			textures.push_back(texture);
 			mTextures.push_back(texture);
 		}
@@ -116,5 +120,5 @@ vector<BaseTexture*> BaseModel::LoadMaterialTextures(aiMaterial* mat, aiTextureT
 
 void BaseModel::DrawMeshesRaw() {
 	for (auto& mesh : mMeshes)
-		mesh.Draw(*mShader);
+		mesh.Draw();
 }

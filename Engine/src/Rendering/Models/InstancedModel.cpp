@@ -16,7 +16,7 @@ void InstancedModel::DrawModel() {
 	for (auto& transform : mInstanceTransforms) {
 		auto matrix = transform.GetTransform();
 		matrix *= mTransform->GetTransform();
-		mShader->setUniformMat4("modelTransform", matrix);
+		mShader->SetUniformMat4("modelTransform", matrix);
 
 		DrawMeshesRaw();
 	}

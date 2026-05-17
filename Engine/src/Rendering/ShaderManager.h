@@ -2,14 +2,14 @@
 
 #include <string>
 
-#include "Graphics/BaseShader.h"
+#include <EngineClasses/Assets/Shader.h>
 
 class ShaderManager {
 public:
 	ShaderManager() = default;
 
-	static void LoadAllShaders(std::string resourcesPath);
+	static void LoadAllShaders();
 
-	static BaseShader* GetShaderByName(const std::string name);
+	static EngineAssets::Shader* GetShaderByName(const std::string name);
 };
 

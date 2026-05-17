@@ -1,47 +1,35 @@
 #include "Mesh.h"
 
-Mesh::Mesh(vector<sVertex> vertices, vector<unsigned int> indices, vector<BaseTexture*> textures) {
-	m_vertices = vertices;
-	m_indices = indices;
-	mTextures = textures;
+Mesh::Mesh(vector<sVertex> vertices, vector<unsigned int> indices, EngineAssets::Material* material) {
+	mVertices = vertices;
+	mIndices = indices;
+	mMaterial = material;
 
 	SetupMesh();
 }
 
-void Mesh::Draw(BaseShader& shader) {
-	unsigned int diffuseIndex = 1;
-	unsigned int specularIndex = 1;
-	for (unsigned int i = 0; i < mTextures.size(); i++) {
-		mTextures[i]->Activate(i);
-		std::string number;
-		std::string name = mTextures[i]->GetTextureType();
-		if (name == REFRACT_TEXTURE_TYPE_DIFFUSE)
-			number = std::to_string(diffuseIndex++);
-		else if (name == REFRACT_TEXTURE_TYPE_SPECULAR)
-			number = std::to_string(specularIndex++);
-
-		shader.setUniformInt(name + number, i);
-	}
+void Mesh::Draw() {
+	mMaterial->Activate();
 	glActiveTexture(GL_TEXTURE0);
 
-	glBindVertexArray(m_VAO);
-	glDrawElements(GL_TRIANGLES, (GLsizei)m_indices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(mVAO);
+	glDrawElements(GL_TRIANGLES, (GLsizei)mIndices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 }
 
 void Mesh::SetupMesh() {
 	// Create buffers
-	glGenVertexArrays(1, &m_VAO);
-	glGenBuffers(1, &m_VBO);
-	glGenBuffers(1, &m_EBO);
+	glGenVertexArrays(1, &mVAO);
+	glGenBuffers(1, &mVBO);
+	glGenBuffers(1, &mEBO);
 
-	glBindVertexArray(m_VAO);
+	glBindVertexArray(mVAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(sVertex), &m_vertices[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+	glBufferData(GL_ARRAY_BUFFER, mVertices.size() * sizeof(sVertex), &mVertices[0], GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(unsigned int), &m_indices[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, mIndices.size() * sizeof(unsigned int), &mIndices[0], GL_STATIC_DRAW);
 
 	// Load vertex data
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(sVertex), (void*)0);

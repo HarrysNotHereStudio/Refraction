@@ -6,5 +6,7 @@
 #define GLCheckError() (glGetError() == GL_NO_ERROR)
 
 namespace EngineConstants {
-	static std::string ResourcePath;
+	static std::string ResourcePath("../../Resources/");
+
+	static std::string GetResourcePath() { return std::string(ResourcePath); };
 }

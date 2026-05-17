@@ -9,7 +9,7 @@
 extern "C" {
 	static sol::state lua;
 	Exported void InitLua() {
-		std::cout << "initialising lua\n";
+		RuntimeLog::Info("Initialising Lua...");
 		lua.open_libraries(sol::lib::base);
 
 		lua.script("print('hello moon!')");
@@ -19,7 +19,8 @@ extern "C" {
 		try {
 			lua.script(source);
 		} catch (sol::error e) {
-			std::cout << "Error while parsing lua: " << e.what() << std::endl;
+			std::string err(e.what());
+			RuntimeLog::Info("Error while parsing Lua: " + err);
 		}
 	}
 }

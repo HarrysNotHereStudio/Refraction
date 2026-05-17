@@ -13,13 +13,14 @@
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "Constants.h"
-#include "Log.h"
-#include "Utilities.h"
+#include <EngineConstants.h>
+#include <EngineLog.h>
+#include <EngineUtilities.h>
 #include "Settings.h"
 #include "ShaderManager.h"
 #include "Graphics/Window.h"
-#include "Graphics/BaseShader.h"
+
+#include <EngineClasses/Assets/Shader.h>
 #include "Models/BaseScene.h"
 #include "Models/BaseModel.h"
 #include "Models/InstancedModel.h"
@@ -38,41 +39,36 @@ enum class RendererState {
 	EXIT
 };
 
-struct sSettings {
-	struct sControlSettings {
-		float cameraSensitivity = .1f; // Sensitivity of the camera movement.
-		float cameraSpeed = 0.05f; // Speed of the camera movement.
-	} control;
-};
-
-
 class Renderer {
 public:
 	static Renderer* GetInstance();
 	static void DestroyInstance();
+
 	RendererState GetState() { return mState; }
 	Window* GetWindow() { return mWindow; }
 	BaseCamera* GetCamera() { return mCamera; }
-	int Init(Settings* initSettings);
+	
+	int Init();
+
+	void SetResourcePath(std::string path) { EngineConstants::ResourcePath = path; };
 private:
 	Renderer();
 	void MainLoop();
-	void UpdateUniformBuffers();
+	void UpdateUniformBuffers() const;
 	void Cleanup();
 
 	// Deferred shading functions
-	void DSPassGeometry();
-	void DSPassLighting();
-	void DSPassFinal();
+	void DSPassGeometry() const;
+	void DSPassLighting() const;
+	void DSPassFinal() const;
 
 	static Renderer* mInstance;
 	RendererState mState = RendererState::NONE;
-	Settings mCurrentSettings;
 	Window* mWindow = nullptr;
 
 	UniformBufferObject* mUBO = nullptr;
-	BaseShader* mGeomPassShader = nullptr;
-	BaseShader* mLightingPassShader = nullptr;
+	EngineAssets::Shader* mGeomPassShader = nullptr;
+	EngineAssets::Shader* mLightingPassShader = nullptr;
 	GBuffer* mGBuffer = nullptr;
 
 	BaseCamera* mCamera = nullptr;

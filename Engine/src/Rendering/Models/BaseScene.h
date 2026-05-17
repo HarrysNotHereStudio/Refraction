@@ -12,7 +12,7 @@ public:
 	std::vector<BaseModel*> mModels = {};
 	std::vector<BaseLight*> mLights = {};
 
-	BaseScene(std::string resourcesPath);
+	BaseScene();
 	
 	void LoadFromFile(std::string path);
 	void Tick(float deltaTime);

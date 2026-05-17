@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../Graphics/BaseShader.h"
-#include "../Graphics/BaseTexture.h"
+#include <EngineClasses/Assets/Material.h>
 
 #include <vector>
 
@@ -16,14 +15,14 @@ using std::vector;
 class Mesh
 {
 public:
-	vector<sVertex> m_vertices;
-	vector<unsigned int> m_indices;
-	vector<BaseTexture*> mTextures;
+	vector<sVertex> mVertices;
+	vector<unsigned int> mIndices;
+	EngineAssets::Material* mMaterial;
 
-	Mesh(vector<sVertex> vertices, vector<unsigned int> indices, vector<BaseTexture*> textures);
-	void Draw(BaseShader &shader);
+	Mesh(vector<sVertex> vertices, vector<unsigned int> indices, EngineAssets::Material* material);
+	void Draw();
 private:
-	unsigned int m_VAO, m_VBO, m_EBO;
+	unsigned int mVAO, mVBO, mEBO;
 
 	void SetupMesh();
 };

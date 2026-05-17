@@ -33,7 +33,7 @@ public:
 
 	Window();
 
-	int Init(Settings::Window windowSettings);
+	int Init();
 
 	void UpdateLoop();
 	void DrawGUI();

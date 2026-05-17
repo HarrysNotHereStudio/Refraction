@@ -2,8 +2,8 @@
 
 #include "Common.h"
 
-#include <Log.h>
-#include <../Engine.h>
+#include <EngineLog.h>
+#include <Engine.h>
 
 extern "C" {
 	Exported int TestFunction() {
@@ -11,12 +11,22 @@ extern "C" {
 	}
 
 	Exported void TestPrint() {
-		Log::Info("hello world!");
+		RuntimeLog::Info("hello world!");
+	}
+
+	Exported void Print(const char* message) {
+		RuntimeLog::Info(message);
+	}
+	Exported void Warn(const char* message) {
+		RuntimeLog::Warn(message);
+	}
+	Exported void Error(const char* message) {
+		RuntimeLog::Error(message);
 	}
 	
 	Exported void SetResourcePath(const char* path) {
 		std::string strPath(path);
-		Log::Info("Setting resource path to " + strPath);
+		RuntimeLog::Info("Setting resource path to " + strPath);
 		RefractionEngine::SetResourcePath(path);
 	}
 

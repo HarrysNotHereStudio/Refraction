@@ -1,4 +1,4 @@
-#include "Log.h"
+#include <EngineLog.h>
 
 #include "GBuffer.h"
 
@@ -47,7 +47,7 @@ bool GBuffer::Init(unsigned int viewWidth, unsigned int viewHeight) {
 	// Check status
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		Log::Info("FRAMEBUFFER CONSTRUCT ERROR | " + status);
+		RenderLog::Error("FRAMEBUFFER CONSTRUCT ERROR | " + status);
 		return false;
 	}
 

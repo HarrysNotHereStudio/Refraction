@@ -1,6 +1,7 @@
 #include <random>
+#include <unordered_set>
 
-#include "Utilities.h"
+#include "EngineUtilities.h"
 
 
 using std::string, std::vector, fs::directory_entry, fs::directory_iterator, fs::path;
@@ -23,7 +24,56 @@ float Utilities::RandomF(const float max, const float min) {
 	return (float)dist(randGen);
 }
 
-vector<char> Utilities::ReadFile(const string& filename) {
+
+
+// UUID
+static std::string IntToHex(int i, uint8_t width) {
+	std::stringstream stream;
+	stream << "0x" << std::setfill('0') << std::setw(width) << std::hex << i;
+	return stream.str();
+}
+
+
+// The UUID generator uses system clock and RNG along with a repetition counter to hopefully generate a random UUID
+// It is formatted as such:
+// Section 1: Seconds since epoch as 4 digit hex
+// Section 2: Milliseconds since epoch as 4 digit hex*
+// Section 3: Random number as 4 digit hex
+// Section 4: Random number as 4 digit hex
+// Section 2 is slightly different, as the repetition counter is added to enhance variation
+// The repetition counter ticks up every time the generated UUID already exists in the unordered_set, and resets every time a new UUID is requested
+///
+
+std::string Utilities::GenerateUUID() {
+	using namespace std::chrono;
+	static std::unordered_set<std::string> GeneratedUUIDs = {};
+	std::string result = "";
+	int repeatCounter = 0;
+
+	do {
+		// Get system clock ticks since epoch
+		auto duration = system_clock::now().time_since_epoch();
+		auto sec = duration_cast<seconds>(duration).count();
+		auto milli = duration_cast<milliseconds>(duration).count() + repeatCounter;
+
+		// Generate UUID string
+		result = IntToHex((int)sec, 4) + "-" + IntToHex((int)milli, 4) + "-" + IntToHex(Utilities::RandomI(0xFFFF), 4) + "-" + IntToHex(Utilities::RandomI(0xFFFF), 4);
+
+		if (GeneratedUUIDs.empty()) break;
+		// Increment repeat counter
+		repeatCounter++;
+	} while (GeneratedUUIDs.count(result));
+
+	GeneratedUUIDs.insert(result);
+
+	return result;
+}
+
+
+// Filesystem utilities
+///
+
+std::string Utilities::ReadFile(const string& filename) {
 	std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
 	if (!file.is_open()) {
@@ -38,19 +88,8 @@ vector<char> Utilities::ReadFile(const string& filename) {
 	file.close();
 	buffer.insert(buffer.end(), *fileTerminator);
 
-	return buffer;
+	return std::string(buffer.begin(), buffer.end());
 };
-
-bool Utilities::ReadFile(const string& filename, string& buffer) {
-	vector<char> charBuf;
-	try {
-		charBuf = ReadFile(filename);
-	} catch (...) {
-		return false;
-	}
-	buffer = string(charBuf.begin(), charBuf.end());
-	return true;
-}
 
 vector<directory_entry> Utilities::GetFilesInFolder(path folderPath) {
 	vector<directory_entry> files;
@@ -87,7 +126,11 @@ vector<directory_entry> Utilities::GetFoldersInFolder(path folderPath) {
 	return folders;
 };
 
-string Utilities::CalculateFPS(double deltaTime, int precision) {
+
+// Math utilities
+///
+
+string Utilities::DeltaToRate(double deltaTime, int precision) {
 	double fps = 1.0 / deltaTime;
 	if (precision < 0) return std::to_string(fps);
 	if (precision == 0) return std::to_string(trunc(fps));
