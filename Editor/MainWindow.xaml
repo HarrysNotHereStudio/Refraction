@@ -4,6 +4,7 @@
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:Editor"
+		xmlns:custom="clr-namespace:Editor.Components"
 		mc:Ignorable="d"
 		Title="Refraction Editor" Height="1080" Width="1920">
 	<Window.Resources>
@@ -15,12 +16,14 @@
 	</Window.Resources>
 
 	<Grid>
-		<Rectangle x:Name="Viewport" HorizontalAlignment="Center" Height="346" Margin="0,97,0,0" Stroke="Black" VerticalAlignment="Top" Width="645"/>
-		<Canvas Height="96" VerticalAlignment="Top">
-			<TabControl x:Name="Ribbon" Height="96" Width="1920">
+		<Rectangle x:Name="Viewport" HorizontalAlignment="Center" Height="730" Margin="0,107,0,0" Stroke="Black" VerticalAlignment="Top" Width="1500"/>
+		<Canvas Height="102" VerticalAlignment="Top">
+			<TabControl x:Name="Ribbon" Width="1920" Height="110">
 				<TabItem Header="General">
-					<StackPanel Orientation="Horizontal">
-						<Image Height="48" Width="48" />
+					<StackPanel Orientation="Horizontal" Margin="2,2,2,2">
+						<custom:RibbonButton/>
+						<custom:RibbonButton/>
+						<custom:RibbonButton/>
 					</StackPanel>
 				</TabItem>
 				<TabItem Header="Debug" Padding="12,2,12,2">

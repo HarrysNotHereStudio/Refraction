@@ -33,5 +33,4 @@ extern "C" {
 	Exported void InitEngine() {
 		RefractionEngine::Init();
 	}
-
 }
