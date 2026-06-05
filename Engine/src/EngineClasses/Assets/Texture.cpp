@@ -3,11 +3,13 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#pragma warning(push, 0)
+#pragma warning(push)
+#pragma warning(disable : 26819)
+#pragma warning(disable : 6262)
 #include "STB/stb_image.h"
 #pragma warning(pop)
 
-#include <EngineLog.h>
+#include <Core/Log.h>
 
 #include "Texture.h"
 

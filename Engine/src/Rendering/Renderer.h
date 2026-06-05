@@ -13,22 +13,20 @@
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <EngineConstants.h>
-#include <EngineLog.h>
-#include <EngineUtilities.h>
+#include <Core/Constants.h>
+#include <Core/Log.h>
+#include <Core/Utilities.h>
 #include "Settings.h"
 #include "ShaderManager.h"
-#include "Graphics/Window.h"
+#include <Platform/Windows/Window.h>
 
 #include <EngineClasses/Assets/Shader.h>
 #include "Models/BaseScene.h"
 #include "Models/BaseModel.h"
 #include "Models/InstancedModel.h"
 #include "Models/BaseCamera.h"
-#include "Models/BaseLight.h"
-#include "Models/PointLight.h"
-#include "Graphics/Buffers/UniformBufferObject.h"
-#include "Graphics/Buffers/GBuffer.h"
+#include "Buffers/UniformBufferObject.h"
+#include "Buffers/GBuffer.h"
 
 
 enum class RendererState {
@@ -45,12 +43,12 @@ public:
 	static void DestroyInstance();
 
 	RendererState GetState() { return mState; }
-	Window* GetWindow() { return mWindow; }
+	Refraction::Platform::Windows::Window* GetWindow() { return mWindow; }
 	BaseCamera* GetCamera() { return mCamera; }
 	
 	int Init();
 
-	void SetResourcePath(std::string path) { EngineConstants::ResourcePath = path; };
+	void SetResourcePath(std::string path) { Refraction::Constants::ResourcePath = path; };
 private:
 	Renderer();
 	void MainLoop();
@@ -64,7 +62,7 @@ private:
 
 	static Renderer* mInstance;
 	RendererState mState = RendererState::NONE;
-	Window* mWindow = nullptr;
+	Refraction::Platform::Windows::Window* mWindow = nullptr;
 
 	UniformBufferObject* mUBO = nullptr;
 	EngineAssets::Shader* mGeomPassShader = nullptr;

@@ -2,9 +2,11 @@
 
 #include "BaseBuffer.h"
 
+#include <Math/Matrices.h>
+
 struct sUBO {
-	glm::mat4 viewMatrix;
-	glm::mat4 perspectiveMatrix;
+	Refraction::Math::Matrix4 viewMatrix;
+	Refraction::Math::Matrix4 perspectiveMatrix;
 	glm::uint padding;
 };
 

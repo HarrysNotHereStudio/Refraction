@@ -1,9 +1,9 @@
-#include <EngineUtilities.h>
+#include <Core/Utilities.h>
 
 #include "Component.h"
 
 Component::Component() {
-	mUUID = Utilities::GenerateUUID();
+	mUUID = Refraction::Utilities::GenerateUUID();
 }
 
 Component::~Component() {

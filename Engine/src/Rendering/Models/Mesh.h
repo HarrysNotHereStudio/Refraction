@@ -1,13 +1,15 @@
 #pragma once
 
+#include <Math/Vector2.h>
+#include <Math/Vector3.h>
 #include <EngineClasses/Assets/Material.h>
 
 #include <vector>
 
 struct sVertex {
-	glm::vec3 pos;
-	glm::vec3 normal;
-	glm::vec2 texCoord;
+	Refraction::Math::Vector3 pos;
+	Refraction::Math::Vector3 normal;
+	Refraction::Math::Vector2 texCoord;
 };
 
 using std::vector;

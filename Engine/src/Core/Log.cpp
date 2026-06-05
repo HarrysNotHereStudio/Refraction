@@ -8,7 +8,7 @@
 #include <cpptrace/cpptrace.hpp>
 #include <cpptrace/formatting.hpp>
 
-#include "EngineLog.h"
+#include "Log.h"
 
 
 namespace {

@@ -1,5 +1,6 @@
 #include <vector>
 
+#include <Math/Vector3.h>
 #include "Mesh.h"
 #include "BaseCamera.h"
 
@@ -7,13 +8,10 @@
 
 #include "Billboard.h"
 
-static const sVertex BillboardVerts[4] = {
-	sVertex{ glm::vec3(-1,1,0), glm::vec3(0,0,1), glm::vec2(0,1) },
-	sVertex{ glm::vec3(-1,-1,0), glm::vec3(0,0,1), glm::vec2(0,0) },
-	sVertex{ glm::vec3(1,1,0), glm::vec3(0,0,1), glm::vec2(1,1) },
-	sVertex{ glm::vec3(1,-1,0), glm::vec3(0,0,1), glm::vec2(1,0) }
-};
-
+namespace RMath = Refraction::Math;
+using RMath::Transform;
+using RMath::Vector2;
+using RMath::Vector3;
 
 std::vector<Billboard*> ActiveBillboards = {};
 
@@ -25,7 +23,7 @@ void Billboard::DrawAll() {
 
 Billboard::Billboard() {
 	mTransform = new Transform();
-	mTransform->scale = glm::vec3(10);
+	mTransform->mScale = Vector3(10);
 }
 
 Billboard::~Billboard() {
@@ -45,15 +43,15 @@ void Billboard::Draw() {
 	auto cameraRight = camera->mTransform.GetRightVector();
 
 	sVertex rectVertices[4] = {
-		sVertex{ glm::vec3(-1,1,0), glm::vec3(0,0,1), glm::vec2(0,1) },
-		sVertex{ glm::vec3(-1,-1,0), glm::vec3(0,0,1), glm::vec2(0,0) },
-		sVertex{ glm::vec3(1,1,0), glm::vec3(0,0,1), glm::vec2(1,1) },
-		sVertex{ glm::vec3(1,-1,0), glm::vec3(0,0,1), glm::vec2(1,0) }
+		sVertex{ Vector3(-1,1,0), Vector3(0,0,1), Vector2(0,1) },
+		sVertex{ Vector3(-1,-1,0), Vector3(0,0,1), Vector2(0,0) },
+		sVertex{ Vector3(1,1,0), Vector3(0,0,1), Vector2(1,1) },
+		sVertex{ Vector3(1,-1,0), Vector3(0,0,1), Vector2(1,0) }
 	};
 
 	for (size_t i = 0; i < 4; i++) {
 		sVertex& vert = rectVertices[i];
-		vert.pos = mTransform->position + cameraRight * vert.pos.x * mTransform->scale.x + cameraUp * vert.pos.y * mTransform->scale.y;
+		vert.pos = mTransform->mPosition + cameraRight * vert.pos.x * mTransform->mScale.x + cameraUp * vert.pos.y * mTransform->mScale.y;
 	}
 
 	unsigned int quadVAO = 0;

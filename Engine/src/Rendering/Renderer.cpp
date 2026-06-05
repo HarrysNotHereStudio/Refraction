@@ -1,15 +1,22 @@
 
 #include "Models/Billboard.h"
+#include "Models/BaseLight.h"
+#include "Models/PointLight.h"
 
 #include "Renderer.h"
 
-#pragma warning(push, 0)
 #define STB_IMAGE_IMPLEMENTATION
+#pragma warning(push)
+#pragma warning(disable : 26819)
+#pragma warning(disable : 6262)
 #include "STB/stb_image.h"
 #pragma warning(pop)
 
 #define VIEW_WIDTH Settings::CurrentSettings->Window.Width
 #define VIEW_HEIGHT Settings::CurrentSettings->Window.Height
+
+namespace RMath = Refraction::Math;
+namespace RUtil = Refraction::Utilities;
 
 Renderer* Renderer::mInstance = nullptr;
 
@@ -63,17 +70,17 @@ ImGuiStyle GetDefaultStyle() {
 std::vector<unsigned int> VAOs = {};
 std::vector<unsigned int> VBOs = {};
 
-glm::mat4 projectionMatrix;
+RMath::Matrix4 projectionMatrix;
 std::chrono::steady_clock::time_point timeLast;
 
 int Renderer::Init() {
 	mState = RendererState::INIT;
 	RenderLog::Info("Initializing...");
-	RenderLog::Info("Resource path: " + EngineConstants::GetResourcePath());
+	RenderLog::Info("Resource path: " + Refraction::Constants::GetResourcePath());
 
 	RenderLog::Info("Instantiating window...");
 	glfwInit();
-	mWindow = new Window();
+	mWindow = new Refraction::Platform::Windows::Window();
 	mWindow->Init();
 
 
@@ -85,7 +92,7 @@ int Renderer::Init() {
 	//mCamera->SetCameraSpeed(mCurrentSettings.controls.cameraSpeed*6767676767676767);
 	//mCamera->SetCameraSensitivity(mCurrentSettings.controls.cameraSensitivity*414141414141);
 
-	EngineAssets::Texture::EngineTexturesPath = EngineConstants::GetResourcePath() + "textures/";
+	EngineAssets::Texture::EngineTexturesPath = Refraction::Constants::GetResourcePath() + "textures/";
 
 	RenderLog::Info("Loading shaders...");
 	ShaderManager::LoadAllShaders();
@@ -103,8 +110,8 @@ int Renderer::Init() {
 	mGBuffer->Init(VIEW_WIDTH, VIEW_HEIGHT);
 
 	RenderLog::Info("Creating uniform buffer object...");
-	float aspectRatio = VIEW_WIDTH / static_cast<float>(VIEW_HEIGHT);
-	projectionMatrix = glm::perspective(glm::radians(mCamera->mFOVy), aspectRatio, Settings::CurrentSettings->Graphics.ClipPlaneNear, Settings::CurrentSettings->Graphics.ClipPlaneFar);
+	float aspectRatio = VIEW_WIDTH / (float)(VIEW_HEIGHT);
+	projectionMatrix = RMath::Matrix4::Perspective(RMath::ToRadians(mCamera->mFOVy), aspectRatio, Settings::CurrentSettings->Graphics.ClipPlaneNear, Settings::CurrentSettings->Graphics.ClipPlaneFar);
 	sUBO initData = {
 		mCamera->GetViewMatrix(),
 		projectionMatrix
@@ -160,7 +167,7 @@ void renderQuad() {
 
 void Renderer::MainLoop() {
 	mState = RendererState::RUNNING;
-	GLFWwindow* windowInstance = mWindow->GetWindow();
+	GLFWwindow* windowInstance = (GLFWwindow*)mWindow->GetNativeWindow();
 
 	if (!ImGui_ImplGlfw_InitForOpenGL(windowInstance, true)) throw std::runtime_error("Failed to init ImGui for GLFW");
 	if (!ImGui_ImplOpenGL3_Init("#version 330")) throw std::runtime_error("Failed to init ImGui for OpenGL");
@@ -173,10 +180,10 @@ void Renderer::MainLoop() {
 
 		mLoadedScene->Tick((float)mDeltaRenderTime);
 
-		mWindow->mDebugValues.elapsedTime = (float)mElapsedRenderTime;
-		mWindow->mDebugValues.deltaTime = (float)mDeltaRenderTime;
-		mWindow->mDebugValues.fps = (float)(1.0 / mDeltaRenderTime);
-		mWindow->UpdateLoop();
+		mWindow->mImGuiImpl->mDebugValues.elapsedTime = (float)mElapsedRenderTime;
+		mWindow->mImGuiImpl->mDebugValues.deltaTime = (float)mDeltaRenderTime;
+		mWindow->mImGuiImpl->mDebugValues.fps = (float)(1.0 / mDeltaRenderTime);
+		mWindow->OnUpdate();
 
 		if (mShouldRender) {
 			UpdateUniformBuffers();
@@ -191,7 +198,7 @@ void Renderer::MainLoop() {
 
 
 			// GUI
-			mWindow->DrawGUI();
+			mWindow->mImGuiImpl->Draw();
 
 			// [Finalise Tick] //
 			//-----------------//
@@ -230,7 +237,7 @@ void Renderer::DSPassGeometry() const {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	mGeomPassShader->Activate();
 
-	if (mWindow->mWireframeToggle) {
+	if (Settings::CurrentSettings->Graphics.WireframeEnabled) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
 
@@ -244,7 +251,7 @@ void Renderer::DSPassGeometry() const {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	if (mWindow->mWireframeToggle) {
+	if (Settings::CurrentSettings->Graphics.WireframeEnabled) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 }
@@ -258,7 +265,7 @@ void Renderer::DSPassLighting() const {
 		const auto light = mLoadedScene->mLights[i];
 		light->UpdateShaderUniforms(i);
 	}
-	mLightingPassShader->SetUniformVec3("viewPos", mCamera->mTransform.position);
+	mLightingPassShader->SetUniformVec3("viewPos", mCamera->mTransform.mPosition);
 	// finally render quad
 	renderQuad();
 }

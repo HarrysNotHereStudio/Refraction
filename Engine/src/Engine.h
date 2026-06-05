@@ -5,5 +5,6 @@
 
 namespace RefractionEngine {
 	int Init();
+	void InitWindow();
 	void SetResourcePath(std::string path);
 }

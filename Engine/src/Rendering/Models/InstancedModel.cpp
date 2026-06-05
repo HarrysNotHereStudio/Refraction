@@ -1,11 +1,15 @@
+
+
 #include "InstancedModel.h"
+
+namespace RMath = Refraction::Math;
 
 InstancedModel::InstancedModel(std::string modelSourcePath) : BaseModel(modelSourcePath) {
 }
 
-void InstancedModel::AddInstance(glm::vec3 relativePos) {
-	Transform newTransform = Transform();
-	newTransform.position = relativePos;
+void InstancedModel::AddInstance(RMath::Vector3 relativePos) {
+	RMath::Transform newTransform = RMath::Transform();
+	newTransform.mPosition = relativePos;
 
 	mInstanceTransforms.push_back(newTransform);
 }

@@ -2,8 +2,14 @@
 
 #include "Shader.h"
 
-#include <EngineLog.h>
-#include <EngineUtilities.h>
+#include <Core/Log.h>
+#include <Core/Utilities.h>
+
+namespace RMath = Refraction::Math;
+namespace RUtil = Refraction::Utilities;
+using RMath::Vector2;
+using RMath::Vector3;
+
 
 EngineAssets::Shader::Shader(std::string sourcePath) {
 	using std::vector, std::filesystem::directory_entry;
@@ -12,8 +18,8 @@ EngineAssets::Shader::Shader(std::string sourcePath) {
 	RuntimeLog::Info("Creating shader " + mName);
 
 	// Get all shader files (.vert and .frag) in the folder
-	directory_entry vertShader = Utilities::GetFirstFileOfExtInFolder(mSourcePath, ".vert");
-	directory_entry fragShader = Utilities::GetFirstFileOfExtInFolder(mSourcePath, ".frag");
+	directory_entry vertShader = RUtil::GetFirstFileOfExtInFolder(mSourcePath, ".vert");
+	directory_entry fragShader = RUtil::GetFirstFileOfExtInFolder(mSourcePath, ".frag");
 
 	if (!(vertShader.exists() && fragShader.exists())) {
 		RuntimeLog::Warn("Skipping shader creation, missing source files");
@@ -23,8 +29,8 @@ EngineAssets::Shader::Shader(std::string sourcePath) {
 	std::string vertPath = vertShader.path().string();
 	std::string fragPath = fragShader.path().string();
 
-	std::string vertSource = Utilities::ReadFile(vertPath);
-	std::string fragSource = Utilities::ReadFile(fragPath);
+	std::string vertSource = RUtil::ReadFile(vertPath);
+	std::string fragSource = RUtil::ReadFile(fragPath);
 
 	const char* pVertSource = vertSource.data();
 	const char* pFragSource = fragSource.data();
@@ -77,12 +83,20 @@ void EngineAssets::Shader::SetUniformVec2(const std::string& name, float x, floa
 	glUniform2f(glGetUniformLocation(mID, name.c_str()), x, y);
 }
 
+void EngineAssets::Shader::SetUniformVec2(const std::string& name, const Vector2& value) const {
+	SetUniformVec2(name, value.x, value.y);
+}
+
 void EngineAssets::Shader::SetUniformVec3(const std::string& name, const glm::vec3& value) const {
 	glUniform3fv(glGetUniformLocation(mID, name.c_str()), 1, &value[0]);
 }
 
 void EngineAssets::Shader::SetUniformVec3(const std::string& name, float x, float y, float z) const {
 	glUniform3f(glGetUniformLocation(mID, name.c_str()), x, y, z);
+}
+
+void EngineAssets::Shader::SetUniformVec3(const std::string& name, const Vector3& value) const {
+	SetUniformVec3(name, value.x, value.y, value.z);
 }
 
 void EngineAssets::Shader::SetUniformVec4(const std::string& name, const glm::vec4& value) const {
@@ -101,8 +115,16 @@ void EngineAssets::Shader::SetUniformMat3(const std::string& name, const glm::ma
 	glUniformMatrix3fv(glGetUniformLocation(mID, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
 }
 
+void EngineAssets::Shader::SetUniformMat3(const std::string& name, const Refraction::Math::Matrix3& matrix) const {
+	SetUniformMat3(name, RUtil::NativeToGLMMat3(matrix));
+}
+
 void EngineAssets::Shader::SetUniformMat4(const std::string& name, const glm::mat4& matrix) const {
 	glUniformMatrix4fv(glGetUniformLocation(mID, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
+}
+
+void EngineAssets::Shader::SetUniformMat4(const std::string& name, const Refraction::Math::Matrix4& matrix) const {
+	SetUniformMat4(name, RUtil::NativeToGLMMat4(matrix));
 }
 
 void EngineAssets::Shader::CheckLogErrors(GLuint shader, const std::string type) {

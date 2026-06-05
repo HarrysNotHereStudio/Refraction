@@ -7,17 +7,17 @@
 
 #include <assimp/scene.h>
 
-#include <EngineLog.h>
-#include <EngineUtilities.h>
+#include <Core/Log.h>
+#include <Core/Utilities.h>
 #include <EngineClasses/Assets/Shader.h>
 #include <EngineClasses/Assets/Texture.h>
-#include "Transform.h"
+#include <Math/Transform.h>
 #include "Mesh.h"
 
 class BaseModel
 {
 public:
-	Transform* mTransform;
+	Refraction::Math::Transform* mTransform;
 	EngineAssets::Shader* mShader;
 	std::string mSourcePath;
 

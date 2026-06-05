@@ -2,14 +2,10 @@
 
 #include "Common.h"
 
-#include <EngineLog.h>
+#include <Core/Log.h>
 #include <Engine.h>
 
 extern "C" {
-	Exported int TestFunction() {
-		return 67;
-	}
-
 	Exported void TestPrint() {
 		RuntimeLog::Info("hello world!");
 	}
@@ -32,5 +28,9 @@ extern "C" {
 
 	Exported void InitEngine() {
 		RefractionEngine::Init();
+	}
+
+	Exported void InitWindow() {
+		RefractionEngine::InitWindow();
 	}
 }

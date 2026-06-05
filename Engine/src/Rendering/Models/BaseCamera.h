@@ -9,24 +9,26 @@
 
 #include <algorithm>
 
-#include "Transform.h"
-#include <EngineLog.h>
+#include <Core/Log.h>
+#include <Math/Transform.h>
+#include <Math/Vector3.h>
+#include <Math/Matrices.h>
 
 class BaseCamera
 {
 public:
 	static BaseCamera* ActiveCamera;
 
-	Transform mTransform;
+	Refraction::Math::Transform mTransform;
 	float mFOVy = 70.0f;
 
 	BaseCamera();
 
-	void Move(glm::vec3 dirInput, glm::vec3 angInput);
-	glm::mat4 GetViewMatrix() const { return glm::lookAt(mTransform.position, mTransform.position + mTransform.GetForwardVector(), mTransform.GetUpVector()); };
+	void Move(Refraction::Math::Vector3 dirInput, Refraction::Math::Vector3 angInput);
+	Refraction::Math::Matrix4 GetViewMatrix() const { return Refraction::Math::Matrix4(mTransform.mPosition, mTransform.mPosition + mTransform.GetForwardVector(), mTransform.GetUpVector()); };
 
 private:
-	glm::vec3 mCameraTarget;
+	Refraction::Math::Vector3 mCameraTarget;
 	float mYaw = 0;
 	float mPitch = 0;
 	float mCameraSpeed = 1;

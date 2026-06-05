@@ -149,6 +149,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Math\Matrices.h" />
+    <ClInclude Include="src\Math\Quaternion.h" />
+    <ClInclude Include="src\Math\Common.h" />
+    <ClInclude Include="src\Platform\AImGuiImpl.h" />
     <ClInclude Include="lib\include\imgui\imconfig.h" />
     <ClInclude Include="lib\include\imgui\imgui.h" />
     <ClInclude Include="lib\include\imgui\imgui_impl_glfw.h" />
@@ -163,14 +167,16 @@
     <ClInclude Include="src\EngineClasses\Objects\Object.h" />
     <ClInclude Include="src\EngineClasses\Assets\Asset.h" />
     <ClInclude Include="src\EngineClasses\Components\Component.h" />
+    <ClInclude Include="src\Platform\AWindow.h" />
+    <ClInclude Include="src\Platform\OpenGL\ImGuiImpl.h" />
     <ClInclude Include="src\Rendering\Models\Billboard.h" />
     <ClInclude Include="src\Engine.h" />
-    <ClInclude Include="src\EngineLog.h" />
-    <ClInclude Include="src\EngineConstants.h" />
-    <ClInclude Include="src\Rendering\Graphics\Buffers\BaseBuffer.h" />
-    <ClInclude Include="src\Rendering\Graphics\Buffers\GBuffer.h" />
-    <ClInclude Include="src\Rendering\Graphics\Buffers\UniformBufferObject.h" />
-    <ClInclude Include="src\Rendering\Graphics\Window.h" />
+    <ClInclude Include="src\Core\Log.h" />
+    <ClInclude Include="src\Core\Constants.h" />
+    <ClInclude Include="src\Rendering\Buffers\BaseBuffer.h" />
+    <ClInclude Include="src\Rendering\Buffers\GBuffer.h" />
+    <ClInclude Include="src\Rendering\Buffers\UniformBufferObject.h" />
+    <ClInclude Include="src\Platform\Windows\Window.h" />
     <ClInclude Include="src\Rendering\Models\BaseCamera.h" />
     <ClInclude Include="src\Rendering\Models\BaseLight.h" />
     <ClInclude Include="src\Rendering\Models\BaseModel.h" />
@@ -179,14 +185,20 @@
     <ClInclude Include="src\Rendering\Models\InstancedModel.h" />
     <ClInclude Include="src\Rendering\Models\Mesh.h" />
     <ClInclude Include="src\Rendering\Models\PointLight.h" />
-    <ClInclude Include="src\Rendering\Models\Transform.h" />
+    <ClInclude Include="src\Math\Transform.h" />
     <ClInclude Include="src\Rendering\Renderer.h" />
-    <ClInclude Include="src\Rendering\Settings.h" />
+    <ClInclude Include="src\Settings.h" />
     <ClInclude Include="src\Rendering\ShaderManager.h" />
-    <ClInclude Include="src\EngineUtilities.h" />
+    <ClInclude Include="src\Core\Utilities.h" />
     <ClInclude Include="src\EngineClasses\Assets\Texture.h" />
+    <ClInclude Include="src\Math\Vector2.h" />
+    <ClInclude Include="src\Math\Vector3.h" />
+    <ClInclude Include="src\Math\Vector4.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Math\Matrices.cpp" />
+    <ClCompile Include="src\Math\Quaternion.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\ImGuiImpl.cpp" />
     <ClCompile Include="lib\include\imgui\imgui.cpp" />
     <ClCompile Include="lib\include\imgui\imgui_demo.cpp" />
     <ClCompile Include="lib\include\imgui\imgui_draw.cpp" />
@@ -201,12 +213,12 @@
     <ClCompile Include="src\EngineClasses\Components\Component.cpp" />
     <ClCompile Include="src\Rendering\Models\Billboard.cpp" />
     <ClCompile Include="src\Engine.cpp" />
-    <ClCompile Include="src\EngineLog.cpp" />
+    <ClCompile Include="src\Core\Log.cpp" />
     <ClCompile Include="src\Rendering\glad.c" />
-    <ClCompile Include="src\Rendering\Graphics\Buffers\BaseBuffer.cpp" />
-    <ClCompile Include="src\Rendering\Graphics\Buffers\GBuffer.cpp" />
-    <ClCompile Include="src\Rendering\Graphics\Buffers\UniformBufferObject.cpp" />
-    <ClCompile Include="src\Rendering\Graphics\Window.cpp" />
+    <ClCompile Include="src\Rendering\Buffers\BaseBuffer.cpp" />
+    <ClCompile Include="src\Rendering\Buffers\GBuffer.cpp" />
+    <ClCompile Include="src\Rendering\Buffers\UniformBufferObject.cpp" />
+    <ClCompile Include="src\Platform\Windows\Window.cpp" />
     <ClCompile Include="src\Rendering\Models\BaseCamera.cpp" />
     <ClCompile Include="src\Rendering\Models\BaseLight.cpp" />
     <ClCompile Include="src\Rendering\Models\BaseModel.cpp" />
@@ -215,11 +227,14 @@
     <ClCompile Include="src\Rendering\Models\InstancedModel.cpp" />
     <ClCompile Include="src\Rendering\Models\Mesh.cpp" />
     <ClCompile Include="src\Rendering\Models\PointLight.cpp" />
-    <ClCompile Include="src\Rendering\Models\Transform.cpp" />
+    <ClCompile Include="src\Math\Transform.cpp" />
     <ClCompile Include="src\Rendering\Renderer.cpp" />
     <ClCompile Include="src\Rendering\ShaderManager.cpp" />
-    <ClCompile Include="src\EngineUtilities.cpp" />
+    <ClCompile Include="src\Core\Utilities.cpp" />
     <ClCompile Include="src\EngineClasses\Assets\Texture.cpp" />
+    <ClCompile Include="src\Math\Vector2.cpp" />
+    <ClCompile Include="src\Math\Vector3.cpp" />
+    <ClCompile Include="src\Math\Vector4.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

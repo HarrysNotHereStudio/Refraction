@@ -5,6 +5,11 @@
 
 #include "BaseModel.h"
 
+namespace RMath = Refraction::Math;
+using RMath::Transform;
+using RMath::Vector2;
+using RMath::Vector3;
+
 BaseModel::BaseModel(std::string modelSourcePath) {
 	mTransform = new Transform();
 	mShader = ShaderManager::GetShaderByName("gbufferShader");
@@ -55,16 +60,16 @@ Mesh BaseModel::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
 		sVertex vertex;
 
 		aiVector3D importPos = mesh->mVertices[i];
-		vertex.pos = glm::vec3(importPos.x, importPos.y, importPos.z);
+		vertex.pos = Vector3(importPos.x, importPos.y, importPos.z);
 
 		aiVector3D importNormal = mesh->mNormals[i];
-		vertex.normal = glm::vec3(importNormal.x, importNormal.y, importNormal.z);
+		vertex.normal = Vector3(importNormal.x, importNormal.y, importNormal.z);
 
 		if (mesh->HasTextureCoords(0)) {
 			aiVector3D importTexCoord = mesh->mTextureCoords[0][i];
-			vertex.texCoord = glm::vec2(importTexCoord.x, importTexCoord.y);
+			vertex.texCoord = Vector2(importTexCoord.x, importTexCoord.y);
 		} else
-			vertex.texCoord = glm::vec2(0.0f);
+			vertex.texCoord = Vector2(0.0f);
 
 		vertices.push_back(vertex);
 	}

@@ -1,13 +1,17 @@
 #pragma once
+
+#include <Math/Vector3.h>
+#include <Math/Transform.h>
+
 #include "BaseModel.h"
 
 class InstancedModel : public BaseModel {
 public:
-	std::vector<Transform> mInstanceTransforms = {};
+	std::vector<Refraction::Math::Transform> mInstanceTransforms = {};
 
 	InstancedModel(std::string modelSourcePath);
 
-	void AddInstance(glm::vec3 relativePos);
+	void AddInstance(Refraction::Math::Vector3 relativePos);
 	void DrawModel();
 private:
 };

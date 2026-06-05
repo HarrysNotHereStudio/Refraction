@@ -1,11 +1,11 @@
 #pragma once
 
 #include <EngineClasses/Assets/Texture.h>
-#include "Transform.h"
+#include <Math/Transform.h>
 
 class Billboard {
 public:
-	Transform* mTransform;
+	Refraction::Math::Transform* mTransform;
 	bool mScreenSpaceScale = false;
 
 	static void DrawAll();

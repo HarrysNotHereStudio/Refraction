@@ -20,7 +20,7 @@
     <File Path="Resources/shaders/lightingShader/lighting.frag" />
     <File Path="Resources/shaders/lightingShader/lighting.vert" />
   </Folder>
-  <Project Path="Editor/Editor.csproj" Id="1109d987-f587-4f6c-afe9-fc7a85402459" />
+  <Project Path="Editor/Editor.vcxproj" Id="cb254b8e-4fab-4dfa-a012-5ef0481d739c" />
   <Project Path="Engine/Engine.vcxproj" Id="6414aa4a-f9f1-4cd7-88df-baadba8b8029" />
   <Project Path="Runtime/Runtime.vcxproj" Id="a3c49e0b-8fd8-4a6d-8634-1ffa9c9a809a" />
 </Solution>
