@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <string>
 
 #include <Math/Common.h>
 
@@ -39,32 +40,20 @@ namespace Refraction::Math {
 			return Vector4(-x, -y, -z, -w);
 		}
 
-		Vector4 operator*(float n) const {
-			return Vector4(x * n, y * n, z * n, w * n);
-		}
-		Vector4 operator*(Vector4 v2) const {
-			return Vector4(x * v2.x, y * v2.y, z * v2.z, w * v2.w);
-		}
 
-		Vector4 operator+(Vector4 v2) const {
-			return Vector4(x + v2.x, y + v2.y, z + v2.z, w + v2.w);
-		}
-		Vector4 operator-(Vector4 v2) const {
-			return Vector4(x - v2.x, y - v2.y, z - v2.z, w - v2.w);
-		}
+		Vector4 operator+(Vector4 v2) const { return Vector4(x + v2.x, y + v2.y, z + v2.z, w + v2.w); }
+		Vector4 operator-(Vector4 v2) const { return Vector4(x - v2.x, y - v2.y, z - v2.z, w - v2.w); }
+		Vector4 operator*(Vector4 v2) const { return Vector4(x * v2.x, y * v2.y, z * v2.z, w * v2.w); }
+		Vector4 operator*(float n) const { return Vector4(x * n, y * n, z * n, w * n); }
 
-		void operator+=(Vector4 v2) {
-			x += v2.x;
-			y += v2.y;
-			z += v2.z;
-			w += v2.w;
-		}
-		void operator-=(Vector4 v2) {
-			x -= v2.x;
-			y -= v2.y;
-			z -= v2.z;
-			w -= v2.w;
-		}
+		void operator+=(Vector4 v2) { x += v2.x; y += v2.y; z += v2.z; w += v2.w; }
+		void operator-=(Vector4 v2) { x -= v2.x; y -= v2.y; z -= v2.z; w -= v2.w; }
+		void operator*=(Vector4 v2) { x *= v2.x; y *= v2.y; z *= v2.z; w *= v2.w; }
+		void operator*=(float n) { x *= n; y *= n; z *= n; w *= n; }
+
+		bool operator==(const Vector4& v2) const = default;
+		bool operator<(const Vector4& v2) const { return (x < v2.x) && (y < v2.y) && (z < v2.z) && (w < v2.w); }
+		bool operator>(const Vector4& v2) const { return (x > v2.x) && (y > v2.y) && (z > v2.z) && (w > v2.w); }
 
 		// Compatibility with smaller vectors
 		///
@@ -75,37 +64,23 @@ namespace Refraction::Math {
 		void operator+=(Vector3 v2);
 		void operator-=(Vector3 v2);
 
-		bool operator==(const Vector4& v2) {
-			return (x == v2.x) && (y == v2.y) && (z == v2.z) && (w == v2.w);
-		}
-		bool operator<(const Vector4& v2) {
-			return (x < v2.x) && (y < v2.y) && (z < v2.z) && (w < v2.w);
-		}
-		bool operator>(const Vector4& v2) {
-			return (x > v2.x) && (y > v2.y) && (z > v2.z) && (w > v2.w);
-		}
-
-		float Dot(const Vector4& v2) const;
-		static float Distance(const Vector4 v1, const Vector4 v2);
-
-		void Normalise();
-
-		inline float Magnitude() const {
-			auto tempX = x;
-			auto tempY = y;
-			auto tempZ = z;
-			auto tempW = w;
-			if (tempX < 0) tempX *= -1;
-			if (tempY < 0) tempY *= -1;
-			if (tempZ < 0) tempZ *= -1;
-			if (tempW < 0) tempW *= -1;
-			return tempX + tempY + tempZ + tempW;
-		}
+		inline void Normalise() { (*this) *= 1.0f / sqrtf(Dot((*this))); }
+		inline float Magnitude() const { return fabsf(x) + fabsf(y) + fabsf(z) + fabsf(w); }
+		inline float Dot(const Vector4& v2) const { return x * v2.x + y * v2.y + z * v2.z + w * v2.w; };
+		inline float Distance(const Vector4& v2) const { return sqrtf(powf(x - v2.x, 2) + powf(y - v2.y, 2) + powf(z - v2.z, 2) + powf(w - v2.w, 2)); };
 
 		inline Vector4 Normalised() const {
 			Vector4 copy = Vector4(x, y, z, w);
 			copy.Normalise();
 			return copy;
+		}
+
+		inline std::string ToString(bool pretty = true) const {
+			if (pretty) {
+				return std::string("x: " + std::to_string(x) + "\ny: " + std::to_string(y) + "\nz: " + std::to_string(z) + "\nw: " + std::to_string(w));
+			} else {
+				return std::string("{" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ", " + std::to_string(w) + "}");
+			}
 		}
 	};
 }

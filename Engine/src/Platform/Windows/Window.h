@@ -20,7 +20,7 @@ enum WindowInputState {
 	NONE
 };
 
-namespace Refraction::Platform::Windows {
+namespace Refraction::Platform {
 	class Window : public AWindow {
 	public:
 		typedef Refraction::Platform::OpenGL::ImGuiImpl ImGuiImpl;

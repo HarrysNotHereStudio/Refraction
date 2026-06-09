@@ -9,7 +9,7 @@ using RMath::Vector3;
 
 
 BaseScene::BaseScene() {
-	Log::Info("Creating test model...");
+	Refraction::Log::Info("Creating test model...");
 	mNyen = new BaseModel(Refraction::Constants::GetResourcePath() + "/models/nyen/nyen plush.obj");
 	mModels.push_back(mNyen);
 
@@ -18,10 +18,10 @@ BaseScene::BaseScene() {
 	testModel2->AddInstance(Vector3(0.0f, 5.0f, 0.0f));
 	testModel2->AddInstance(Vector3(5.0f, 10.0f, 0.0f));
 	testModel2->AddInstance(Vector3(-3.0f, -5.0f, 0.0f));
-	testModel2->mInstanceTransforms[1].Rotate(Vector3(0.0f,glm::radians(30.0f),2.0f));
+	testModel2->mInstanceTransforms[1].Rotate(Vector3(0.0f, RMath::ToRadians(30.0f), 2.0f));
 	mModels.push_back(testModel2);
 
-	Log::Info("Instantiating lights...");
+	Refraction::Log::Info("Instantiating lights...");
 	for (int i = 0; i < 27; i++) {
 		auto light = new PointLight();
 		light->mTransform->Translate(Vector3(RUtil::RandomI(20,-20), RUtil::RandomI(20, -20), RUtil::RandomI(20, -20)));

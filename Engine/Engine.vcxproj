@@ -169,6 +169,7 @@
     <ClInclude Include="src\EngineClasses\Components\Component.h" />
     <ClInclude Include="src\Platform\AWindow.h" />
     <ClInclude Include="src\Platform\OpenGL\ImGuiImpl.h" />
+    <ClInclude Include="src\Platform\PlatformAPI.h" />
     <ClInclude Include="src\Rendering\Models\Billboard.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Core\Log.h" />
@@ -232,8 +233,6 @@
     <ClCompile Include="src\Rendering\ShaderManager.cpp" />
     <ClCompile Include="src\Core\Utilities.cpp" />
     <ClCompile Include="src\EngineClasses\Assets\Texture.cpp" />
-    <ClCompile Include="src\Math\Vector2.cpp" />
-    <ClCompile Include="src\Math\Vector3.cpp" />
     <ClCompile Include="src\Math\Vector4.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

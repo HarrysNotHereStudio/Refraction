@@ -40,7 +40,9 @@ namespace Refraction::Utilities {
 	extern inline glm::vec3 NativeToGLMVec3(Refraction::Math::Vector3 v) { return glm::vec3(v.x, v.y, v.z); };
 	extern inline Refraction::Math::Vector3 GLMToNativeVec3(glm::vec3 v) { return Refraction::Math::Vector3(v.x, v.y, v.z); };
 	extern glm::mat3 NativeToGLMMat3(Refraction::Math::Matrix3 m);
+	extern Refraction::Math::Matrix3 GLMToNativeMat3(glm::mat3 m);
 	extern glm::mat4 NativeToGLMMat4(Refraction::Math::Matrix4 m);
+	extern Refraction::Math::Matrix4 GLMToNativeMat4(glm::mat4 m);
 };
 
 namespace Refraction::Common {

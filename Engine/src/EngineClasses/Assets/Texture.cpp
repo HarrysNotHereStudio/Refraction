@@ -50,9 +50,9 @@ EngineAssets::Texture::Texture(std::string texturePath, std::string textureType)
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
-		RuntimeLog::Info("Created texture from path " + mSourcePath);
+		Refraction::RuntimeLog::Info("Created texture from path " + mSourcePath);
 	} else {
-		RuntimeLog::Error("Failed to create texture from path " + mSourcePath);
+		Refraction::RuntimeLog::Error("Failed to create texture from path " + mSourcePath);
 	}
 	stbi_image_free(data);
 }

@@ -11,15 +11,16 @@
 #include "Window.h"
 
 
-namespace Platform = Refraction::Platform::Windows;
+namespace RPlatform = Refraction::Platform;
+namespace RCommon = Refraction::Common;
 
-Platform::Window::Window() {}
+RPlatform::Window::Window() {}
 
 void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-int Platform::Window::Init() {
+int RPlatform::Window::Init() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -39,6 +40,8 @@ int Platform::Window::Init() {
 
 	glViewport(0, 0, Settings::CurrentSettings->Window.Width, Settings::CurrentSettings->Window.Height);
 	glfwSetFramebufferSizeCallback(mWindow, framebufferResizeCallback);
+
+	mImGuiImpl = RCommon::NewURef<ImGuiImpl>(ImGuiImpl());
 	return 0;
 }
 
@@ -46,27 +49,30 @@ void OnMouseScroll(GLFWwindow* window, double _, double yoffset) {
 	auto& cameraSpeed = Settings::CurrentSettings->Controls.CameraSpeed;
 	cameraSpeed = std::clamp(yoffset > 0 ? cameraSpeed * 1.1f : cameraSpeed * 0.9f, 0.1f, 2.0f);
 }
-void Refraction::Platform::Windows::Window::InitInput() {
+void RPlatform::Window::InitInput() {
 	glfwSetScrollCallback(mWindow, OnMouseScroll);
 	mInput.inputEnabled = true;
 }
 
-void Platform::Window::OnUpdate() {
+void RPlatform::Window::OnUpdate() {
 	mImGuiImpl->GetGuiInputState(&mInputState);
 
 	if (mInputState != mInputStateLast) {
 		switch (mInputState) {
 			case VIEWPORT:
 				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				mImGuiImpl->mDebugValues.inputStateStr = "Viewport";
 				//Log::Info("Cursor locked for viewport");
 				break;
 			case GUI:
 				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				mImGuiImpl->mDebugValues.inputStateStr = "GUI";
 				//Log::Info("Cursor free for GUI");
 				break;
 			case NONE:
 			default:
 				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				mImGuiImpl->mDebugValues.inputStateStr = "None";
 				//Log::Info("Cursor free from application");
 				break;
 		}
@@ -107,7 +113,7 @@ void Platform::Window::OnUpdate() {
 		}
 
 		// Map WASDQE to Vector3 directional input
-		auto dirInput = Refraction::Utilities::BoolToVector3(mInput.keyW, mInput.keyS, mInput.keyD, mInput.keyA, mInput.keyE, mInput.keyQ);
+		auto dirInput = Refraction::Utilities::BoolToVector3(mInput.keyD, mInput.keyA, mInput.keyE, mInput.keyQ, mInput.keyW, mInput.keyS);
 
 		// Camera rotation
 		if (mInput.inputFocus) {
@@ -121,6 +127,6 @@ void Platform::Window::OnUpdate() {
 	}
 }
 
-void Platform::Window::Cleanup() {
+void RPlatform::Window::Cleanup() {
 	glfwTerminate();
 }

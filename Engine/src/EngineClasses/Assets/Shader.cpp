@@ -15,14 +15,14 @@ EngineAssets::Shader::Shader(std::string sourcePath) {
 	using std::vector, std::filesystem::directory_entry;
 	mSourcePath = sourcePath;
 	mName = sourcePath.substr(sourcePath.find_last_of("/") + 1);
-	RuntimeLog::Info("Creating shader " + mName);
+	Refraction::RuntimeLog::Info("Creating shader " + mName);
 
 	// Get all shader files (.vert and .frag) in the folder
 	directory_entry vertShader = RUtil::GetFirstFileOfExtInFolder(mSourcePath, ".vert");
 	directory_entry fragShader = RUtil::GetFirstFileOfExtInFolder(mSourcePath, ".frag");
 
 	if (!(vertShader.exists() && fragShader.exists())) {
-		RuntimeLog::Warn("Skipping shader creation, missing source files");
+		Refraction::RuntimeLog::Warn("Skipping shader creation, missing source files");
 		return;
 	}
 
@@ -40,20 +40,20 @@ EngineAssets::Shader::Shader(std::string sourcePath) {
 	glShaderSource(vert, 1, &pVertSource, NULL);
 	glCompileShader(vert);
 	CheckLogErrors(vert, "VERTEX");
-	RuntimeLog::Info("Compiled vertex shader");
+	Refraction::RuntimeLog::Info("Compiled vertex shader");
 
 	frag = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(frag, 1, &pFragSource, NULL);
 	glCompileShader(frag);
 	CheckLogErrors(frag, "FRAGMENT");
-	RuntimeLog::Info("Compiled fragment shader");
+	Refraction::RuntimeLog::Info("Compiled fragment shader");
 
 	mID = glCreateProgram();
 	glAttachShader(mID, vert);
 	glAttachShader(mID, frag);
 	glLinkProgram(mID);
 	CheckLogErrors(mID, "PROGRAM");
-	RuntimeLog::Info("Linked shader program");
+	Refraction::RuntimeLog::Info("Linked shader program");
 
 	glDeleteShader(vert);
 	glDeleteShader(frag);
@@ -134,13 +134,13 @@ void EngineAssets::Shader::CheckLogErrors(GLuint shader, const std::string type)
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 		if (!success) {
 			glGetShaderInfoLog(shader, 1024, NULL, log);
-			RuntimeLog::Error("SHADER COMPILATION FAILED | " + type + "\n" + log + "\n--- COMPILE ERROR LOG END ---");
+			Refraction::RuntimeLog::Error("SHADER COMPILATION FAILED | " + type + "\n" + log + "\n--- COMPILE ERROR LOG END ---");
 		}
 	} else {
 		glGetProgramiv(shader, GL_LINK_STATUS, &success);
 		if (!success) {
 			glGetProgramInfoLog(shader, 1024, NULL, log);
-			RuntimeLog::Error("PROGRAM LINK FAILED | " + type + "\n" + log + "\n--- LINK ERROR LOG END ---");
+			Refraction::RuntimeLog::Error("PROGRAM LINK FAILED | " + type + "\n" + log + "\n--- LINK ERROR LOG END ---");
 		}
 	}
 }

@@ -5,8 +5,8 @@
 #include <Math/Matrices.h>
 
 struct sUBO {
-	Refraction::Math::Matrix4 viewMatrix;
-	Refraction::Math::Matrix4 perspectiveMatrix;
+	glm::mat4 viewMatrix;
+	glm::mat4 perspectiveMatrix;
 	glm::uint padding;
 };
 
@@ -16,5 +16,5 @@ public:
 
 	void UploadNewData(sUBO newData);
 private:
-	sUBO m_currentData;
+	sUBO mCurrentData;
 };

@@ -12,16 +12,16 @@
 
 #include "ImGuiImpl.h"
 
-namespace Platform = Refraction::Platform::OpenGL;
+namespace RPlatform = Refraction::Platform::OpenGL;
 
 std::deque<float> deltaHistory = {};
 const int deltaHistoryMax = 90;
 
-Platform::ImGuiImpl::ImGuiImpl() {
+RPlatform::ImGuiImpl::ImGuiImpl() {
 	deltaHistory.resize(deltaHistoryMax);
 }
 
-void Platform::ImGuiImpl::Draw() {
+void RPlatform::ImGuiImpl::Draw() {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
@@ -56,7 +56,7 @@ void Platform::ImGuiImpl::Draw() {
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void Platform::ImGuiImpl::GetGuiInputState(Refraction::Enums::WindowInputState* inputState) {
+void RPlatform::ImGuiImpl::GetGuiInputState(Refraction::Enums::WindowInputState* inputState) {
 	// The actual focus signal is handled outside, but here we decide whether to give it to the viewport or the GUI
 	using Refraction::Enums::WindowInputState;
 	if (ImGui::GetIO().WantCaptureMouse && *inputState != WindowInputState::VIEWPORT) {
@@ -66,6 +66,6 @@ void Platform::ImGuiImpl::GetGuiInputState(Refraction::Enums::WindowInputState* 
 	}
 }
 
-void Platform::ImGuiImpl::HideMouse() {
+void RPlatform::ImGuiImpl::HideMouse() {
 	ImGui::GetIO().MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
 }

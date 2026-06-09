@@ -1,4 +1,5 @@
 #include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include "../ShaderManager.h"
@@ -25,17 +26,17 @@ void BaseModel::DrawModel() {
 }
 
 void BaseModel::LoadModel(std::string path) {
-	Log::Info("Loading model " + path);
+	Refraction::Log::Info("Loading model " + path);
 
 	Assimp::Importer import;
 	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-		Log::Info("MODEL LOAD FAILED | " + std::string(import.GetErrorString()));
+		Refraction::Log::Info("MODEL LOAD FAILED | " + std::string(import.GetErrorString()));
 		return;
 	}
 	mSourcePath = path.substr(0, path.find_last_of("/"));
-	Log::Info("Parsing scene data...");
+	Refraction::Log::Info("Parsing scene data...");
 	ProcessNode(scene->mRootNode, scene);
 }
 
@@ -53,8 +54,8 @@ void BaseModel::ProcessNode(aiNode* node, const aiScene* scene) {
 Mesh BaseModel::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
 	std::vector<sVertex> vertices;
 	std::vector<unsigned int> indices;
-	vector<EngineAssets::Texture*> diffuseMaps;
-	vector<EngineAssets::Texture*> specularMaps;
+	std::vector<EngineAssets::Texture*> diffuseMaps;
+	std::vector<EngineAssets::Texture*> specularMaps;
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
 		sVertex vertex;
@@ -89,16 +90,16 @@ Mesh BaseModel::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
 
 	EngineAssets::Material* newMat = new EngineAssets::Material();
 	if (diffuseMaps.size() > 0) newMat->mDiffuse = diffuseMaps[0];
-	else Log::Warn("Imported mesh does not contain any diffuse textures. There may be undefined behaviour.");
+	else Refraction::Log::Warn("Imported mesh does not contain any diffuse textures. There may be undefined behaviour.");
 	if (specularMaps.size() > 0) newMat->mSpecular = specularMaps[0];
-	else Log::Warn("Imported mesh does not contain any specular textures. There may be undefined behaviour.");
+	else Refraction::Log::Warn("Imported mesh does not contain any specular textures. There may be undefined behaviour.");
 	newMat->mShader = mShader;
 
 	return Mesh(vertices, indices, newMat);
 }
 
-vector<EngineAssets::Texture*> BaseModel::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {
-	vector<EngineAssets::Texture*> textures;
+std::vector<EngineAssets::Texture*> BaseModel::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {
+	std::vector<EngineAssets::Texture*> textures;
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString str;
 		mat->GetTexture(type, i, &str);

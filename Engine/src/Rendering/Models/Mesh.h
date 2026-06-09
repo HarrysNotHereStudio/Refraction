@@ -12,16 +12,14 @@ struct sVertex {
 	Refraction::Math::Vector2 texCoord;
 };
 
-using std::vector;
-
 class Mesh
 {
 public:
-	vector<sVertex> mVertices;
-	vector<unsigned int> mIndices;
+	std::vector<sVertex> mVertices;
+	std::vector<unsigned int> mIndices;
 	EngineAssets::Material* mMaterial;
 
-	Mesh(vector<sVertex> vertices, vector<unsigned int> indices, EngineAssets::Material* material);
+	Mesh(std::vector<sVertex> vertices, std::vector<unsigned int> indices, EngineAssets::Material* material);
 	void Draw();
 private:
 	unsigned int mVAO, mVBO, mEBO;

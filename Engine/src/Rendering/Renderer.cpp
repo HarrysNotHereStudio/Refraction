@@ -25,19 +25,19 @@ Renderer::Renderer() = default;
 Renderer* Renderer::GetInstance() {
 	if (mInstance == nullptr) {
 		mInstance = new Renderer();
-		RenderLog::Info("Instance created");
+		Refraction::RenderLog::Info("Instance created");
 	}
 	return mInstance;
 }
 
 void Renderer::DestroyInstance() {
-	RenderLog::Warn("Instance destruction requested");
+	Refraction::RenderLog::Warn("Instance destruction requested");
 	if (mInstance != nullptr) {
 		if (mInstance->GetState() != RendererState::CLEANUP) {
 			mInstance->Cleanup();
 		}
 
-		RenderLog::Info("Exiting...");
+		Refraction::RenderLog::Info("Exiting...");
 		mInstance->mState = RendererState::EXIT;
 	}
 }
@@ -75,26 +75,26 @@ std::chrono::steady_clock::time_point timeLast;
 
 int Renderer::Init() {
 	mState = RendererState::INIT;
-	RenderLog::Info("Initializing...");
-	RenderLog::Info("Resource path: " + Refraction::Constants::GetResourcePath());
+	Refraction::RenderLog::Info("Initializing...");
 
-	RenderLog::Info("Instantiating window...");
+	Refraction::RenderLog::Info("Instantiating window...");
 	glfwInit();
-	mWindow = new Refraction::Platform::Windows::Window();
+	mWindow = new Refraction::Platform::Window();
 	mWindow->Init();
 
 
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
-	RenderLog::Info("Instantiating camera...");
+	Refraction::RenderLog::Info("Instantiating camera...");
 	mCamera = new BaseCamera();
+	mWindow->SetCurrentCamera(mCamera);
 	//mCamera->SetCameraSpeed(mCurrentSettings.controls.cameraSpeed*6767676767676767);
 	//mCamera->SetCameraSensitivity(mCurrentSettings.controls.cameraSensitivity*414141414141);
 
 	EngineAssets::Texture::EngineTexturesPath = Refraction::Constants::GetResourcePath() + "textures/";
 
-	RenderLog::Info("Loading shaders...");
+	Refraction::RenderLog::Info("Loading shaders...");
 	ShaderManager::LoadAllShaders();
 
 	mGeomPassShader = ShaderManager::GetShaderByName("gbufferShader");
@@ -105,23 +105,23 @@ int Renderer::Init() {
 	mLightingPassShader->SetUniformInt("gNormal", 1);
 	mLightingPassShader->SetUniformInt("gAlbedoSpec", 2);
 
-	RenderLog::Info("Creating G-Buffer...");
+	Refraction::RenderLog::Info("Creating G-Buffer...");
 	mGBuffer = new GBuffer();
 	mGBuffer->Init(VIEW_WIDTH, VIEW_HEIGHT);
 
-	RenderLog::Info("Creating uniform buffer object...");
+	Refraction::RenderLog::Info("Creating uniform buffer object...");
 	float aspectRatio = VIEW_WIDTH / (float)(VIEW_HEIGHT);
 	projectionMatrix = RMath::Matrix4::Perspective(RMath::ToRadians(mCamera->mFOVy), aspectRatio, Settings::CurrentSettings->Graphics.ClipPlaneNear, Settings::CurrentSettings->Graphics.ClipPlaneFar);
 	sUBO initData = {
-		mCamera->GetViewMatrix(),
-		projectionMatrix
+		RUtil::NativeToGLMMat4(mCamera->GetViewMatrix()),
+		RUtil::NativeToGLMMat4(projectionMatrix)
 	};
 	mUBO = new UniformBufferObject(initData);
 
-	RenderLog::Info("Loading test scene...");
+	Refraction::RenderLog::Info("Loading test scene...");
 	mLoadedScene = new BaseScene();
 
-	RenderLog::Info("Initialising ImGui...");
+	Refraction::RenderLog::Info("Initialising ImGui...");
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -129,7 +129,7 @@ int Renderer::Init() {
 	ImGui::StyleColorsDark();
 	ImGui::GetStyle() = GetDefaultStyle();
 
-	RenderLog::Info("Initialisation complete");
+	Refraction::RenderLog::Info("Initialisation complete");
 
 	mStartRenderTime = std::chrono::steady_clock::now();
 	timeLast = mStartRenderTime;
@@ -212,15 +212,15 @@ void Renderer::MainLoop() {
 
 void Renderer::UpdateUniformBuffers() const {
 	sUBO newData{};
-	newData.viewMatrix = mCamera->GetViewMatrix();
-	newData.perspectiveMatrix = projectionMatrix;
+	newData.viewMatrix = RUtil::NativeToGLMMat4(mCamera->GetViewMatrix());
+	newData.perspectiveMatrix = RUtil::NativeToGLMMat4(projectionMatrix);
 	mUBO->UploadNewData(newData);
 }
 
 void Renderer::Cleanup() {
 	mState = RendererState::CLEANUP;
 
-	RenderLog::Info("Cleaning up...");
+	Refraction::RenderLog::Info("Cleaning up...");
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
@@ -233,7 +233,7 @@ void Renderer::Cleanup() {
 // Deferred Shading
 
 void Renderer::DSPassGeometry() const {
-	mGBuffer->BindAny();
+	mGBuffer->BindFull();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	mGeomPassShader->Activate();
 

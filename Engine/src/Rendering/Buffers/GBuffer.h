@@ -18,7 +18,7 @@ public:
 
 	void BindForWrite();
 	void BindForRead();
-	void BindAny();
+	void BindFull();
 	void BindTextures();
 private:
 	GLuint mGBuffer = 0;

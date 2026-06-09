@@ -18,7 +18,7 @@
 #include <Core/Utilities.h>
 #include "Settings.h"
 #include "ShaderManager.h"
-#include <Platform/Windows/Window.h>
+#include <Platform/PlatformAPI.h>
 
 #include <EngineClasses/Assets/Shader.h>
 #include "Models/BaseScene.h"
@@ -43,7 +43,7 @@ public:
 	static void DestroyInstance();
 
 	RendererState GetState() { return mState; }
-	Refraction::Platform::Windows::Window* GetWindow() { return mWindow; }
+	Refraction::Platform::Window* GetWindow() { return mWindow; }
 	BaseCamera* GetCamera() { return mCamera; }
 	
 	int Init();
@@ -62,7 +62,7 @@ private:
 
 	static Renderer* mInstance;
 	RendererState mState = RendererState::NONE;
-	Refraction::Platform::Windows::Window* mWindow = nullptr;
+	Refraction::Platform::Window* mWindow = nullptr;
 
 	UniformBufferObject* mUBO = nullptr;
 	EngineAssets::Shader* mGeomPassShader = nullptr;

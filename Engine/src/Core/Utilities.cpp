@@ -72,6 +72,7 @@ namespace Refraction::Utilities {
 	///
 
 	std::string ReadFile(const string& filename) {
+		if (!fs::exists(filename)) throw std::runtime_error("File " + filename + " does not exist.");
 		std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
 		if (!file.is_open()) {
@@ -90,6 +91,7 @@ namespace Refraction::Utilities {
 	};
 
 	vector<fs::directory_entry> GetFilesInFolder(path folderPath) {
+		if (!fs::exists(folderPath)) throw std::runtime_error("Path " + folderPath.string() + " does not exist.");
 		vector<fs::directory_entry> files;
 		for (const auto& file : directory_iterator(folderPath)) {
 			files.push_back(file);
@@ -98,6 +100,7 @@ namespace Refraction::Utilities {
 	};
 
 	vector<fs::directory_entry> GetFilesOfExtInFolder(path folderPath, string ext) {
+		if (!fs::exists(folderPath)) throw std::runtime_error("Path " + folderPath.string() + " does not exist.");
 		vector<fs::directory_entry> files;
 		for (const auto& file : directory_iterator(folderPath)) {
 			if (file.path().extension() == ext) {
@@ -107,6 +110,7 @@ namespace Refraction::Utilities {
 		return files;
 	}
 	fs::directory_entry GetFirstFileOfExtInFolder(path folderPath, string ext) {
+		if (!fs::exists(folderPath)) throw std::runtime_error("Path " + folderPath.string() + " does not exist.");
 		for (const auto& file : directory_iterator(folderPath)) {
 			if (file.path().extension() == ext) {
 				return file;
@@ -116,6 +120,7 @@ namespace Refraction::Utilities {
 	};
 
 	vector<fs::directory_entry> GetFoldersInFolder(path folderPath) {
+		if (!fs::exists(folderPath)) throw std::runtime_error("Path " + folderPath.string() + " does not exist.");
 		vector<fs::directory_entry> folders;
 		for (const auto& folder : fs::recursive_directory_iterator(folderPath)) {
 			if (!folder.is_directory()) continue;
@@ -145,15 +150,27 @@ namespace Refraction::Utilities {
 		return glm::mat3(m[0][0], m[0][1], m[0][2], m[1][0], m[1][1], m[1][2], m[2][0], m[2][1], m[2][2]);
 	}
 
+	Refraction::Math::Matrix3 GLMToNativeMat3(glm::mat3 m) {
+		Refraction::Math::Matrix3 newMat;
+		for (size_t row = 0; row < 3; row++) {
+			for (size_t col = 0; col < 3; col++) {
+				newMat[row][col] = m[(int)row][(int)col];
+			}
+		}
+		return newMat;
+	}
+
 	glm::mat4 NativeToGLMMat4(RMath::Matrix4 m) {
 		return glm::mat4(m[0][0], m[0][1], m[0][2], m[0][3], m[1][0], m[1][1], m[1][2], m[1][3], m[2][0], m[2][1], m[2][2], m[2][3], m[3][0], m[3][1], m[3][2], m[3][3]);
 	}
+
+	Refraction::Math::Matrix4 GLMToNativeMat4(glm::mat4 m) {
+		Refraction::Math::Matrix4 newMat;
+		for (size_t row = 0; row < 4; row++) {
+			for (size_t col = 0; col < 4; col++) {
+				newMat[row][col] = m[(int)row][(int)col];
+			}
+		}
+		return newMat;
+	}
 }
-
-
-
-
-
-
-
-

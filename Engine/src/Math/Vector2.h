@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <string>
 
 #include <Math/Common.h>
 
@@ -31,54 +32,37 @@ namespace Refraction::Math {
 			return Vector2(-x, -y);
 		}
 
-		Vector2 operator*(float n) {
-			return Vector2(x * n, y * n);
-		}
-		Vector2 operator*(Vector2 v) {
-			return Vector2(x * v.x, y * v.y);
-		}
+		Vector2 operator+(Vector2 v2) const { return Vector2(x + v2.x, y + v2.y); }
+		Vector2 operator-(Vector2 v2) const { return Vector2(x - v2.x, y - v2.y); }
+		Vector2 operator*(Vector2 v2) const { return Vector2(x * v2.x, y * v2.y); }
+		Vector2 operator*(float n) const { return Vector2(x * n, y * n); }
 
-		Vector2 operator+(Vector2 v2) {
-			return Vector2(x + v2.x, y + v2.y);
-		}
-		Vector2 operator-(Vector2 v2) {
-			return Vector2(x - v2.x, y - v2.y);
-		}
-
-		void operator+=(Vector2 v2) {
-			x += v2.x;
-			y += v2.y;
-		}
-		void operator-=(Vector2 v2) {
-			x -= v2.x;
-			y -= v2.y;
-		}
+		void operator+=(Vector2 v2) { x += v2.x; y += v2.y; }
+		void operator-=(Vector2 v2) { x -= v2.x; y -= v2.y; }
+		void operator*=(Vector2 v2) { x *= v2.x; y *= v2.y; }
+		void operator*=(float n) { x *= n; y *= n; }
 
 		bool operator==(const Vector2& v2) const = default;
-		bool operator<(const Vector2& v2) const {
-			return (x < v2.x) && (y < v2.y);
-		}
-		bool operator>(const Vector2& v2) const {
-			return (x > v2.x) && (y > v2.y);
-		}
+		bool operator<(const Vector2& v2) const { return (x < v2.x) && (y < v2.y); }
+		bool operator>(const Vector2& v2) const { return (x > v2.x) && (y > v2.y); }
 
-		static float Dot(Vector2 v1, Vector2 v2);
-		static float Distance(const Vector2 v1, const Vector2 v2);
-
-		void Normalise();
-
-		inline float Magnitude() const {
-			auto tempX = x;
-			auto tempY = y;
-			if (tempX < 0) tempX *= -1;
-			if (tempY < 0) tempY *= -1;
-			return tempX + tempY;
-		}
+		inline void Normalise() { (*this) *= 1.0f / sqrtf(Dot((*this))); }
+		inline float Magnitude() const { return fabsf(x) + fabsf(y); }
+		inline float Dot(const Vector2& v2) const { return x * v2.x + y * v2.y; };
+		inline float Distance(const Vector2& v2) const { return sqrtf(powf(x - v2.x, 2) + powf(y - v2.y, 2)); };
 
 		inline Vector2 Normalised() const {
 			Vector2 copy = Vector2(x, y);
 			copy.Normalise();
 			return copy;
+		}
+
+		inline std::string ToString(bool pretty = true) const {
+			if (pretty) {
+				return std::string("x: " + std::to_string(x) + "\ny: " + std::to_string(y));
+			} else {
+				return std::string("{" + std::to_string(x) + ", " + std::to_string(y) + "}");
+			}
 		}
 	};
 }

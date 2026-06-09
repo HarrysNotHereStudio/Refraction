@@ -47,7 +47,7 @@ bool GBuffer::Init(unsigned int viewWidth, unsigned int viewHeight) {
 	// Check status
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		RenderLog::Error("FRAMEBUFFER CONSTRUCT ERROR | " + status);
+		Refraction::RenderLog::Error("FRAMEBUFFER CONSTRUCT ERROR | " + status);
 		return false;
 	}
 
@@ -63,7 +63,7 @@ void GBuffer::BindForRead() {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, mGBuffer);
 }
 
-void GBuffer::BindAny() {
+void GBuffer::BindFull() {
 	glBindFramebuffer(GL_FRAMEBUFFER, mGBuffer);
 }
 

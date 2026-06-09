@@ -1,15 +1,17 @@
 #pragma once
 
+#include <string>
+
 #include <Core/Constants.h>
 
 namespace Refraction::Platform {
 	class AImGuiImpl {
 	public:
 		struct {
-			float fps;
-			float deltaTime;
-			float elapsedTime;
-			char* inputStateStr;
+			float fps = 0;
+			float deltaTime = 0;
+			float elapsedTime = 0;
+			std::string inputStateStr = "None";
 		} mDebugValues;
 
 		virtual void Draw() = 0;

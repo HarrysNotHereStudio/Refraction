@@ -1,7 +1,15 @@
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+
 #include "Transform.h"
 
 namespace RMath = Refraction::Math;
-namespace RUtilities = Refraction::Utilities;
+namespace RUtil = Refraction::Utilities;
 
 using RMath::Matrix4;
 using RMath::Vector3;
@@ -36,11 +44,15 @@ void RMath::Transform::Scale(Vector3 delta) {
 }
 
 Matrix4 RMath::Transform::GetTransform() const {
-	Matrix4 transform = Matrix4();
-	transform = transform.Translate(mPosition);
-	transform = transform.Rotate(RMath::ToRadians(mOrientation.x), Vector3::Right());
-	transform = transform.Rotate(RMath::ToRadians(mOrientation.y), Vector3::Up());
-	transform = transform.Rotate(RMath::ToRadians(mOrientation.z), Vector3::Front());
-	transform = transform.Scale(mScale);
-	return transform;
+	glm::mat4 transform = glm::mat4(1.0f);
+	transform = glm::translate(transform,RUtil::NativeToGLMVec3(mPosition));
+	transform = glm::rotate(transform, glm::radians(mOrientation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	transform = glm::rotate(transform, glm::radians(mOrientation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	transform = glm::rotate(transform, glm::radians(mOrientation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	transform = glm::scale(transform, RUtil::NativeToGLMVec3(mScale));
+	//Matrix4 transform = Matrix4();
+	//transform = transform.Translate(mPosition);
+	//transform = transform.Rotate(mOrientation);
+	//transform = transform.Scale(mScale);
+	return RUtil::GLMToNativeMat4(transform);
 }

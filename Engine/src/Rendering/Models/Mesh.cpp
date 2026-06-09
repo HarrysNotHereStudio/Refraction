@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-Mesh::Mesh(vector<sVertex> vertices, vector<unsigned int> indices, EngineAssets::Material* material) {
+Mesh::Mesh(std::vector<sVertex> vertices, std::vector<unsigned int> indices, EngineAssets::Material* material) {
 	mVertices = vertices;
 	mIndices = indices;
 	mMaterial = material;

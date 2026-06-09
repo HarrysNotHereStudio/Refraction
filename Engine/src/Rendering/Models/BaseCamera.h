@@ -5,8 +5,8 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
+#include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
 
 #include <Core/Log.h>
@@ -25,7 +25,7 @@ public:
 	BaseCamera();
 
 	void Move(Refraction::Math::Vector3 dirInput, Refraction::Math::Vector3 angInput);
-	Refraction::Math::Matrix4 GetViewMatrix() const { return Refraction::Math::Matrix4(mTransform.mPosition, mTransform.mPosition + mTransform.GetForwardVector(), mTransform.GetUpVector()); };
+	Refraction::Math::Matrix4 GetViewMatrix() const { return Refraction::Math::Matrix4::LookAt(mTransform.mPosition, mCameraTarget, mTransform.GetUpVector()); };
 
 private:
 	Refraction::Math::Vector3 mCameraTarget;

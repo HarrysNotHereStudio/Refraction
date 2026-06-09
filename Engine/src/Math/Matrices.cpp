@@ -1,49 +1,30 @@
+#include <Math/Quaternion.h>
+
 #include "Matrices.h"
 
 namespace RMath = Refraction::Math;
 
 
-inline RMath::Matrix3 RMath::Matrix3::operator*(Matrix3 other) const {
-	Matrix3 result(*this);
-	result *= other;
-	return result;
-}
-
-inline void RMath::Matrix3::operator*=(Matrix3 other) {
-	if (other.mSize != mSize) throw std::runtime_error("Matrix sizes do not match");
-	Matrix3 result;
-	result.ResizeMatrix(mSize);
-
-	for (unsigned int i = 0; i < mSize; i++) {
-		for (unsigned int j = 0; j < mSize; j++) {
-			result[i][j] = 0;
-
-			for (unsigned int k = 0; k < mSize; k++) {
-				result[i][j] += m[i][k] * other[k][j];
-			}
-		}
-	}
-	m = result.m;
-}
-
-
-RMath::Matrix4::Matrix4(const Vector3& from, const Vector3& at, const Vector3& up) {
+RMath::Matrix4 RMath::Matrix4::LookAt(const Vector3& from, const Vector3& at, const Vector3& up) {
 	const Vector3 forward = (at - from).Normalised();
 	const Vector3 right = forward.Cross(up).Normalised();
 	const Vector3 matrixUp = right.Cross(forward);
 
-	m[0][0] = right.x;
-	m[1][0] = right.y;
-	m[2][0] = right.z;
-	m[0][1] = matrixUp.x;
-	m[1][1] = matrixUp.y;
-	m[2][1] = matrixUp.z;
-	m[0][2] = -forward.x;
-	m[1][2] = -forward.y;
-	m[2][2] = -forward.z;
-	m[3][0] = -right.Dot(from);
-	m[3][1] = -matrixUp.Dot(from);
-	m[3][2] = forward.Dot(from);
+	Matrix4 newMat;
+	newMat[0][0] = right.x;
+	newMat[1][0] = right.y;
+	newMat[2][0] = right.z;
+	newMat[0][1] = matrixUp.x;
+	newMat[1][1] = matrixUp.y;
+	newMat[2][1] = matrixUp.z;
+	newMat[0][2] = -forward.x;
+	newMat[1][2] = -forward.y;
+	newMat[2][2] = -forward.z;
+	newMat[3][0] = -right.Dot(from);
+	newMat[3][1] = -matrixUp.Dot(from);
+	newMat[3][2] = forward.Dot(from);
+
+	return newMat;
 }
 
 RMath::Matrix4 RMath::Matrix4::Perspective(float fovY, float aspectRatio, float zNear, float zFar) {
@@ -58,65 +39,158 @@ RMath::Matrix4 RMath::Matrix4::Perspective(float fovY, float aspectRatio, float 
 	return newMat;
 }
 
-inline RMath::Matrix4 RMath::Matrix4::operator*(Matrix4 other) const {
-	Matrix4 result(*this);
-	result *= other;
-	return result;
+RMath::Matrix4 RMath::Matrix4::FromTranslation(const Vector3& translation) {
+	Matrix4 newMat(1);
+	newMat[0][3] = translation.x;
+	newMat[1][3] = translation.y;
+	newMat[2][3] = translation.z;
+	return newMat;
 }
 
-inline void RMath::Matrix4::operator*=(Matrix4 other) {
-	if (other.mSize != mSize) throw std::runtime_error("Matrix sizes do not match");
-	Matrix4 result;
-	result.ResizeMatrix(mSize);
-
-	for (unsigned int i = 0; i < mSize; i++) {
-		for (unsigned int j = 0; j < mSize; j++) {
-			result[i][j] = 0;
-
-			for (unsigned int k = 0; k < mSize; k++) {
-				result[i][j] += m[i][k] * other[k][j];
-			}
-		}
-	}
-	m = result.m;
+RMath::Matrix4 RMath::Matrix4::FromRotationX(const float& angle) {
+	Matrix4 newMat(1);
+	newMat[1][1] = cosf(angle);
+	newMat[1][2] = sinf(angle);
+	newMat[2][1] = -sinf(angle);
+	newMat[2][2] = cosf(angle);
+	return newMat;
+}
+RMath::Matrix4 RMath::Matrix4::FromRotationY(const float& angle) {
+	Matrix4 newMat(1);
+	newMat[0][0] = cosf(angle);
+	newMat[0][1] = sinf(angle);
+	newMat[1][0] = -sinf(angle);
+	newMat[1][1] = cosf(angle);
+	return newMat;
+}
+RMath::Matrix4 RMath::Matrix4::FromRotationZ(const float& angle) {
+	Matrix4 newMat(1);
+	newMat[1][1] = cosf(angle);
+	newMat[1][2] = sinf(angle);
+	newMat[2][1] = -sinf(angle);
+	newMat[2][2] = cosf(angle);
+	return newMat;
 }
 
-RMath::Matrix4 RMath::Matrix4::Rotate(const float& angle, Vector3 axis) {
+RMath::Matrix4 RMath::Matrix4::FromRotation(const Quaternion& rotation) {
+	Matrix4 newMat(1);
+	Vector3 rot = rotation.ToEulerAngles();
+	Matrix4 rx = FromRotationX(rot.x);
+	Matrix4 ry = FromRotationY(rot.y);
+	Matrix4 rz = FromRotationZ(rot.z);
+
+	return rz * ry * rx;
+}
+RMath::Matrix4 RMath::Matrix4::FromRotationZYX(const Quaternion& rotation) {
+	Matrix4 newMat(1);
+	Vector3 rot = rotation.ToEulerAngles();
+	Matrix4 rx = FromRotationX(rot.x);
+	Matrix4 ry = FromRotationY(rot.y);
+	Matrix4 rz = FromRotationZ(rot.z);
+
+	return rx * ry * rz;
+}
+
+RMath::Matrix4 RMath::Matrix4::FromScale(const Vector3& scale) {
+	Matrix4 newMat(1);
+	newMat[0][0] = scale.x;
+	newMat[1][1] = scale.y;
+	newMat[2][2] = scale.z;
+	newMat[3][3] = 1.0f;
+	return newMat;
+}
+
+RMath::Matrix4 RMath::Matrix4::Rotate(Quaternion quat) {
+	float angle;
+	Vector3 axis;
+	quat.ToAxisAngle(angle, axis);
 	const float cosA = cosf(angle);
 	const float sinA = sinf(angle);
 
-	axis.Normalise();
 	Vector3 temp(axis * (1.0f - cosA));
 
-	Matrix4 rotMatrix;
-	rotMatrix[0][0] = cosA + temp.x * axis.x;
-	rotMatrix[0][1] = temp.x * axis.y + sinA * axis.z;
-	rotMatrix[0][2] = temp.x * axis.z - sinA * axis.y;
+	Matrix4 rotMat;
+	rotMat[0][0] = cosA + temp.x * axis.x;
+	rotMat[0][1] = temp.x * axis.y + sinA * axis.z;
+	rotMat[0][2] = temp.x * axis.z - sinA * axis.y;
 
-	rotMatrix[1][0] = temp.y * axis.x - sinA * axis.z;
-	rotMatrix[1][1] = cosA + temp.y * axis.y;
-	rotMatrix[1][2] = temp.y * axis.z + sinA * axis.x;
+	rotMat[1][0] = temp.y * axis.x - sinA * axis.z;
+	rotMat[1][1] = cosA + temp.y * axis.y;
+	rotMat[1][2] = temp.y * axis.z + sinA * axis.x;
 
-	rotMatrix[2][0] = temp.z * axis.x + sinA * axis.y;
-	rotMatrix[2][1] = temp.z * axis.y - sinA * axis.x;
-	rotMatrix[2][2] = cosA + temp.z * axis.z;
+	rotMat[2][0] = temp.z * axis.x + sinA * axis.y;
+	rotMat[2][1] = temp.z * axis.y - sinA * axis.x;
+	rotMat[2][2] = cosA + temp.z * axis.z;
 
-	Matrix4 newMat;
-	Vector4 row0 = (*this)[0];
-	Vector4 row1 = (*this)[1];
-	Vector4 row2 = (*this)[2];
-	newMat[0] = row0 * rotMatrix[0][0] + row1 * rotMatrix[0][1] + row2 * rotMatrix[0][2];
-	newMat[1] = row0 * rotMatrix[1][0] + row1 * rotMatrix[1][1] + row2 * rotMatrix[1][2];
-	newMat[2] = row0 * rotMatrix[2][0] + row1 * rotMatrix[2][1] + row2 * rotMatrix[2][2];
-	newMat[3] = (*this)[3];
-	return newMat;
+	Matrix4 result;
+	result[0] = (*this)[0] * rotMat[0][0] + (*this)[1] * rotMat[0][1] + (*this)[2] * rotMat[0][2];
+	result[1] = (*this)[0] * rotMat[1][0] + (*this)[1] * rotMat[1][1] + (*this)[2] * rotMat[1][2];
+	result[2] = (*this)[0] * rotMat[2][0] + (*this)[1] * rotMat[2][1] + (*this)[2] * rotMat[2][2];
+	result[3] = (*this)[3];
+	return result;
 }
 
 RMath::Matrix4 RMath::Matrix4::Scale(Vector3 scale) {
-	Matrix4 newMat;
-	newMat[0] = (Vector4)(*this)[0] * scale.x;
-	newMat[1] = (Vector4)(*this)[1] * scale.y;
-	newMat[2] = (Vector4)(*this)[2] * scale.z;
-	newMat[3] = (*this)[3];
-	return newMat;
+	Matrix4 result(*this);
+	result[0] *= scale.x;
+	result[1] *= scale.y;
+	result[2] *= scale.z;
+	return result;
+}
+
+RMath::Matrix4 RMath::Matrix4::Inverse() {
+	float c0 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
+	float c2 = m[1][2] * m[3][3] - m[3][2] * m[1][3];
+	float c3 = m[1][2] * m[2][3] - m[2][2] * m[1][3];
+
+	float c4 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
+	float c6 = m[1][1] * m[3][3] - m[3][1] * m[1][3];
+	float c7 = m[1][1] * m[2][3] - m[2][1] * m[1][3];
+
+	float c8 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
+	float c10 = m[1][1] * m[3][2] - m[3][1] * m[1][2];
+	float c11 = m[1][1] * m[2][2] - m[2][1] * m[1][2];
+
+	float c12 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
+	float c14 = m[1][0] * m[3][3] - m[3][0] * m[1][3];
+	float c15 = m[1][0] * m[2][3] - m[2][0] * m[1][3];
+
+	float c16 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
+	float c18 = m[1][0] * m[3][2] - m[3][0] * m[1][2];
+	float c19 = m[1][0] * m[2][2] - m[2][0] * m[1][2];
+
+	float c20 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
+	float c22 = m[1][0] * m[3][1] - m[3][0] * m[1][1];
+	float c23 = m[1][0] * m[2][1] - m[2][0] * m[1][1];
+
+	Vector4 f0(c0, c0, c2, c3);
+	Vector4 f1(c4, c4, c6, c7);
+	Vector4 f2(c8, c8, c10, c11);
+	Vector4 f3(c12, c12, c14, c15);
+	Vector4 f4(c16, c16, c18, c19);
+	Vector4 f5(c20, c20, c22, c23);
+
+	Vector4 v0(m[1][0], m[0][0], m[0][0], m[0][0]);
+	Vector4 v1(m[1][1], m[0][1], m[0][1], m[0][1]);
+	Vector4 v2(m[1][2], m[0][2], m[0][2], m[0][2]);
+	Vector4 v3(m[1][3], m[0][3], m[0][3], m[0][3]);
+
+	Vector4 inv0(v1 * f0 - v2 * f1 + v3 * f2);
+	Vector4 inv1(v0 * f0 - v2 * f3 + v3 * f4);
+	Vector4 inv2(v0 * f1 - v1 * f3 + v3 * f5);
+	Vector4 inv3(v0 * f1 - v1 * f4 + v2 * f5);
+
+	Vector4 signA(+1, -1, +1, -1);
+	Vector4 signB(-1, +1, -1, +1);
+	Matrix4 invMat(inv0 * signA, inv1 * signB, inv2 * signA, inv3 * signB);
+
+	Vector4 r0(invMat[0][0], invMat[1][0], invMat[2][0], invMat[3][0]);
+
+	Vector4 d0((*this)[0]);
+	d0 *= r0;
+	float d1 = (d0.x + d0.y) + (d0.z + d0.w);
+
+	float OneOverDeterminant = 1.0f / d1;
+
+	return invMat * OneOverDeterminant;
 }

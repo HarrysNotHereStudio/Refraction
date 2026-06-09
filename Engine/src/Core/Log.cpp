@@ -28,7 +28,7 @@ namespace {
 		using std::vformat, std::make_format_args, std::clog;
 
 		// Get print information
-		std::string timestamp = Log::GenerateTimestamp();
+		std::string timestamp = Refraction::Log::GenerateTimestamp();
 		auto trace = cpptrace::generate_trace();
 		// Use the 3rd frame
 		auto frameSymbols = cpptrace::prune_symbol(trace.frames[2].symbol);
@@ -61,7 +61,7 @@ namespace {
 	}
 }
 
-std::string Log::GenerateTimestamp() {
+std::string Refraction::Log::GenerateTimestamp() {
 	using namespace std::chrono;
 
 	// get time variables
@@ -80,44 +80,18 @@ std::string Log::GenerateTimestamp() {
 	return oss.str();
 };
 
-void Log::Info(std::string message) {
+void Refraction::Log::Info(std::string message) {
 	LogPrint(ThreadName, message, "INFO", ANSI24RGB(255, 255, 255), ANSI24RGB(200, 255, 255));
 }
-void Log::Warn(std::string message) {
+void Refraction::Log::Warn(std::string message) {
 	LogPrint(ThreadName, message, "WARN", ANSI24RGB(255, 160, 70));
 }
-void Log::Error(std::string message) {
+void Refraction::Log::Error(std::string message) {
 	LogPrint(ThreadName, message, "ERR", ANSI24RGB(255, 60, 60));
 }
 
 
-std::string Log::ThreadName = "Main";
-std::string RenderLog::ThreadName = "Renderer";
-std::string RuntimeLog::ThreadName = "Runtime";
-std::string PhysicsLog::ThreadName = "Physics";
-
-// Renderer Log
-
-std::string RenderLog::ToString(const glm::vec3 vector) {
-	return ("x" + std::to_string(vector.x) + " y" + std::to_string(vector.y) + " z" + std::to_string(vector.z));
-}
-
-std::string RenderLog::ToString(const glm::quat quaternion) {
-	return ("x" + std::to_string(quaternion.x) + " y" + std::to_string(quaternion.y) + " z" + std::to_string(quaternion.z) + " w" + std::to_string(quaternion.w));
-}
-
-std::string RenderLog::ToString(glm::mat4 matrix, const bool pretty) {
-	std::string out;
-	if (pretty) {
-		out += ("x0: " + std::to_string(matrix[0].x) + " y0: " + std::to_string(matrix[0].y) + " z0: " + std::to_string(matrix[0].z) + "\n");
-		out += ("x1: " + std::to_string(matrix[1].x) + " y1: " + std::to_string(matrix[1].y) + " z1: " + std::to_string(matrix[1].z) + "\n");
-		out += ("x2: " + std::to_string(matrix[2].x) + " y2: " + std::to_string(matrix[2].y) + " z2: " + std::to_string(matrix[2].z) + "\n");
-		out += ("x3: " + std::to_string(matrix[3].x) + " y3: " + std::to_string(matrix[3].y) + " z3: " + std::to_string(matrix[3].z) + "\n");
-	} else {
-		out += ("x0: " + std::to_string(matrix[0].x) + " y0: " + std::to_string(matrix[0].y) + " z0: " + std::to_string(matrix[0].z));
-		out += (" x1: " + std::to_string(matrix[1].x) + " y1: " + std::to_string(matrix[1].y) + " z1: " + std::to_string(matrix[1].z));
-		out += (" x2: " + std::to_string(matrix[2].x) + " y2: " + std::to_string(matrix[2].y) + " z2: " + std::to_string(matrix[2].z));
-		out += (" x3: " + std::to_string(matrix[3].x) + " y3: " + std::to_string(matrix[3].y) + " z3: " + std::to_string(matrix[3].z));
-	}
-	return out;
-}
+std::string Refraction::Log::ThreadName = "Main";
+std::string Refraction::RenderLog::ThreadName = "Renderer";
+std::string Refraction::RuntimeLog::ThreadName = "Runtime";
+std::string Refraction::PhysicsLog::ThreadName = "Physics";

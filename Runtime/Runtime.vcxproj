@@ -178,6 +178,8 @@
     <ClInclude Include="src\Lua.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\EngineExports.cpp" />
+    <ClCompile Include="src\Lua.cpp" />
     <ClCompile Include="src\Runtime.cpp" />
   </ItemGroup>
   <ItemGroup>

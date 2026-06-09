@@ -13,23 +13,13 @@
 Settings* Settings::CurrentSettings = new Settings();
 
 namespace {
-
-	void EnableInputProcessing(Renderer* pRenderer) {
-		Refraction::Platform::Windows::Window* pWindow = pRenderer->GetWindow();
-		GLFWwindow* pGLFWWindow = (GLFWwindow*)pWindow->GetNativeWindow();
-		BaseCamera* pCamera = pRenderer->GetCamera();
-
-		pWindow->InitInput();
-	}
-
-
-	void RunRenderer(Renderer* pRenderer) {
+	void RunRenderer(Renderer* renderer) {
 		try {
-			Log::Info("Resource path: " + Refraction::Constants::GetResourcePath());
-			pRenderer->SetResourcePath(Refraction::Constants::GetResourcePath());
-			pRenderer->Init();
+			renderer->SetResourcePath(Refraction::Constants::GetResourcePath());
+			renderer->Init();
 		} catch (const std::exception& e) {
 			std::cerr << e.what() << '\n';
+			Refraction::Log::Error(e.what());
 			Renderer::DestroyInstance();
 			throw;
 		}
@@ -50,10 +40,9 @@ int RefractionEngine::Init() {
 	Settings::CurrentSettings->Controls.CameraSpeed = 0.5f;
 
 	std::thread renderThread;
-	std::thread inputThread;
 	try {
-		Log::Info("Resource path: " + Refraction::Constants::GetResourcePath());
-		Log::Info("Starting render thread...");
+		Refraction::Log::Info("Resource path: " + Refraction::Constants::GetResourcePath());
+		Refraction::Log::Info("Starting render thread...");
 		Renderer* renderer = Renderer::GetInstance();
 		renderThread = std::thread(RunRenderer, renderer);
 
@@ -63,8 +52,8 @@ int RefractionEngine::Init() {
 		}
 
 		// Allow inputs to be processed
-		Log::Info("Starting input thread...");
-		inputThread = std::thread(EnableInputProcessing, renderer);
+		Refraction::Log::Info("Starting input thread...");
+		renderer->GetWindow()->InitInput();
 
 		// Wait for renderer to clean up before exiting
 		while (renderer->GetState() != RendererState::EXIT) {
@@ -75,15 +64,10 @@ int RefractionEngine::Init() {
 	}
 
 	renderThread.join();
-	inputThread.join();
 
 
 	std::cout << "\n\n--------------------------------\n";
 	std::cout << "Refraction shut down successfully.\n\n";
-
-	Log::Info("hi im a regular print message");
-	Log::Warn("hi im a warning message");
-	Log::Error("hi im an error message");
 
 	return EXIT_SUCCESS;
 }
@@ -94,5 +78,5 @@ void RefractionEngine::InitWindow() {
 
 void RefractionEngine::SetResourcePath(std::string path) {
 	Refraction::Constants::ResourcePath = path;
-	Log::Info("Set Resource path to " + Refraction::Constants::GetResourcePath());
+	Refraction::Log::Info("Set Resource path to " + Refraction::Constants::GetResourcePath());
 }

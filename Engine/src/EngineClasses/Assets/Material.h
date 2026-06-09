@@ -7,10 +7,10 @@
 namespace EngineAssets {
 	class Material : public Asset {
 	public:
-		EngineAssets::Shader* mShader;
-		EngineAssets::Texture* mDiffuse;
-		EngineAssets::Texture* mSpecular;
-		EngineAssets::Texture* mNormal;
+		Shader* mShader = nullptr;
+		Texture* mDiffuse = nullptr;
+		Texture* mSpecular = nullptr;
+		Texture* mNormal = nullptr;
 
 		void Activate();
 	};

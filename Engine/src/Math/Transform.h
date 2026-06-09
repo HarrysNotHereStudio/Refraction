@@ -1,13 +1,5 @@
 #pragma once
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
-
 #include <Core/Utilities.h>
 #include <Math/Common.h>
 #include <Math/Vector3.h>
@@ -29,9 +21,9 @@ namespace Refraction::Math {
 		void Scale(Vector3 delta);
 
 		Matrix4 GetTransform() const;
-		Vector3 GetForwardVector() const { return (Vector3::Front() * mOrientation); };
-		Vector3 GetRightVector() const { return (Vector3::Right() * mOrientation); };
-		Vector3 GetUpVector() const { return Vector3::Up() * mOrientation; };
+		Vector3 GetForwardVector() const { return mOrientation * Vector3::Front(); };
+		Vector3 GetRightVector() const { return mOrientation * Vector3::Right(); };
+		Vector3 GetUpVector() const { return mOrientation * Vector3::Up(); };
 
 		// Utility
 		static bool AreQuaternionsSimilar(Quaternion quatA, Quaternion quatB) {
@@ -40,7 +32,7 @@ namespace Refraction::Math {
 		static Quaternion LookAt(const Vector3& eye, Vector3 target, Vector3 targetUp) {
 			Vector3 direction = target - eye;
 
-			auto rot1 = Quaternion::RotationBetweenEulerAngles(Vector3::Front(), direction);
+			auto rot1 = Quaternion::RotationBetweenEulerAngles(Vector3::Z(), direction);
 
 			Vector3 right = direction.Cross(targetUp);
 			targetUp = right.Cross(direction);

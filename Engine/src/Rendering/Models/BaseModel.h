@@ -1,18 +1,18 @@
 #pragma once
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <assimp/scene.h>
-
 #include <Core/Log.h>
 #include <Core/Utilities.h>
 #include <EngineClasses/Assets/Shader.h>
 #include <EngineClasses/Assets/Texture.h>
 #include <Math/Transform.h>
 #include "Mesh.h"
+
+//TODO: implement native file loading, assimp can't stop crying about linking
+struct aiNode;
+struct aiMesh;
+struct aiScene;
+struct aiMaterial;
+enum aiTextureType;
 
 class BaseModel
 {
@@ -36,5 +36,5 @@ private:
 	void LoadModel(std::string path);
 	void ProcessNode(aiNode *node, const aiScene *scene);
 	Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
-	vector<EngineAssets::Texture*> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
+	std::vector<EngineAssets::Texture*> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
 };

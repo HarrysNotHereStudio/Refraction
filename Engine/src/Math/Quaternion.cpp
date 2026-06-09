@@ -96,7 +96,7 @@ RMath::Quaternion RMath::Quaternion::RotationBetweenEulerAngles(Vector3 start, V
 RMath::Quaternion RMath::Quaternion::LookIn(const Vector3& direction, const Vector3& up) {
 	auto result = Matrix3();
 
-	result[2] = -direction;
+	result[2] = -direction.Normalised();
 	auto right = up.Cross(result[2]);
 	result[0] = right * (1 / sqrtf(std::max(0.00001f, right.Dot(right))));
 	result[1] = result[2].Cross(result[0]);
@@ -108,7 +108,7 @@ RMath::Quaternion RMath::Quaternion::LookIn(const Vector3& direction, const Vect
 RMath::Quaternion RMath::Quaternion::LookAt(const Vector3& from, const Vector3& at, const Vector3& up) {
 	auto direction = at - from;
 
-	auto rot1 = Quaternion::RotationBetweenEulerAngles(Vector3::Front(), direction);
+	auto rot1 = Quaternion::RotationBetweenEulerAngles(Vector3::Z(), direction);
 
 	auto right = direction.Cross(up);
 	auto targetUp = right.Cross(direction);
@@ -129,7 +129,7 @@ float RMath::Quaternion::Dot(const Quaternion& other) const {
 	return (x * other.x) + (y * other.y) + (z * other.z) + (w * other.w);
 }
 
-Vector3 RMath::Quaternion::ToDegrees() const {
+Vector3 RMath::Quaternion::ToEulerAngles() const {
 	Vector3 vec(0);
 
 	vec.x = RMath::ToDegrees(atan2f((x * z) + (y * w), (x * w) - (y * z)));
@@ -140,6 +140,7 @@ Vector3 RMath::Quaternion::ToDegrees() const {
 }
 
 void RMath::Quaternion::Normalize() {
+	if (IsZero()) return;
 	float len = sqrtf((x * x) + (y * y) + (z * z) + (w * w));
 	x /= len;
 	y /= len;
@@ -176,6 +177,14 @@ RMath::Quaternion RMath::Quaternion::NLerp(Quaternion other, float time) const {
 	return Quaternion(RMath::Lerp(x, other.x, time), RMath::Lerp(y, other.y, time), RMath::Lerp(z, other.z, time), RMath::Lerp(w, other.w, time));
 }
 
+inline std::string RMath::Quaternion::ToString(bool pretty) const {
+	if (pretty) {
+		return std::string("x: " + std::to_string(x) + "\ny: " + std::to_string(y) + "\nz: " + std::to_string(z) + "\nw: " + std::to_string(w));
+	} else {
+		return std::string("{" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ", " + std::to_string(w) + "}");
+	}
+}
+
 RMath::Quaternion Refraction::Math::operator*(const Quaternion& l, const Quaternion& r) {
 	auto quat = Quaternion();
 
@@ -187,21 +196,14 @@ RMath::Quaternion Refraction::Math::operator*(const Quaternion& l, const Quatern
 	return quat;
 }
 
-RMath::Quaternion Refraction::Math::operator*(const Quaternion& q, const Vector3& v) {
-	auto quat = Quaternion();
-
-	quat.w = -((q.x * v.x) - (q.y * v.y) - (q.z * v.z));
-	quat.x = ((q.w * v.x) + (q.y * v.z) - (q.z * v.y));
-	quat.y = ((q.w * v.y) + (q.z * v.x) - (q.x * v.z));
-	quat.z = ((q.w * v.z) + (q.x * v.y) - (q.y * v.x));
-
-	return quat;
-}
-
-Vector3 Refraction::Math::operator*(Vector3 v, const Quaternion& q) {
+RMath::Vector3 Refraction::Math::operator*(const Quaternion& q, const Vector3& v) {
 	Vector3 quatVec(q.x, q.y, q.z);
 	Vector3 uv(quatVec.Cross(v));
 	Vector3 uuv(quatVec.Cross(uv));
 
 	return v + ((uv * q.w) + uuv) * 2.0f;
+}
+
+Vector3 Refraction::Math::operator*(Vector3 v, const Quaternion& q) {
+	return q.Inverse() * v;
 }
