@@ -28,6 +28,7 @@ namespace Refraction::Utilities {
 	// Returns a string of the contents of a file
 	extern std::string ReadFile(const std::string& filename);
 
+	extern bool DoesFileExist(const std::string& path);
 	extern std::vector<fs::directory_entry> GetFilesInFolder(fs::path folderPath);
 	extern std::vector<fs::directory_entry> GetFilesOfExtInFolder(fs::path folderPath, std::string ext);
 	extern fs::directory_entry GetFirstFileOfExtInFolder(fs::path folderPath, std::string ext);
@@ -57,6 +58,10 @@ namespace Refraction::Common {
 	// Creates a new Ref (shared pointer)
 	constexpr Ref<T> NewRef(Args&&... args) {
 		return std::make_shared<T>(std::forward<Args>(args)...);
+	}
+	template<typename T, typename... Args>
+	constexpr Ref<T> WrapRef(Args&&... args) {
+		return std::shared_ptr<T>(std::forward<Args>(args)...);
 	}
 
 	// Unique pointer wrapper

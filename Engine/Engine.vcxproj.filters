@@ -33,19 +33,13 @@
     <ClInclude Include="src\Rendering\Models\BaseLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rendering\Models\BaseModel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Rendering\Models\BaseScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\Models\DirectionalLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rendering\Models\InstancedModel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\Models\Mesh.h">
+    <ClInclude Include="src\EngineClasses\Components\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\Models\PointLight.h">
@@ -63,9 +57,6 @@
     <ClInclude Include="src\Settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rendering\ShaderManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Core\Utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -78,13 +69,13 @@
     <ClInclude Include="src\Rendering\Models\Billboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EngineClasses\Components\Component.h">
+    <ClInclude Include="src\EngineClasses\Components\AComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\EngineClasses\Assets\Asset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EngineClasses\Objects\Object.h">
+    <ClInclude Include="src\EngineClasses\Objects\AObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\EngineClasses\Assets\Material.h">
@@ -153,6 +144,12 @@
     <ClInclude Include="src\Platform\PlatformAPI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\EngineClasses\Objects\BasicObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EngineClasses\Components\APhysics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine.cpp">
@@ -176,19 +173,13 @@
     <ClCompile Include="src\Rendering\Models\BaseLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rendering\Models\BaseModel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Rendering\Models\BaseScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Rendering\Models\DirectionalLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rendering\Models\InstancedModel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rendering\Models\Mesh.cpp">
+    <ClCompile Include="src\EngineClasses\Components\Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Rendering\Models\PointLight.cpp">
@@ -203,9 +194,6 @@
     <ClCompile Include="src\Rendering\Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rendering\ShaderManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Core\Utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -215,13 +203,13 @@
     <ClCompile Include="src\Rendering\Models\Billboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EngineClasses\Components\Component.cpp">
+    <ClCompile Include="src\EngineClasses\Components\AComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\EngineClasses\Assets\Asset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EngineClasses\Objects\Object.cpp">
+    <ClCompile Include="src\EngineClasses\Objects\AObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\EngineClasses\Assets\Material.cpp">
@@ -264,6 +252,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Math\Vector4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EngineClasses\Objects\BasicObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EngineClasses\Components\APhysics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

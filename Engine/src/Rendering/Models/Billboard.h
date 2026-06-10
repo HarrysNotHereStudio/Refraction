@@ -17,5 +17,5 @@ public:
 protected:
 	virtual void Draw();
 private:
-	EngineAssets::Texture* mTexture = nullptr;
+	Refraction::Assets::Texture* mTexture = nullptr;
 };

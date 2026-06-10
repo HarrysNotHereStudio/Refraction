@@ -66,7 +66,7 @@ namespace Refraction::Math {
 			if (pretty) {
 				return std::string("x: " + std::to_string(x) + "\ny: " + std::to_string(y) + "\nz: " + std::to_string(z));
 			} else {
-				return std::string("{" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z));
+				return std::string("{" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + "}");
 			}
 		}
 	};

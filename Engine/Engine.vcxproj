@@ -149,6 +149,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\EngineClasses\Components\APhysics.h" />
+    <ClInclude Include="src\EngineClasses\Objects\BasicObject.h" />
     <ClInclude Include="src\Math\Matrices.h" />
     <ClInclude Include="src\Math\Quaternion.h" />
     <ClInclude Include="src\Math\Common.h" />
@@ -164,9 +166,9 @@
     <ClInclude Include="lib\include\imgui\imstb_truetype.h" />
     <ClInclude Include="src\EngineClasses\Assets\Shader.h" />
     <ClInclude Include="src\EngineClasses\Assets\Material.h" />
-    <ClInclude Include="src\EngineClasses\Objects\Object.h" />
+    <ClInclude Include="src\EngineClasses\Objects\AObject.h" />
     <ClInclude Include="src\EngineClasses\Assets\Asset.h" />
-    <ClInclude Include="src\EngineClasses\Components\Component.h" />
+    <ClInclude Include="src\EngineClasses\Components\AComponent.h" />
     <ClInclude Include="src\Platform\AWindow.h" />
     <ClInclude Include="src\Platform\OpenGL\ImGuiImpl.h" />
     <ClInclude Include="src\Platform\PlatformAPI.h" />
@@ -180,16 +182,13 @@
     <ClInclude Include="src\Platform\Windows\Window.h" />
     <ClInclude Include="src\Rendering\Models\BaseCamera.h" />
     <ClInclude Include="src\Rendering\Models\BaseLight.h" />
-    <ClInclude Include="src\Rendering\Models\BaseModel.h" />
     <ClInclude Include="src\Rendering\Models\BaseScene.h" />
     <ClInclude Include="src\Rendering\Models\DirectionalLight.h" />
-    <ClInclude Include="src\Rendering\Models\InstancedModel.h" />
-    <ClInclude Include="src\Rendering\Models\Mesh.h" />
+    <ClInclude Include="src\EngineClasses\Components\Mesh.h" />
     <ClInclude Include="src\Rendering\Models\PointLight.h" />
     <ClInclude Include="src\Math\Transform.h" />
     <ClInclude Include="src\Rendering\Renderer.h" />
     <ClInclude Include="src\Settings.h" />
-    <ClInclude Include="src\Rendering\ShaderManager.h" />
     <ClInclude Include="src\Core\Utilities.h" />
     <ClInclude Include="src\EngineClasses\Assets\Texture.h" />
     <ClInclude Include="src\Math\Vector2.h" />
@@ -197,6 +196,8 @@
     <ClInclude Include="src\Math\Vector4.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\EngineClasses\Components\APhysics.cpp" />
+    <ClCompile Include="src\EngineClasses\Objects\BasicObject.cpp" />
     <ClCompile Include="src\Math\Matrices.cpp" />
     <ClCompile Include="src\Math\Quaternion.cpp" />
     <ClCompile Include="src\Platform\OpenGL\ImGuiImpl.cpp" />
@@ -209,9 +210,9 @@
     <ClCompile Include="lib\include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\EngineClasses\Assets\Shader.cpp" />
     <ClCompile Include="src\EngineClasses\Assets\Material.cpp" />
-    <ClCompile Include="src\EngineClasses\Objects\Object.cpp" />
+    <ClCompile Include="src\EngineClasses\Objects\AObject.cpp" />
     <ClCompile Include="src\EngineClasses\Assets\Asset.cpp" />
-    <ClCompile Include="src\EngineClasses\Components\Component.cpp" />
+    <ClCompile Include="src\EngineClasses\Components\AComponent.cpp" />
     <ClCompile Include="src\Rendering\Models\Billboard.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Core\Log.cpp" />
@@ -222,15 +223,12 @@
     <ClCompile Include="src\Platform\Windows\Window.cpp" />
     <ClCompile Include="src\Rendering\Models\BaseCamera.cpp" />
     <ClCompile Include="src\Rendering\Models\BaseLight.cpp" />
-    <ClCompile Include="src\Rendering\Models\BaseModel.cpp" />
     <ClCompile Include="src\Rendering\Models\BaseScene.cpp" />
     <ClCompile Include="src\Rendering\Models\DirectionalLight.cpp" />
-    <ClCompile Include="src\Rendering\Models\InstancedModel.cpp" />
-    <ClCompile Include="src\Rendering\Models\Mesh.cpp" />
+    <ClCompile Include="src\EngineClasses\Components\Mesh.cpp" />
     <ClCompile Include="src\Rendering\Models\PointLight.cpp" />
     <ClCompile Include="src\Math\Transform.cpp" />
     <ClCompile Include="src\Rendering\Renderer.cpp" />
-    <ClCompile Include="src\Rendering\ShaderManager.cpp" />
     <ClCompile Include="src\Core\Utilities.cpp" />
     <ClCompile Include="src\EngineClasses\Assets\Texture.cpp" />
     <ClCompile Include="src\Math\Vector4.cpp" />

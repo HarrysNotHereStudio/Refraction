@@ -17,13 +17,10 @@
 #include <Core/Log.h>
 #include <Core/Utilities.h>
 #include "Settings.h"
-#include "ShaderManager.h"
 #include <Platform/PlatformAPI.h>
 
 #include <EngineClasses/Assets/Shader.h>
 #include "Models/BaseScene.h"
-#include "Models/BaseModel.h"
-#include "Models/InstancedModel.h"
 #include "Models/BaseCamera.h"
 #include "Buffers/UniformBufferObject.h"
 #include "Buffers/GBuffer.h"
@@ -50,6 +47,8 @@ public:
 
 	void SetResourcePath(std::string path) { Refraction::Constants::ResourcePath = path; };
 private:
+	static Renderer* mInstance;
+
 	Renderer();
 	void MainLoop();
 	void UpdateUniformBuffers() const;
@@ -60,13 +59,12 @@ private:
 	void DSPassLighting() const;
 	void DSPassFinal() const;
 
-	static Renderer* mInstance;
 	RendererState mState = RendererState::NONE;
 	Refraction::Platform::Window* mWindow = nullptr;
 
 	UniformBufferObject* mUBO = nullptr;
-	EngineAssets::Shader* mGeomPassShader = nullptr;
-	EngineAssets::Shader* mLightingPassShader = nullptr;
+	Refraction::Assets::Shader* mGeomPassShader = nullptr;
+	Refraction::Assets::Shader* mLightingPassShader = nullptr;
 	GBuffer* mGBuffer = nullptr;
 
 	BaseCamera* mCamera = nullptr;
@@ -74,7 +72,7 @@ private:
 
 	bool mShouldRender = true;
 	bool mWireframeMode = false;
-	std::chrono::steady_clock::time_point mStartRenderTime;
 	double mElapsedRenderTime = 0;
 	double mDeltaRenderTime = 0;
+	std::chrono::steady_clock::time_point mStartRenderTime;
 };

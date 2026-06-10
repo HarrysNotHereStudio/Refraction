@@ -7,7 +7,7 @@
 #define REFRACT_TEXTURE_TYPE_DIFFUSE "texDiffuse"
 #define REFRACT_TEXTURE_TYPE_SPECULAR "texSpecular"
 
-namespace EngineAssets {
+namespace Refraction::Assets {
 	class Texture : public Asset {
 	public:
 		static std::string EngineTexturesPath;

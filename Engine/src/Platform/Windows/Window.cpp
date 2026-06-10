@@ -47,7 +47,7 @@ int RPlatform::Window::Init() {
 
 void OnMouseScroll(GLFWwindow* window, double _, double yoffset) {
 	auto& cameraSpeed = Settings::CurrentSettings->Controls.CameraSpeed;
-	cameraSpeed = std::clamp(yoffset > 0 ? cameraSpeed * 1.1f : cameraSpeed * 0.9f, 0.1f, 2.0f);
+	cameraSpeed = std::clamp(yoffset > 0 ? cameraSpeed * 1.1f : cameraSpeed * 0.9f, 0.01f, 5.0f);
 }
 void RPlatform::Window::InitInput() {
 	glfwSetScrollCallback(mWindow, OnMouseScroll);
@@ -78,7 +78,7 @@ void RPlatform::Window::OnUpdate() {
 		}
 		mInputStateLast = mInputState;
 	}
-	if (mInputState == VIEWPORT) {
+	if (mInputState == VIEWPORT && mInput.inputEnabled && mInput.mouseRight) {
 		mImGuiImpl->HideMouse();
 	}
 
@@ -96,9 +96,12 @@ void RPlatform::Window::OnUpdate() {
 		mInput.keyE = (glfwGetKey(mWindow, GLFW_KEY_E) == GLFW_PRESS);
 		mInput.keyEsc = (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS);
 		mInput.mouseLeft = (glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+		mInput.mouseRight = (glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS);
 
 		double currentMouseX, currentMouseY;
 		glfwGetCursorPos(mWindow, &currentMouseX, &currentMouseY);
+
+		mImGuiImpl->mDebugValues.lastMousePos = Vector3(mInput.lastMouseX, mInput.lastMouseY, 0);
 
 		// Process inputs
 		mInput.inputFocus = (mInputState == VIEWPORT);
@@ -108,22 +111,23 @@ void RPlatform::Window::OnUpdate() {
 		}
 		if (mInput.mouseLeft && (mInputState == NONE)) {
 			mInputState = WindowInputState::VIEWPORT;
-			mInput.lastMouseX = currentMouseX;
-			mInput.lastMouseY = currentMouseY;
 		}
 
 		// Map WASDQE to Vector3 directional input
 		auto dirInput = Refraction::Utilities::BoolToVector3(mInput.keyD, mInput.keyA, mInput.keyE, mInput.keyQ, mInput.keyW, mInput.keyS);
 
-		// Camera rotation
-		if (mInput.inputFocus) {
+		// Camera movement
+		if (mInput.inputFocus && mInput.mouseRight) {
+			glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			auto mouseDelta = Vector2((float)(currentMouseX - mInput.lastMouseX), (float)(mInput.lastMouseY - currentMouseY));
 			auto angInput = Vector3(mouseDelta.y, mouseDelta.x, 0.0f);
-			mInput.lastMouseX = currentMouseX;
-			mInput.lastMouseY = currentMouseY;
 
 			mCurrentCamera->Move(dirInput, angInput);
+		} else {
+			glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
+		mInput.lastMouseX = currentMouseX;
+		mInput.lastMouseY = currentMouseY;
 	}
 }
 

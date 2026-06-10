@@ -14,9 +14,12 @@
 
 #include "Asset.h"
 
-namespace EngineAssets {
+namespace Refraction::Assets {
 	class Shader : public Asset {
 	public:
+		static Shader* GetShaderByName(const std::string& name);
+		static void LoadAllShaders();
+
 		Shader(std::string sourcePath);
 
 		void Activate() const;

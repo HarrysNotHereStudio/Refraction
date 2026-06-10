@@ -4,6 +4,57 @@
 
 namespace RMath = Refraction::Math;
 
+RMath::Vector3 RMath::Matrix3::ToEulerAngles() const {
+	Vector3 newVec;
+	float T1 = atan2f(m[2][1], m[2][2]);
+	float C2 = sqrtf(m[0][0] * m[0][0] + m[1][0] * m[1][0]);
+	float T2 = atan2f(-m[2][0], C2);
+	float S1 = sinf(T1);
+	float C1 = cosf(T1);
+	float T3 = atan2f(S1 * m[0][2] - C1 * m[0][1], C1 * m[1][1] - S1 * m[1][2]);
+	newVec.x = -T1;
+	newVec.y = -T2;
+	newVec.z = -T3;
+	return newVec;
+}
+
+RMath::Quaternion Refraction::Math::Matrix3::ToQuaternion() const {
+	float x = m[0][0] - m[1][1] - m[2][2];
+	float y = m[1][1] - m[0][0] - m[2][2];
+	float z = m[2][2] - m[0][0] - m[1][1];
+	float w = m[0][0] + m[1][1] + m[2][2];
+
+	int biggestIndex = 0;
+	float biggest = x;
+	if (y > biggest) {
+		biggest = y;
+		biggestIndex = 1;
+	}
+	if (z > biggest) {
+		biggest = z;
+		biggestIndex = 2;
+	}
+	if (w > biggest) {
+		biggest = w;
+		biggestIndex = 3;
+	}
+
+	float biggestVal = sqrtf(biggest + 1.0f) * 0.5f;
+	float mult = 0.25f / biggestVal;
+
+	switch (biggestIndex) {
+	case 0:
+		return Quaternion(biggestVal, (m[0][1] + m[1][0]) * mult, (m[2][0] + m[0][2]) * mult, (m[1][2] - m[2][1]) * mult);
+	case 1:
+		return Quaternion((m[0][1] + m[1][0]) * mult, biggestVal, (m[1][2] + m[2][1]) * mult, (m[2][0] - m[0][2]) * mult);
+	case 2:
+		return Quaternion((m[2][0] + m[0][2]) * mult, (m[1][2] + m[2][1]) * mult, biggestVal, (m[0][1] - m[1][0]) * mult);
+	case 3:
+		return Quaternion((m[1][2] - m[2][1]) * mult, (m[2][0] - m[0][2]) * mult, (m[0][1] - m[1][0]) * mult, biggestVal);
+	default:
+		return Quaternion();
+	}
+}
 
 RMath::Matrix4 RMath::Matrix4::LookAt(const Vector3& from, const Vector3& at, const Vector3& up) {
 	const Vector3 forward = (at - from).Normalised();
@@ -136,6 +187,58 @@ RMath::Matrix4 RMath::Matrix4::Scale(Vector3 scale) {
 	result[1] *= scale.y;
 	result[2] *= scale.z;
 	return result;
+}
+
+RMath::Vector3 RMath::Matrix4::ToEulerAngles() const {
+	Vector3 newVec;
+	float T1 = atan2f(m[2][1], m[2][2]);
+	float C2 = sqrtf(m[0][0] * m[0][0] + m[1][0] * m[1][0]);
+	float T2 = atan2f(-m[2][0], C2);
+	float S1 = sinf(T1);
+	float C1 = cosf(T1);
+	float T3 = atan2f(S1 * m[0][2] - C1 * m[0][1], C1 * m[1][1] - S1 * m[1][2]);
+	newVec.x = -T1;
+	newVec.y = -T2;
+	newVec.z = -T3;
+	return newVec;
+}
+
+RMath::Quaternion Refraction::Math::Matrix4::ToQuaternion() const {
+	float x = m[0][0] - m[1][1] - m[2][2];
+	float y = m[1][1] - m[0][0] - m[2][2];
+	float z = m[2][2] - m[0][0] - m[1][1];
+	float w = m[0][0] + m[1][1] + m[2][2];
+
+	int biggestIndex = 0;
+	float biggest = x;
+	if (y > biggest) {
+		biggest = y;
+		biggestIndex = 1;
+	}
+	if (z > biggest) {
+		biggest = z;
+		biggestIndex = 2;
+	}
+	if (w > biggest) {
+		biggest = w;
+		biggestIndex = 3;
+	}
+
+	float biggestVal = sqrtf(biggest + 1.0f) * 0.5f;
+	float mult = 0.25f / biggestVal;
+
+	switch (biggestIndex) {
+	case 0:
+		return Quaternion(biggestVal, (m[0][1] + m[1][0]) * mult, (m[2][0] + m[0][2]) * mult, (m[1][2] - m[2][1]) * mult);
+	case 1:
+		return Quaternion((m[0][1] + m[1][0]) * mult, biggestVal, (m[1][2] + m[2][1]) * mult, (m[2][0] - m[0][2]) * mult);
+	case 2:
+		return Quaternion((m[2][0] + m[0][2]) * mult, (m[1][2] + m[2][1]) * mult, biggestVal, (m[0][1] - m[1][0]) * mult);
+	case 3:
+		return Quaternion((m[1][2] - m[2][1]) * mult, (m[2][0] - m[0][2]) * mult, (m[0][1] - m[1][0]) * mult, biggestVal);
+	default:
+		return Quaternion();
+	}
 }
 
 RMath::Matrix4 RMath::Matrix4::Inverse() {

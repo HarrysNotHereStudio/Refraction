@@ -90,6 +90,10 @@ namespace Refraction::Utilities {
 		return std::string(buffer.begin(), buffer.end());
 	};
 
+	bool DoesFileExist(const std::string& path) {
+		return fs::exists(path);
+	}
+
 	vector<fs::directory_entry> GetFilesInFolder(path folderPath) {
 		if (!fs::exists(folderPath)) throw std::runtime_error("Path " + folderPath.string() + " does not exist.");
 		vector<fs::directory_entry> files;

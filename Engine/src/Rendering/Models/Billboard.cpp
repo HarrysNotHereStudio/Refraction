@@ -1,10 +1,8 @@
 #include <vector>
 
 #include <Math/Vector3.h>
-#include "Mesh.h"
+#include <EngineClasses/Components/Mesh.h>
 #include "BaseCamera.h"
-
-#include "../ShaderManager.h"
 
 #include "Billboard.h"
 
@@ -34,7 +32,7 @@ Billboard::~Billboard() {
 
 
 void Billboard::SetTexture(std::string path) {
-	mTexture = EngineAssets::Texture::GetTexture(path, REFRACT_TEXTURE_TYPE_DIFFUSE);
+	mTexture = Refraction::Assets::Texture::GetTexture(path, REFRACT_TEXTURE_TYPE_DIFFUSE);
 }
 
 void Billboard::Draw() {
@@ -51,7 +49,7 @@ void Billboard::Draw() {
 
 	for (size_t i = 0; i < 4; i++) {
 		sVertex& vert = rectVertices[i];
-		vert.pos = mTransform->mPosition + cameraRight * vert.pos.x * mTransform->mScale.x + cameraUp * vert.pos.y * mTransform->mScale.y;
+		vert.pos = mTransform->GetWorldPosition() + cameraRight * vert.pos.x * mTransform->mScale.x + cameraUp * vert.pos.y * mTransform->mScale.y;
 	}
 
 	unsigned int quadVAO = 0;

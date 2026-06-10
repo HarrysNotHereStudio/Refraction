@@ -6,41 +6,43 @@
 #include <Math/Quaternion.h>
 
 namespace Refraction::Math {
+	constexpr int SpatialCellSize = 128;
+	struct SpatialPosition {
+		Vector3 GridIndex = Vector3::Zero();
+		Vector3 CellPosition = Vector3::Zero();
+
+		inline Vector3 ToWorld() const { return CellPosition + (GridIndex * SpatialCellSize); }
+		void Translate(Vector3 delta);
+	};
+
 	class Transform {
 	public:
-		Vector3 mPosition;
+		SpatialPosition mSpatialPosition;
 		Quaternion mOrientation;
 		Vector3 mScale;
 
 		Transform();
+		Transform(const Vector3& pos);
 
-		void Translate(Vector3 delta);
+		// Creates a Transform looking at a target
+		static Transform FromLookAt(const Vector3& eye, Vector3 target, Vector3 targetUp = Vector3::Up());
+
+		inline void Translate(Vector3 delta) { mSpatialPosition.Translate(delta); }
+		// Rotate using an angle (degrees) axis
 		void Rotate(float angle, Vector3 axis);
+		// Rotate using Euler angles (degrees)
 		void Rotate(Vector3 delta);
+		// Rotate using a Quaternion
 		void Rotate(Quaternion delta);
 		void Scale(Vector3 delta);
+		// Rotates the Transform to look at a target
+		void LookAt(Vector3 target, Vector3 targetUp = Vector3::Up());
 
+		// Generates the Transform's matrix
 		Matrix4 GetTransform() const;
-		Vector3 GetForwardVector() const { return mOrientation * Vector3::Front(); };
-		Vector3 GetRightVector() const { return mOrientation * Vector3::Right(); };
-		Vector3 GetUpVector() const { return mOrientation * Vector3::Up(); };
-
-		// Utility
-		static bool AreQuaternionsSimilar(Quaternion quatA, Quaternion quatB) {
-			return (abs(quatA.Dot(quatB) - 1.0) < 0.001);
-		}
-		static Quaternion LookAt(const Vector3& eye, Vector3 target, Vector3 targetUp) {
-			Vector3 direction = target - eye;
-
-			auto rot1 = Quaternion::RotationBetweenEulerAngles(Vector3::Z(), direction);
-
-			Vector3 right = direction.Cross(targetUp);
-			targetUp = right.Cross(direction);
-
-			Vector3 newUp = Vector3::Up() * rot1;
-			auto rot2 = Quaternion::RotationBetweenEulerAngles(newUp, targetUp);
-
-			return rot2 * rot1;
-		}
+		inline Vector3 GetWorldPosition() const { return mSpatialPosition.ToWorld(); }
+		inline Vector3 GetForwardVector() const { return mOrientation * Vector3::Front(); }
+		inline Vector3 GetRightVector() const { return mOrientation * Vector3::Right(); }
+		inline Vector3 GetUpVector() const { return mOrientation * Vector3::Up(); }
 	};
 }

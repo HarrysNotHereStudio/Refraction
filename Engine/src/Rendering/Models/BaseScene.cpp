@@ -1,30 +1,32 @@
 #include <Core/Constants.h>
 #include <Math/Vector3.h>
+#include <EngineClasses/Components/Mesh.h>
+#include <EngineClasses/Components/APhysics.h>
+#include <EngineClasses/Objects/BasicObject.h>
 
 #include "BaseScene.h"
 
-namespace RMath = Refraction::Math;
-namespace RUtil = Refraction::Utilities;
-using RMath::Vector3;
+using namespace Refraction;
+using Math::Vector3;
 
 
 BaseScene::BaseScene() {
-	Refraction::Log::Info("Creating test model...");
-	mNyen = new BaseModel(Refraction::Constants::GetResourcePath() + "/models/nyen/nyen plush.obj");
-	mModels.push_back(mNyen);
+	Log::Info("Creating test model...");
+	auto nyen = Common::NewRef<Objects::BasicObject>();
+	nyen->GetComponent<Components::Mesh>()->LoadModel(Constants::GetResourcePath() + "/models/nyen/nyen plush.obj");
+	nyen->GetComponent<Components::APhysics>()->mAngularVelocity = Vector3(0, 64, 0);
+	mObjects.push_back(nyen);
+	mNyen = nyen;
 
-	InstancedModel* testModel2 = new InstancedModel(Refraction::Constants::GetResourcePath() + "/models/survivalBackpack/backpack.obj");
-	testModel2->mTransform->Translate(Vector3(0.0f, 0.0f, 10.0f));
-	testModel2->AddInstance(Vector3(0.0f, 5.0f, 0.0f));
-	testModel2->AddInstance(Vector3(5.0f, 10.0f, 0.0f));
-	testModel2->AddInstance(Vector3(-3.0f, -5.0f, 0.0f));
-	testModel2->mInstanceTransforms[1].Rotate(Vector3(0.0f, RMath::ToRadians(30.0f), 2.0f));
-	mModels.push_back(testModel2);
+	auto backpack = Common::NewRef<Objects::BasicObject>();
+	backpack->GetComponent<Components::Mesh>()->LoadModel(Constants::GetResourcePath() + "/models/survivalBackpack/backpack.obj");
+	backpack->mTransform = Math::Transform::FromLookAt(Vector3(0, 4, 10), Vector3::Zero());
+	mObjects.push_back(backpack);
 
 	Refraction::Log::Info("Instantiating lights...");
 	for (int i = 0; i < 27; i++) {
 		auto light = new PointLight();
-		light->mTransform->Translate(Vector3(RUtil::RandomI(20,-20), RUtil::RandomI(20, -20), RUtil::RandomI(20, -20)));
+		light->mTransform->Translate(Vector3(Utilities::RandomI(20,-20), Utilities::RandomI(20, -20), Utilities::RandomI(20, -20)));
 		light->mLightColor = Vector3(1.0f, 1.0f, 1.0f);
 		mLights.push_back(light);
 	}
@@ -55,8 +57,19 @@ void BaseScene::LoadFromFile(std::string path) {
 }
 
 void BaseScene::Tick(float deltaTime) {
-	auto yawDiff = 64.0f * deltaTime;
+	for (auto& object : mObjects) {
+		auto comps = object->GetComponents();
+		for (size_t i = 0; i < comps->size(); i++) {
+			(*comps)[i]->Tick(deltaTime);
+		}
+	}
+}
 
-	// rotate nyen.
-	mNyen->mTransform->mOrientation.y += yawDiff;
+void BaseScene::Render() {
+	for (auto& object : mObjects) {
+		auto comps = object->GetComponents();
+		for (size_t i = 0; i < comps->size(); i++) {
+			(*comps)[i]->Render();
+		}
+	}
 }

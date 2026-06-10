@@ -2,12 +2,18 @@
 
 #include <string>
 
-class Asset {
-public:
+#include <Core/Constants.h>
+#include <Core/Utilities.h>
+#include <Core/Log.h>
 
-protected:
-	std::string mDisplayName;
+namespace Refraction::Assets {
+	class Asset {
+	public:
 
-private:
+	protected:
+		std::string mDisplayName;
 
-};
+	private:
+
+	};
+}

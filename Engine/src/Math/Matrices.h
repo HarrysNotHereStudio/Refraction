@@ -191,6 +191,10 @@ namespace Refraction::Math {
 		inline void operator*=(Matrix3 other) {
 			m = ((*this) * other).m;
 		}
+
+		// Convert the matrix to a rotational Vector3 (degrees)
+		Vector3 ToEulerAngles() const;
+		Quaternion ToQuaternion() const;
 	};
 
 	class Matrix4 : public Matrix {
@@ -233,7 +237,7 @@ namespace Refraction::Math {
 			(*this)[3] = r3;
 		}
 
-		static Matrix4 LookAt(const Vector3& from, const Vector3& at, const Vector3& up);
+		static Matrix4 LookAt(const Vector3& from, const Vector3& at, const Vector3& up = Vector3::Up());
 		static Matrix4 Perspective(float fovY, float aspectRatio, float zNear, float zFar);
 		static Matrix4 FromTranslation(const Vector3& translation);
 		static Matrix4 FromRotationX(const float& angle);
@@ -287,5 +291,8 @@ namespace Refraction::Math {
 		Matrix4 Scale(Vector3 scale);
 
 		Matrix4 Inverse();
+		// Convert the matrix to a rotational Vector3 (degrees)
+		Vector3 ToEulerAngles() const;
+		Quaternion ToQuaternion() const;
 	};
 }

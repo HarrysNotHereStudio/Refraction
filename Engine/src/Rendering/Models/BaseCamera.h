@@ -25,7 +25,7 @@ public:
 	BaseCamera();
 
 	void Move(Refraction::Math::Vector3 dirInput, Refraction::Math::Vector3 angInput);
-	Refraction::Math::Matrix4 GetViewMatrix() const { return Refraction::Math::Matrix4::LookAt(mTransform.mPosition, mCameraTarget, mTransform.GetUpVector()); };
+	Refraction::Math::Matrix4 GetViewMatrix() const { return Refraction::Math::Matrix4::LookAt(mTransform.GetWorldPosition(), mCameraTarget, mTransform.GetUpVector()); };
 
 private:
 	Refraction::Math::Vector3 mCameraTarget;

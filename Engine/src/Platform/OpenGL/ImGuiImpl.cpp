@@ -46,11 +46,73 @@ void RPlatform::ImGuiImpl::Draw() {
 	ImGui::Text(std::format("Delta: {:.3f}ms", mDebugValues.deltaTime * 1000).c_str());
 	ImGui::Text(std::format("FPS: {:.0f}", mDebugValues.fps).c_str());
 	ImGui::Text(std::format("Mouse focus: {}", mDebugValues.inputStateStr).c_str());
+	ImGui::Text(std::format("Last mouse pos: {}", mDebugValues.lastMousePos.ToString(false)).c_str());
 	ImGui::Text(std::format("Camera speed: {}", Settings::CurrentSettings->Controls.CameraSpeed).c_str());
+	ImGui::Text(std::format("Camera grid index: {}", mDebugValues.cameraGridIndex.ToString(false)).c_str());
+	ImGui::Text(std::format("Camera cell position: {}", mDebugValues.cameraCellPos.ToString(false)).c_str());
+	ImGui::Text(std::format("Camera world position: {}", mDebugValues.cameraWorldPos.ToString(false)).c_str());
 	ImGui::Checkbox("Wireframe", &Settings::CurrentSettings->Graphics.WireframeEnabled);
 	ImGui::End();
 
-	ImGui::ShowDemoWindow();
+	ImGui::Begin("Object Properties");
+	if (!mSelectedObject) {
+		float tmpX = 0;
+		float tmpY = 0;
+		float tmpZ = 0;
+
+		ImGui::Text("No object selected");
+		ImGui::Separator();
+		ImGui::BeginDisabled();
+		ImGui::Text("Transform");
+		ImGui::Text("Position");
+		ImGui::PushItemWidth(100);
+		ImGui::DragScalar("X", ImGuiDataType_Float, &tmpX); ImGui::SameLine();
+		ImGui::DragScalar("Y", ImGuiDataType_Float, &tmpY); ImGui::SameLine();
+		ImGui::DragScalar("Z", ImGuiDataType_Float, &tmpZ);
+		ImGui::PopItemWidth();
+		ImGui::Text("Rotation");
+		ImGui::PushItemWidth(100);
+		ImGui::DragScalar("X", ImGuiDataType_Float, &tmpX); ImGui::SameLine();
+		ImGui::DragScalar("Y", ImGuiDataType_Float, &tmpY); ImGui::SameLine();
+		ImGui::DragScalar("Z", ImGuiDataType_Float, &tmpZ);
+		ImGui::PopItemWidth();
+		ImGui::Text("Scale");
+		ImGui::PushItemWidth(100);
+		ImGui::DragScalar("X", ImGuiDataType_Float, &tmpX); ImGui::SameLine();
+		ImGui::DragScalar("Y", ImGuiDataType_Float, &tmpY); ImGui::SameLine();
+		ImGui::DragScalar("Z", ImGuiDataType_Float, &tmpZ);
+		ImGui::PopItemWidth();
+		ImGui::EndDisabled();
+	} else {
+		// Handle rotation differently because it's not a Vector3
+		auto objectRotation = mSelectedObject->mTransform.mOrientation.ToEulerAngles();
+		auto displayedRotation = objectRotation;
+
+		ImGui::Text("Transform");
+		ImGui::Text("Position");
+		ImGui::PushItemWidth(100);
+		ImGui::DragScalar("X##Pos", ImGuiDataType_Float, &mSelectedObject->mTransform.mSpatialPosition.CellPosition.x); ImGui::SameLine();
+		ImGui::DragScalar("Y##Pos", ImGuiDataType_Float, &mSelectedObject->mTransform.mSpatialPosition.CellPosition.y); ImGui::SameLine();
+		ImGui::DragScalar("Z##Pos", ImGuiDataType_Float, &mSelectedObject->mTransform.mSpatialPosition.CellPosition.z);
+		ImGui::PopItemWidth();
+		ImGui::Text("Rotation");
+		ImGui::PushItemWidth(100);
+		ImGui::DragScalar("X##Rot", ImGuiDataType_Float, &displayedRotation.x); ImGui::SameLine();
+		ImGui::DragScalar("Y##Rot", ImGuiDataType_Float, &displayedRotation.y); ImGui::SameLine();
+		ImGui::DragScalar("Z##Rot", ImGuiDataType_Float, &displayedRotation.z);
+		ImGui::PopItemWidth();
+		ImGui::Text("Scale");
+		ImGui::PushItemWidth(100);
+		ImGui::DragScalar("X##Scl", ImGuiDataType_Float, &mSelectedObject->mTransform.mScale.x); ImGui::SameLine();
+		ImGui::DragScalar("Y##Scl", ImGuiDataType_Float, &mSelectedObject->mTransform.mScale.y); ImGui::SameLine();
+		ImGui::DragScalar("Z##Scl", ImGuiDataType_Float, &mSelectedObject->mTransform.mScale.z);
+		ImGui::PopItemWidth();
+
+		if (objectRotation != displayedRotation) {
+			mSelectedObject->mTransform.mOrientation = Refraction::Math::Quaternion::FromEulerAngles(displayedRotation);
+		}
+	}
+	ImGui::End();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -59,10 +121,10 @@ void RPlatform::ImGuiImpl::Draw() {
 void RPlatform::ImGuiImpl::GetGuiInputState(Refraction::Enums::WindowInputState* inputState) {
 	// The actual focus signal is handled outside, but here we decide whether to give it to the viewport or the GUI
 	using Refraction::Enums::WindowInputState;
-	if (ImGui::GetIO().WantCaptureMouse && *inputState != WindowInputState::VIEWPORT) {
+	if (ImGui::GetIO().WantCaptureMouse && !(*inputState == WindowInputState::VIEWPORT && ImGui::GetIO().MouseDown[1])) {
 		*inputState = WindowInputState::GUI;
 	} else if (*inputState == WindowInputState::GUI) {
-		*inputState = WindowInputState::NONE;
+		*inputState = WindowInputState::VIEWPORT;
 	}
 }
 

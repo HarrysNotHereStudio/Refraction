@@ -5,18 +5,10 @@
 
 #include "Renderer.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#pragma warning(push)
-#pragma warning(disable : 26819)
-#pragma warning(disable : 6262)
-#include "STB/stb_image.h"
-#pragma warning(pop)
-
 #define VIEW_WIDTH Settings::CurrentSettings->Window.Width
 #define VIEW_HEIGHT Settings::CurrentSettings->Window.Height
 
-namespace RMath = Refraction::Math;
-namespace RUtil = Refraction::Utilities;
+using namespace Refraction;
 
 Renderer* Renderer::mInstance = nullptr;
 
@@ -25,19 +17,19 @@ Renderer::Renderer() = default;
 Renderer* Renderer::GetInstance() {
 	if (mInstance == nullptr) {
 		mInstance = new Renderer();
-		Refraction::RenderLog::Info("Instance created");
+		RenderLog::Info("Instance created");
 	}
 	return mInstance;
 }
 
 void Renderer::DestroyInstance() {
-	Refraction::RenderLog::Warn("Instance destruction requested");
+	RenderLog::Warn("Instance destruction requested");
 	if (mInstance != nullptr) {
 		if (mInstance->GetState() != RendererState::CLEANUP) {
 			mInstance->Cleanup();
 		}
 
-		Refraction::RenderLog::Info("Exiting...");
+		RenderLog::Info("Exiting...");
 		mInstance->mState = RendererState::EXIT;
 	}
 }
@@ -70,58 +62,58 @@ ImGuiStyle GetDefaultStyle() {
 std::vector<unsigned int> VAOs = {};
 std::vector<unsigned int> VBOs = {};
 
-RMath::Matrix4 projectionMatrix;
+Math::Matrix4 projectionMatrix;
 std::chrono::steady_clock::time_point timeLast;
 
 int Renderer::Init() {
 	mState = RendererState::INIT;
-	Refraction::RenderLog::Info("Initializing...");
+	RenderLog::Info("Initializing...");
 
-	Refraction::RenderLog::Info("Instantiating window...");
+	RenderLog::Info("Instantiating window...");
 	glfwInit();
-	mWindow = new Refraction::Platform::Window();
+	mWindow = new Platform::Window();
 	mWindow->Init();
 
 
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
-	Refraction::RenderLog::Info("Instantiating camera...");
+	RenderLog::Info("Instantiating camera...");
 	mCamera = new BaseCamera();
 	mWindow->SetCurrentCamera(mCamera);
 	//mCamera->SetCameraSpeed(mCurrentSettings.controls.cameraSpeed*6767676767676767);
 	//mCamera->SetCameraSensitivity(mCurrentSettings.controls.cameraSensitivity*414141414141);
 
-	EngineAssets::Texture::EngineTexturesPath = Refraction::Constants::GetResourcePath() + "textures/";
+	Assets::Texture::EngineTexturesPath = Constants::GetResourcePath() + "textures/";
 
-	Refraction::RenderLog::Info("Loading shaders...");
-	ShaderManager::LoadAllShaders();
+	RenderLog::Info("Loading shaders...");
+	Assets::Shader::LoadAllShaders();
 
-	mGeomPassShader = ShaderManager::GetShaderByName("gbufferShader");
-	mLightingPassShader = ShaderManager::GetShaderByName("lightingShader");
+	mGeomPassShader = Assets::Shader::GetShaderByName("gbufferShader");
+	mLightingPassShader = Assets::Shader::GetShaderByName("lightingShader");
 
 	mLightingPassShader->Activate();
 	mLightingPassShader->SetUniformInt("gPosition", 0);
 	mLightingPassShader->SetUniformInt("gNormal", 1);
 	mLightingPassShader->SetUniformInt("gAlbedoSpec", 2);
 
-	Refraction::RenderLog::Info("Creating G-Buffer...");
+	RenderLog::Info("Creating G-Buffer...");
 	mGBuffer = new GBuffer();
 	mGBuffer->Init(VIEW_WIDTH, VIEW_HEIGHT);
 
-	Refraction::RenderLog::Info("Creating uniform buffer object...");
+	RenderLog::Info("Creating uniform buffer object...");
 	float aspectRatio = VIEW_WIDTH / (float)(VIEW_HEIGHT);
-	projectionMatrix = RMath::Matrix4::Perspective(RMath::ToRadians(mCamera->mFOVy), aspectRatio, Settings::CurrentSettings->Graphics.ClipPlaneNear, Settings::CurrentSettings->Graphics.ClipPlaneFar);
+	projectionMatrix = Math::Matrix4::Perspective(Math::ToRadians(mCamera->mFOVy), aspectRatio, Settings::CurrentSettings->Graphics.ClipPlaneNear, Settings::CurrentSettings->Graphics.ClipPlaneFar);
 	sUBO initData = {
-		RUtil::NativeToGLMMat4(mCamera->GetViewMatrix()),
-		RUtil::NativeToGLMMat4(projectionMatrix)
+		Utilities::NativeToGLMMat4(mCamera->GetViewMatrix()),
+		Utilities::NativeToGLMMat4(projectionMatrix)
 	};
 	mUBO = new UniformBufferObject(initData);
 
-	Refraction::RenderLog::Info("Loading test scene...");
+	RenderLog::Info("Loading test scene...");
 	mLoadedScene = new BaseScene();
 
-	Refraction::RenderLog::Info("Initialising ImGui...");
+	RenderLog::Info("Initialising ImGui...");
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -129,7 +121,7 @@ int Renderer::Init() {
 	ImGui::StyleColorsDark();
 	ImGui::GetStyle() = GetDefaultStyle();
 
-	Refraction::RenderLog::Info("Initialisation complete");
+	RenderLog::Info("Initialisation complete");
 
 	mStartRenderTime = std::chrono::steady_clock::now();
 	timeLast = mStartRenderTime;
@@ -172,6 +164,8 @@ void Renderer::MainLoop() {
 	if (!ImGui_ImplGlfw_InitForOpenGL(windowInstance, true)) throw std::runtime_error("Failed to init ImGui for GLFW");
 	if (!ImGui_ImplOpenGL3_Init("#version 330")) throw std::runtime_error("Failed to init ImGui for OpenGL");
 
+	mWindow->mImGuiImpl->mSelectedObject = mLoadedScene->mNyen;
+
 	while (!glfwWindowShouldClose(windowInstance)) {
 		auto timeNow = std::chrono::steady_clock::now();
 		mDeltaRenderTime = std::chrono::duration<double>(timeNow - timeLast).count();
@@ -183,6 +177,9 @@ void Renderer::MainLoop() {
 		mWindow->mImGuiImpl->mDebugValues.elapsedTime = (float)mElapsedRenderTime;
 		mWindow->mImGuiImpl->mDebugValues.deltaTime = (float)mDeltaRenderTime;
 		mWindow->mImGuiImpl->mDebugValues.fps = (float)(1.0 / mDeltaRenderTime);
+		mWindow->mImGuiImpl->mDebugValues.cameraGridIndex = mCamera->mTransform.mSpatialPosition.GridIndex;
+		mWindow->mImGuiImpl->mDebugValues.cameraCellPos = mCamera->mTransform.mSpatialPosition.CellPosition;
+		mWindow->mImGuiImpl->mDebugValues.cameraWorldPos = mCamera->mTransform.GetWorldPosition();
 		mWindow->OnUpdate();
 
 		if (mShouldRender) {
@@ -212,15 +209,15 @@ void Renderer::MainLoop() {
 
 void Renderer::UpdateUniformBuffers() const {
 	sUBO newData{};
-	newData.viewMatrix = RUtil::NativeToGLMMat4(mCamera->GetViewMatrix());
-	newData.perspectiveMatrix = RUtil::NativeToGLMMat4(projectionMatrix);
+	newData.viewMatrix = Utilities::NativeToGLMMat4(mCamera->GetViewMatrix());
+	newData.perspectiveMatrix = Utilities::NativeToGLMMat4(projectionMatrix);
 	mUBO->UploadNewData(newData);
 }
 
 void Renderer::Cleanup() {
 	mState = RendererState::CLEANUP;
 
-	Refraction::RenderLog::Info("Cleaning up...");
+	RenderLog::Info("Cleaning up...");
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
@@ -242,9 +239,7 @@ void Renderer::DSPassGeometry() const {
 	}
 
 	// Draw models
-	for (const auto& mModel : mLoadedScene->mModels) {
-		mModel->DrawModel();
-	}
+	mLoadedScene->Render();
 
 	// Draw billboards
 	Billboard::DrawAll();
@@ -265,7 +260,7 @@ void Renderer::DSPassLighting() const {
 		const auto light = mLoadedScene->mLights[i];
 		light->UpdateShaderUniforms(i);
 	}
-	mLightingPassShader->SetUniformVec3("viewPos", mCamera->mTransform.mPosition);
+	mLightingPassShader->SetUniformVec3("viewPos", mCamera->mTransform.GetWorldPosition());
 	// finally render quad
 	renderQuad();
 }

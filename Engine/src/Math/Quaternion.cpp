@@ -1,8 +1,10 @@
 #include <Math/Matrices.h>
+#include <Math/Vector2.h>
 
 #include "Quaternion.h"
 
 namespace RMath = Refraction::Math;
+using RMath::Vector2;
 using RMath::Vector3;
 
 RMath::Quaternion RMath::Quaternion::FromAxisAngle(float a, const Vector3& vec) {
@@ -20,46 +22,14 @@ RMath::Quaternion RMath::Quaternion::FromAxisAngle(float a, const Vector3& vec) 
 }
 
 RMath::Quaternion RMath::Quaternion::FromEulerAngles(const Vector3& vec) {
-	return Quaternion::FromAxisAngle(0, vec);
+	auto result = Quaternion::FromAxisAngle(vec.x, Vector3::X());
+	result *= Quaternion::FromAxisAngle(vec.y, Vector3::Y());
+	result *= Quaternion::FromAxisAngle(vec.z, Vector3::Z());
+	return result;
 }
 
-RMath::Quaternion RMath::Quaternion::FromMatrix3(Matrix3 mat) {
-	float x = mat[0][0] - mat[1][1] - mat[2][2];
-	float y = mat[1][1] - mat[0][0] - mat[2][2];
-	float z = mat[2][2] - mat[0][0] - mat[1][1];
-	float w = mat[0][0] + mat[1][1] + mat[2][2];
-
-	int biggestIndex = 0;
-	float biggest = x;
-	if (y > biggest) {
-		biggest = y;
-		biggestIndex = 1;
-	}
-	if (z > biggest) {
-		biggest = z;
-		biggestIndex = 2;
-	}
-	if (w > biggest) {
-		biggest = w;
-		biggestIndex = 3;
-	}
-
-	float biggestVal = sqrtf(biggest + 1.0f) * 0.5f;
-	float mult = 0.25f / biggestVal;
-
-	switch (biggestIndex) {
-	case 0:
-		return Quaternion(biggestVal, (mat[0][1] + mat[1][0]) * mult, (mat[2][0] + mat[0][2]) * mult, (mat[1][2] - mat[2][1]) * mult);
-	case 1:
-		return Quaternion((mat[0][1] + mat[1][0]) * mult, biggestVal, (mat[1][2] + mat[2][1]) * mult, (mat[2][0] - mat[0][2]) * mult);
-	case 2:
-		return Quaternion((mat[2][0] + mat[0][2]) * mult, (mat[1][2] + mat[2][1]) * mult, biggestVal, (mat[0][1] - mat[1][0]) * mult);
-	case 3:
-		return Quaternion((mat[1][2] - mat[2][1]) * mult, (mat[2][0] - mat[0][2]) * mult, (mat[0][1] - mat[1][0]) * mult, biggestVal);
-	default:
-		return Quaternion(0, 0, 0, 1);
-	}
-}
+RMath::Quaternion RMath::Quaternion::FromMatrix3(Matrix3 mat) { return mat.ToQuaternion(); }
+RMath::Quaternion RMath::Quaternion::FromMatrix4(Matrix4 mat) { return mat.ToQuaternion(); }
 
 RMath::Quaternion RMath::Quaternion::RotationBetweenEulerAngles(Vector3 start, Vector3 end) {
 	start.Normalise();
@@ -94,32 +64,20 @@ RMath::Quaternion RMath::Quaternion::RotationBetweenEulerAngles(Vector3 start, V
 }
 
 RMath::Quaternion RMath::Quaternion::LookIn(const Vector3& direction, const Vector3& up) {
-	auto result = Matrix3();
+	Matrix3 result;
 
 	result[2] = -direction.Normalised();
 	auto right = up.Cross(result[2]);
 	result[0] = right * (1 / sqrtf(std::max(0.00001f, right.Dot(right))));
 	result[1] = result[2].Cross(result[0]);
 
-	// Use Matrix3 constructor
+	// Use Matrix4 constructor
 	return Quaternion::FromMatrix3(result);
 }
 
 RMath::Quaternion RMath::Quaternion::LookAt(const Vector3& from, const Vector3& at, const Vector3& up) {
-	auto direction = at - from;
-
-	auto rot1 = Quaternion::RotationBetweenEulerAngles(Vector3::Z(), direction);
-
-	auto right = direction.Cross(up);
-	auto targetUp = right.Cross(direction);
-
-	auto newUp = Vector3::Up() * rot1;
-	auto rot2 = Quaternion::RotationBetweenEulerAngles(newUp, targetUp);
-
-	return rot2 * rot1;
+	return Matrix4::LookAt(from, at, up).ToQuaternion();
 }
-
-
 
 bool RMath::Quaternion::IsZero() const {
 	return (!x) && (!y) && (!z) && (!w);
@@ -130,13 +88,32 @@ float RMath::Quaternion::Dot(const Quaternion& other) const {
 }
 
 Vector3 RMath::Quaternion::ToEulerAngles() const {
-	Vector3 vec(0);
+	Vector3 result;
 
-	vec.x = RMath::ToDegrees(atan2f((x * z) + (y * w), (x * w) - (y * z)));
-	vec.y = RMath::ToDegrees(acosf(-(x * x) - (y * y) - (z * z) - (w * w)));
-	vec.z = RMath::ToDegrees(atan2f((x * z) - (y * w), (x * w) + (y * z)));
+	// X
+	float tempY = 2.0f * (y * z + w * x);
+	float tempX = w * w - x * x - y * y + z * z;
 
-	return vec;
+	if ((tempX <= std::numeric_limits<float>::epsilon()) && (tempY <= std::numeric_limits<float>::epsilon())) {
+		result.x = 2.0f * atan2f(x, w);
+	} else {
+		result.x = atan2f(tempY, tempX);
+	}
+
+	// Y
+	result.y = asinf(std::clamp(-2.0f * (x * z - w * y), -1.0f, 1.0f));
+
+	// Z
+	tempY = 2.0f * (x * y + w * z);
+	tempX = w * w + x * x - y * y - z * z;
+
+	if ((tempX <= std::numeric_limits<float>::epsilon()) && (tempY <= std::numeric_limits<float>::epsilon())) {
+		result.z = 0;
+	} else {
+		result.z = atan2f(tempY, tempX);
+	}
+
+	return result;
 }
 
 void RMath::Quaternion::Normalize() {
@@ -183,17 +160,6 @@ inline std::string RMath::Quaternion::ToString(bool pretty) const {
 	} else {
 		return std::string("{" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ", " + std::to_string(w) + "}");
 	}
-}
-
-RMath::Quaternion Refraction::Math::operator*(const Quaternion& l, const Quaternion& r) {
-	auto quat = Quaternion();
-
-	quat.w = ((l.w * r.w) - (l.x * r.x) - (l.y * r.y) - (l.z * r.z));
-	quat.x = ((l.x * r.w) + (l.w * r.x) + (l.y * r.z) - (l.z * r.y));
-	quat.y = ((l.y * r.w) + (l.w * r.y) + (l.z * r.x) - (l.x * r.z));
-	quat.z = ((l.z * r.w) + (l.w * r.z) + (l.x * r.y) - (l.y * r.x));
-
-	return quat;
 }
 
 RMath::Vector3 Refraction::Math::operator*(const Quaternion& q, const Vector3& v) {

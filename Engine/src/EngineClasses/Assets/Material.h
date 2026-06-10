@@ -4,7 +4,7 @@
 #include "Texture.h"
 #include "Shader.h"
 
-namespace EngineAssets {
+namespace Refraction::Assets {
 	class Material : public Asset {
 	public:
 		Shader* mShader = nullptr;
