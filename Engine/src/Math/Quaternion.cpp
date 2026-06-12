@@ -22,10 +22,16 @@ RMath::Quaternion RMath::Quaternion::FromAxisAngle(float a, const Vector3& vec) 
 }
 
 RMath::Quaternion RMath::Quaternion::FromEulerAngles(const Vector3& vec) {
-	auto result = Quaternion::FromAxisAngle(vec.x, Vector3::X());
-	result *= Quaternion::FromAxisAngle(vec.y, Vector3::Y());
-	result *= Quaternion::FromAxisAngle(vec.z, Vector3::Z());
-	return result;
+	const float cX = cosf(vec.x / 2), sX = sinf(vec.x / 2);
+	const float cY = cosf(vec.y / 2), sY = sinf(vec.y / 2);
+	const float cZ = cosf(vec.z / 2), sZ = sinf(vec.z / 2);
+
+	return Quaternion(
+		sX * cY * cZ + sY * sZ * cX,
+		sY * cX * cZ - sX * sZ * cY,
+		sX * sY * cZ + sZ * cX * cY,
+		cX * cY * cZ - sX * sY * sZ
+	);
 }
 
 RMath::Quaternion RMath::Quaternion::FromMatrix3(Matrix3 mat) { return mat.ToQuaternion(); }
@@ -90,39 +96,21 @@ float RMath::Quaternion::Dot(const Quaternion& other) const {
 Vector3 RMath::Quaternion::ToEulerAngles() const {
 	Vector3 result;
 
-	// X
-	float tempY = 2.0f * (y * z + w * x);
-	float tempX = w * w - x * x - y * y + z * z;
-
-	if ((tempX <= std::numeric_limits<float>::epsilon()) && (tempY <= std::numeric_limits<float>::epsilon())) {
-		result.x = 2.0f * atan2f(x, w);
-	} else {
-		result.x = atan2f(tempY, tempX);
-	}
-
-	// Y
-	result.y = asinf(std::clamp(-2.0f * (x * z - w * y), -1.0f, 1.0f));
-
-	// Z
-	tempY = 2.0f * (x * y + w * z);
-	tempX = w * w + x * x - y * y - z * z;
-
-	if ((tempX <= std::numeric_limits<float>::epsilon()) && (tempY <= std::numeric_limits<float>::epsilon())) {
-		result.z = 0;
-	} else {
-		result.z = atan2f(tempY, tempX);
-	}
+	result.x = RMath::ToDegrees(atan2f((x * z) + (y * w), (x * w) - (y * z)));
+	result.y = RMath::ToDegrees(acosf(-(x * x) - (y * y) - (z * z) - (w * w)));
+	result.z = RMath::ToDegrees(atan2f((x * z) - (y * w), (x * w) + (y * z)));
 
 	return result;
 }
 
 void RMath::Quaternion::Normalize() {
 	if (IsZero()) return;
-	float len = sqrtf((x * x) + (y * y) + (z * z) + (w * w));
-	x /= len;
-	y /= len;
-	z /= len;
-	w /= len;
+	const float nSq = x * x + y * y + z * z + w * w;
+	const float inv = 1.0f / sqrtf(nSq);
+	w *= inv;
+	x *= inv;
+	y *= inv;
+	z *= inv;
 }
 
 RMath::Quaternion RMath::Quaternion::SLerp(Quaternion other, float time) const {
@@ -152,14 +140,6 @@ RMath::Quaternion RMath::Quaternion::NLerp(Quaternion other, float time) const {
 		other = -other;
 	}
 	return Quaternion(RMath::Lerp(x, other.x, time), RMath::Lerp(y, other.y, time), RMath::Lerp(z, other.z, time), RMath::Lerp(w, other.w, time));
-}
-
-inline std::string RMath::Quaternion::ToString(bool pretty) const {
-	if (pretty) {
-		return std::string("x: " + std::to_string(x) + "\ny: " + std::to_string(y) + "\nz: " + std::to_string(z) + "\nw: " + std::to_string(w));
-	} else {
-		return std::string("{" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ", " + std::to_string(w) + "}");
-	}
 }
 
 RMath::Vector3 Refraction::Math::operator*(const Quaternion& q, const Vector3& v) {

@@ -62,11 +62,14 @@ namespace Refraction::Math {
 			return copy;
 		}
 
-		inline std::string ToString(bool pretty = true) const {
-			if (pretty) {
-				return std::string("x: " + std::to_string(x) + "\ny: " + std::to_string(y) + "\nz: " + std::to_string(z));
+		inline std::string ToString(PrintFormatArgs fmtArgs = PrintFormatArgs()) const {
+			std::string xStr = fmtArgs.AsInt ? std::to_string((int)x) : std::to_string(x);
+			std::string yStr = fmtArgs.AsInt ? std::to_string((int)y) : std::to_string(y);
+			std::string zStr = fmtArgs.AsInt ? std::to_string((int)z) : std::to_string(z);
+			if (fmtArgs.Pretty) {
+				return std::string("x: " + xStr + "\ny: " + yStr + "\nz: " + zStr);
 			} else {
-				return std::string("{" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + "}");
+				return std::string("{" + xStr + ", " + yStr + ", " + zStr + "}");
 			}
 		}
 	};

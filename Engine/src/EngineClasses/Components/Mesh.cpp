@@ -138,6 +138,9 @@ static std::vector<Refraction::Assets::Texture*> LoadMaterialTextures(std::strin
 }
 
 namespace Refraction::Components {
+	int Mesh::FrameMeshCount = 0;
+	int Mesh::FrameVertexCount = 0;
+
 	Mesh::Mesh() {
 		mDisplayName = "MeshComponent";
 		mTransform = Math::Transform();
@@ -147,8 +150,11 @@ namespace Refraction::Components {
 		auto shader = Assets::Shader::GetShaderByName("gbufferShader");
 		shader->Activate();
 		shader->SetUniformMat4("modelTransform", mParent->mTransform.GetTransform());
-		for (auto& mesh : mFragments)
+		for (auto& mesh : mFragments) {
 			mesh->Draw();
+			FrameVertexCount += (int)mesh->mVertices.size();
+			FrameMeshCount++;
+		}
 	}
 
 	void Mesh::LoadModel(std::string path) {

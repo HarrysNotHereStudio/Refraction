@@ -8,4 +8,9 @@ namespace Refraction::Math {
 	
 	template<typename T>
 	static inline T Lerp(T start, T end, T alpha) { return start - (start - end) * alpha; };
+
+	struct PrintFormatArgs {
+		bool AsInt = false;
+		bool Pretty = true;
+	};
 }

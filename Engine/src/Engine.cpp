@@ -3,7 +3,7 @@
 #include <thread>
 #include <string>
 
-#include <Core/Constants.h>
+#include <Core/Common.h>
 #include <Core/Log.h>
 #include <Core/Utilities.h>
 #include <Rendering/Renderer.h>
@@ -13,10 +13,12 @@
 Settings* Settings::CurrentSettings = new Settings();
 
 namespace {
-	void RunRenderer(Renderer* renderer) {
+	void RunRenderer() {
+		Renderer* renderer = Renderer::GetInstance();
 		try {
 			renderer->SetResourcePath(Refraction::Constants::GetResourcePath());
 			renderer->Init();
+			renderer->Run();
 		} catch (const std::exception& e) {
 			std::cerr << e.what() << '\n';
 			Refraction::Log::Error(e.what());
@@ -28,8 +30,12 @@ namespace {
 	}
 }
 
+void RefractionEngine::InitWindow() {
+	Renderer::GetInstance()->InitWindow();
+}
 
-int RefractionEngine::Init() {
+std::thread RendererThread;
+void RefractionEngine::Init() {
 	std::cout << "Initialising Refraction Engine...\n";
 
 	Settings::CurrentSettings->Window.Width = 1920;
@@ -39,12 +45,12 @@ int RefractionEngine::Init() {
 	Settings::CurrentSettings->Controls.CameraSensitivity = 0.5f;
 	Settings::CurrentSettings->Controls.CameraSpeed = 0.5f;
 
-	std::thread renderThread;
 	try {
 		Refraction::Log::Info("Resource path: " + Refraction::Constants::GetResourcePath());
 		Refraction::Log::Info("Starting render thread...");
 		Renderer* renderer = Renderer::GetInstance();
-		renderThread = std::thread(RunRenderer, renderer);
+		RunRenderer();
+		RendererThread = std::thread(RunRenderer);
 
 		// Wait for renderer to initialise
 		while (renderer->GetState() != RendererState::RUNNING) {
@@ -55,28 +61,39 @@ int RefractionEngine::Init() {
 		Refraction::Log::Info("Starting input thread...");
 		renderer->GetWindow()->InitInput();
 
-		// Wait for renderer to clean up before exiting
-		while (renderer->GetState() != RendererState::EXIT) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-		}
 	} catch (...) {
 		std::cout << "Error occurred during engine initialisation, aborting\n\n";
 	}
+	return;
+}
 
-	renderThread.join();
+bool RefractionEngine::IsRunning() {
+	return (Renderer::GetInstance()->GetState() == RendererState::RUNNING);
+}
 
+void RefractionEngine::Shutdown() {
+	if (!RendererThread.joinable()) return;
+	Renderer* renderer = Renderer::GetInstance();
+
+	// Wait for renderer to clean up before exiting
+	while (renderer->GetState() != RendererState::EXIT) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	}
+	RendererThread.join();
 
 	std::cout << "\n\n--------------------------------\n";
 	std::cout << "Refraction shut down successfully.\n\n";
-
-	return EXIT_SUCCESS;
-}
-
-void RefractionEngine::InitWindow() {
-
 }
 
 void RefractionEngine::SetResourcePath(std::string path) {
 	Refraction::Constants::ResourcePath = path;
 	Refraction::Log::Info("Set Resource path to " + Refraction::Constants::GetResourcePath());
+}
+
+void RefractionEngine::SetViewport(int x, int y, int w, int h) {
+	Renderer::GetInstance()->SetViewport(Refraction::Math::Rect(x, y));
+}
+
+void RefractionEngine::SetEditorInterfaceDrawCallback(std::function<void()> callback) {
+	Renderer::GetInstance()->SetEditorInterfaceDrawCallback(callback);
 }

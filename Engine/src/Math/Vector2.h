@@ -57,11 +57,13 @@ namespace Refraction::Math {
 			return copy;
 		}
 
-		inline std::string ToString(bool pretty = true) const {
-			if (pretty) {
-				return std::string("x: " + std::to_string(x) + "\ny: " + std::to_string(y));
+		inline std::string ToString(PrintFormatArgs fmtArgs = PrintFormatArgs()) const {
+			std::string xStr = fmtArgs.AsInt ? std::to_string((int)x) : std::to_string(x);
+			std::string yStr = fmtArgs.AsInt ? std::to_string((int)y) : std::to_string(y);
+			if (fmtArgs.Pretty) {
+				return std::string("x: " + xStr + "\ny: " + yStr);
 			} else {
-				return std::string("{" + std::to_string(x) + ", " + std::to_string(y) + "}");
+				return std::string("{" + xStr + ", " + yStr + "}");
 			}
 		}
 	};

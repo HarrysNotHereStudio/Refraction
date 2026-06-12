@@ -62,15 +62,17 @@ namespace Refraction::Math {
 		auto rotQ = Quaternion::FromAxisAngle(angle, axis);
 		auto conjQ = rotQ.Conjugate();
 		mOrientation = rotQ * mOrientation * conjQ;
+		mOrientation.ResetNANs();
 	}
 
 	void Transform::Rotate(Vector3 delta) {
 		mOrientation *= Quaternion::FromEulerAngles(delta);
-		//mOrientation.Normalize();
+		mOrientation.ResetNANs();
 	}
 
 	void Transform::Rotate(Quaternion delta) {
 		mOrientation *= delta;
+		mOrientation.ResetNANs();
 	}
 
 	void Transform::Scale(Vector3 delta) {

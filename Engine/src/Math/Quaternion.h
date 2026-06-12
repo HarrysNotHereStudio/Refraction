@@ -73,11 +73,12 @@ namespace Refraction::Math {
 			return Quaternion(x - other.x, y - other.y, z - other.z, w - other.w);
 		}
 		Quaternion operator*(const Quaternion& other) const {
-			float rX = (x * other.w) + (w * other.x) + (y * other.z) - (z * other.y);
-			float rY = (y * other.w) + (w * other.y) + (z * other.x) - (x * other.z);
-			float rZ = (z * other.w) + (w * other.z) + (x * other.y) - (y * other.x);
-			float rW = (w * other.w) - (x * other.x) - (y * other.y) - (z * other.z);
-			return Quaternion(rX, rY, rZ, rW);
+			Vector3 thisVec(x, y, z);
+			Vector3 otherVec(other.x, other.y, other.z);
+
+			Vector3 resultVec = otherVec * w + thisVec * other.w + thisVec.Cross(otherVec);
+			float resultW = w * other.w - thisVec.Dot(otherVec);
+			return Quaternion(resultVec.x, resultVec.y, resultVec.z, resultW);
 		};
 		Quaternion operator*(const float& n) const {
 			return Quaternion(x * n, y * n, z * n, w * n);
@@ -100,16 +101,24 @@ namespace Refraction::Math {
 		}
 
 		void operator*=(const Quaternion& other) {
-			x = (x * other.w) + (w * other.x) + (y * other.z) - (z * other.y);
-			y = (y * other.w) + (w * other.y) + (z * other.x) - (x * other.z);
-			z = (z * other.w) + (w * other.z) + (x * other.y) - (y * other.x);
-			w = (w * other.w) - (x * other.x) - (y * other.y) - (z * other.z);
+			Vector3 thisVec(x, y, z);
+			Vector3 otherVec(other.x, other.y, other.z);
+
+			Vector3 resultVec = otherVec * w + thisVec * other.w + thisVec.Cross(otherVec);
+			x = resultVec.x;
+			y = resultVec.y;
+			z = resultVec.z;
+			w = w * other.w - thisVec.Dot(otherVec);
 		}
 		void operator*=(const float& n) {
 			x *= n;
 			y *= n;
 			z *= n;
 			w *= n;
+		}
+
+		bool operator==(const Quaternion& v) const {
+			return AreSimilar(*this, v);
 		}
 
 		void Normalize();
@@ -121,7 +130,17 @@ namespace Refraction::Math {
 		Quaternion SLerp(Quaternion other, float time) const;
 		Quaternion NLerp(Quaternion other, float time) const;
 
-		inline std::string ToString(bool pretty = true) const;
+		inline std::string ToString(PrintFormatArgs fmtArgs = PrintFormatArgs()) const {
+			std::string xStr = fmtArgs.AsInt ? std::to_string((int)x) : std::to_string(x);
+			std::string yStr = fmtArgs.AsInt ? std::to_string((int)y) : std::to_string(y);
+			std::string zStr = fmtArgs.AsInt ? std::to_string((int)z) : std::to_string(z);
+			std::string wStr = fmtArgs.AsInt ? std::to_string((int)w) : std::to_string(w);
+			if (fmtArgs.Pretty) {
+				return std::string("x: " + xStr + "\ny: " + yStr + "\nz: " + zStr + "\nw: " + wStr);
+			} else {
+				return std::string("{" + xStr + ", " + yStr + ", " + zStr + ", " + wStr + "}");
+			}
+		}
 
 		inline Quaternion Conjugate() const { return Quaternion(-x, -y, -z, w); }
 
@@ -146,6 +165,13 @@ namespace Refraction::Math {
 			axis.y = y / sinHalfAngle;
 			axis.z = z / sinHalfAngle;
 		};
+
+		inline void ResetNANs() {
+			if (x != x) x = 0;
+			if (y != y) y = 0;
+			if (z != z) z = 0;
+			if (w != w) w = 0;
+		}
 	};
 	Vector3 operator*(const Quaternion& q, const Vector3& v);
 	Vector3 operator*(Vector3 v, const Quaternion& q);

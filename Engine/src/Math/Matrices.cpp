@@ -90,6 +90,10 @@ RMath::Matrix4 RMath::Matrix4::Perspective(float fovY, float aspectRatio, float 
 	return newMat;
 }
 
+RMath::Matrix4 Refraction::Math::Matrix4::Perspective(const Frustum& frustum) {
+	return Matrix4::Perspective(frustum.fovY, frustum.AspectRatio(), frustum.zNear, frustum.zFar);
+}
+
 RMath::Matrix4 RMath::Matrix4::FromTranslation(const Vector3& translation) {
 	Matrix4 newMat(1);
 	newMat[0][3] = translation.x;

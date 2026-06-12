@@ -1,5 +1,4 @@
 #include <string>
-#include <deque>
 #include <format>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -7,127 +6,19 @@
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
 
-#include <Core/Constants.h>
-#include <Settings.h>
+#include <Core/Common.h>
 
 #include "ImGuiImpl.h"
 
-namespace RPlatform = Refraction::Platform::OpenGL;
+namespace Refraction::Platform::OpenGL {
+	ImGuiImpl::ImGuiImpl() {}
 
-std::deque<float> deltaHistory = {};
-const int deltaHistoryMax = 90;
-
-RPlatform::ImGuiImpl::ImGuiImpl() {
-	deltaHistory.resize(deltaHistoryMax);
-}
-
-void RPlatform::ImGuiImpl::Draw() {
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
-
-	deltaHistory.push_back(mDebugValues.deltaTime * 1000);
-	if (deltaHistory.size() > deltaHistoryMax) {
-		deltaHistory.pop_front();
-		deltaHistory.shrink_to_fit();
+	void ImGuiImpl::BeginDraw() {
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
 	}
-	float values[deltaHistoryMax] = {};
-	float average = 0.0f;
-	for (int i = 0; i < deltaHistory.size(); i++) {
-		values[i] = deltaHistory[i];
-		average += deltaHistory[i];
+
+	void ImGuiImpl::EndDraw() {
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
-	average /= deltaHistory.size();
-
-	ImGui::Begin("new window");
-	ImGui::Text("gurt: yo");
-	ImGui::PlotLines("FPS", values, deltaHistoryMax, 0, std::format("Avg {:.3f}ms", average).c_str(), 0, 100.0f, ImVec2(0, 80.0f));
-	ImGui::Text(std::format("Elapsed: {:.3f}s", mDebugValues.elapsedTime).c_str());
-	ImGui::Text(std::format("Delta: {:.3f}ms", mDebugValues.deltaTime * 1000).c_str());
-	ImGui::Text(std::format("FPS: {:.0f}", mDebugValues.fps).c_str());
-	ImGui::Text(std::format("Mouse focus: {}", mDebugValues.inputStateStr).c_str());
-	ImGui::Text(std::format("Last mouse pos: {}", mDebugValues.lastMousePos.ToString(false)).c_str());
-	ImGui::Text(std::format("Camera speed: {}", Settings::CurrentSettings->Controls.CameraSpeed).c_str());
-	ImGui::Text(std::format("Camera grid index: {}", mDebugValues.cameraGridIndex.ToString(false)).c_str());
-	ImGui::Text(std::format("Camera cell position: {}", mDebugValues.cameraCellPos.ToString(false)).c_str());
-	ImGui::Text(std::format("Camera world position: {}", mDebugValues.cameraWorldPos.ToString(false)).c_str());
-	ImGui::Checkbox("Wireframe", &Settings::CurrentSettings->Graphics.WireframeEnabled);
-	ImGui::End();
-
-	ImGui::Begin("Object Properties");
-	if (!mSelectedObject) {
-		float tmpX = 0;
-		float tmpY = 0;
-		float tmpZ = 0;
-
-		ImGui::Text("No object selected");
-		ImGui::Separator();
-		ImGui::BeginDisabled();
-		ImGui::Text("Transform");
-		ImGui::Text("Position");
-		ImGui::PushItemWidth(100);
-		ImGui::DragScalar("X", ImGuiDataType_Float, &tmpX); ImGui::SameLine();
-		ImGui::DragScalar("Y", ImGuiDataType_Float, &tmpY); ImGui::SameLine();
-		ImGui::DragScalar("Z", ImGuiDataType_Float, &tmpZ);
-		ImGui::PopItemWidth();
-		ImGui::Text("Rotation");
-		ImGui::PushItemWidth(100);
-		ImGui::DragScalar("X", ImGuiDataType_Float, &tmpX); ImGui::SameLine();
-		ImGui::DragScalar("Y", ImGuiDataType_Float, &tmpY); ImGui::SameLine();
-		ImGui::DragScalar("Z", ImGuiDataType_Float, &tmpZ);
-		ImGui::PopItemWidth();
-		ImGui::Text("Scale");
-		ImGui::PushItemWidth(100);
-		ImGui::DragScalar("X", ImGuiDataType_Float, &tmpX); ImGui::SameLine();
-		ImGui::DragScalar("Y", ImGuiDataType_Float, &tmpY); ImGui::SameLine();
-		ImGui::DragScalar("Z", ImGuiDataType_Float, &tmpZ);
-		ImGui::PopItemWidth();
-		ImGui::EndDisabled();
-	} else {
-		// Handle rotation differently because it's not a Vector3
-		auto objectRotation = mSelectedObject->mTransform.mOrientation.ToEulerAngles();
-		auto displayedRotation = objectRotation;
-
-		ImGui::Text("Transform");
-		ImGui::Text("Position");
-		ImGui::PushItemWidth(100);
-		ImGui::DragScalar("X##Pos", ImGuiDataType_Float, &mSelectedObject->mTransform.mSpatialPosition.CellPosition.x); ImGui::SameLine();
-		ImGui::DragScalar("Y##Pos", ImGuiDataType_Float, &mSelectedObject->mTransform.mSpatialPosition.CellPosition.y); ImGui::SameLine();
-		ImGui::DragScalar("Z##Pos", ImGuiDataType_Float, &mSelectedObject->mTransform.mSpatialPosition.CellPosition.z);
-		ImGui::PopItemWidth();
-		ImGui::Text("Rotation");
-		ImGui::PushItemWidth(100);
-		ImGui::DragScalar("X##Rot", ImGuiDataType_Float, &displayedRotation.x); ImGui::SameLine();
-		ImGui::DragScalar("Y##Rot", ImGuiDataType_Float, &displayedRotation.y); ImGui::SameLine();
-		ImGui::DragScalar("Z##Rot", ImGuiDataType_Float, &displayedRotation.z);
-		ImGui::PopItemWidth();
-		ImGui::Text("Scale");
-		ImGui::PushItemWidth(100);
-		ImGui::DragScalar("X##Scl", ImGuiDataType_Float, &mSelectedObject->mTransform.mScale.x); ImGui::SameLine();
-		ImGui::DragScalar("Y##Scl", ImGuiDataType_Float, &mSelectedObject->mTransform.mScale.y); ImGui::SameLine();
-		ImGui::DragScalar("Z##Scl", ImGuiDataType_Float, &mSelectedObject->mTransform.mScale.z);
-		ImGui::PopItemWidth();
-
-		if (objectRotation != displayedRotation) {
-			mSelectedObject->mTransform.mOrientation = Refraction::Math::Quaternion::FromEulerAngles(displayedRotation);
-		}
-	}
-	ImGui::End();
-
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-}
-
-void RPlatform::ImGuiImpl::GetGuiInputState(Refraction::Enums::WindowInputState* inputState) {
-	// The actual focus signal is handled outside, but here we decide whether to give it to the viewport or the GUI
-	using Refraction::Enums::WindowInputState;
-	if (ImGui::GetIO().WantCaptureMouse && !(*inputState == WindowInputState::VIEWPORT && ImGui::GetIO().MouseDown[1])) {
-		*inputState = WindowInputState::GUI;
-	} else if (*inputState == WindowInputState::GUI) {
-		*inputState = WindowInputState::VIEWPORT;
-	}
-}
-
-void RPlatform::ImGuiImpl::HideMouse() {
-	ImGui::GetIO().MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
 }

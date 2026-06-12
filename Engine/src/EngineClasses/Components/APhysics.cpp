@@ -2,7 +2,7 @@
 
 namespace Refraction::Components {
 	void APhysics::Tick(float delta) {
-		mParent->mTransform.Translate(mLinearVelocity * delta);
-		mParent->mTransform.Rotate(mAngularVelocity * delta);
+		if (mLinearVelocity.Magnitude() > 0) mParent->mTransform.Translate(mLinearVelocity * delta);
+		if (mAngularVelocity.Magnitude() > 0) mParent->mTransform.Rotate(mAngularVelocity * delta);
 	}
 }

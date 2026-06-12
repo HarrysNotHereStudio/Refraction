@@ -16,39 +16,42 @@ namespace RCommon = Refraction::Common;
 
 RPlatform::Window::Window() {}
 
+/*
 void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
+*/
+void GLFWErrorCallback(int code, const char* description) {
+	Refraction::RenderLog::Error(std::format("GLFW | CODE: {} | MESSAGE: {}", code, description));
+}
 
-int RPlatform::Window::Init() {
+void RPlatform::Window::Init() {
+	glfwInit();
+	glfwSetErrorCallback(GLFWErrorCallback);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_CONTEXT_DEBUG, true);
 
 	mWindow = glfwCreateWindow(Settings::CurrentSettings->Window.Width, Settings::CurrentSettings->Window.Height, Settings::CurrentSettings->Window.Title, NULL, NULL);
-	if (mWindow == NULL) {
-		std::cout << "Failed to create GLFW window" << std::endl;
+	if (!mWindow) {
 		glfwTerminate();
-		return -1;
+		throw std::runtime_error("Failed to create GLFW window");
 	}
 	glfwMakeContextCurrent(mWindow);
-
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		std::cout << "Failed to initialize GLAD" << std::endl;
-		return -1;
+		throw std::runtime_error("Failed to initialize GLAD");
 	}
-
 	glViewport(0, 0, Settings::CurrentSettings->Window.Width, Settings::CurrentSettings->Window.Height);
-	glfwSetFramebufferSizeCallback(mWindow, framebufferResizeCallback);
-
-	mImGuiImpl = RCommon::NewURef<ImGuiImpl>(ImGuiImpl());
-	return 0;
+	//glfwSetFramebufferSizeCallback(mWindow, framebufferResizeCallback);
+	mImGuiImpl = RCommon::NewURef<ImGuiImpl>();
 }
 
 void OnMouseScroll(GLFWwindow* window, double _, double yoffset) {
 	auto& cameraSpeed = Settings::CurrentSettings->Controls.CameraSpeed;
 	cameraSpeed = std::clamp(yoffset > 0 ? cameraSpeed * 1.1f : cameraSpeed * 0.9f, 0.01f, 5.0f);
 }
+
 void RPlatform::Window::InitInput() {
 	glfwSetScrollCallback(mWindow, OnMouseScroll);
 	mInput.inputEnabled = true;
@@ -100,8 +103,6 @@ void RPlatform::Window::OnUpdate() {
 
 		double currentMouseX, currentMouseY;
 		glfwGetCursorPos(mWindow, &currentMouseX, &currentMouseY);
-
-		mImGuiImpl->mDebugValues.lastMousePos = Vector3(mInput.lastMouseX, mInput.lastMouseY, 0);
 
 		// Process inputs
 		mInput.inputFocus = (mInputState == VIEWPORT);

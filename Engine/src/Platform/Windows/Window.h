@@ -30,7 +30,7 @@ namespace Refraction::Platform {
 
 		Window();
 
-		int Init() override;
+		void Init() override;
 		void InitInput() override;
 		void OnUpdate() override;
 		void Cleanup() override;

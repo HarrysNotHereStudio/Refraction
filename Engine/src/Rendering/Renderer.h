@@ -5,17 +5,12 @@
 #include <thread>
 #include <vector>
 #include <chrono>
+#include <functional>
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui/imgui.h>
-#include <imgui/imgui_impl_glfw.h>
-#include <imgui/imgui_impl_opengl3.h>
-#include <GLAD/glad.h>
-#include <GLFW/glfw3.h>
-
-#include <Core/Constants.h>
+#include <Core/Common.h>
 #include <Core/Log.h>
 #include <Core/Utilities.h>
+#include <Math/Rect.h>
 #include "Settings.h"
 #include <Platform/PlatformAPI.h>
 
@@ -42,15 +37,18 @@ public:
 	RendererState GetState() { return mState; }
 	Refraction::Platform::Window* GetWindow() { return mWindow; }
 	BaseCamera* GetCamera() { return mCamera; }
-	
-	int Init();
+
+	void InitWindow();
+	void Init();
+	void Run();
 
 	void SetResourcePath(std::string path) { Refraction::Constants::ResourcePath = path; };
+	void SetViewport(Refraction::Math::Rect rect) { mViewportRect = rect; };
+	void SetEditorInterfaceDrawCallback(std::function<void()> callback) { mEditorInterfaceDrawCallback = callback; };
 private:
 	static Renderer* mInstance;
 
 	Renderer();
-	void MainLoop();
 	void UpdateUniformBuffers() const;
 	void Cleanup();
 
@@ -66,6 +64,8 @@ private:
 	Refraction::Assets::Shader* mGeomPassShader = nullptr;
 	Refraction::Assets::Shader* mLightingPassShader = nullptr;
 	GBuffer* mGBuffer = nullptr;
+	Refraction::Math::Rect mViewportRect;
+	Refraction::Math::Rect mViewportRectLast = mViewportRect;
 
 	BaseCamera* mCamera = nullptr;
 	BaseScene* mLoadedScene = nullptr;
@@ -75,4 +75,5 @@ private:
 	double mElapsedRenderTime = 0;
 	double mDeltaRenderTime = 0;
 	std::chrono::steady_clock::time_point mStartRenderTime;
+	std::function<void()> mEditorInterfaceDrawCallback;
 };

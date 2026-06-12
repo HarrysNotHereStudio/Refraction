@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Core/Constants.h>
+#include <Core/Common.h>
 #include <Core/Utilities.h>
 #include <string>
 
@@ -26,7 +26,7 @@ namespace Refraction::Platform {
 
 		virtual ~AWindow() = default;
 
-		virtual int Init() = 0;
+		virtual void Init() = 0;
 		virtual void InitInput() = 0;
 		virtual void OnUpdate() = 0;
 		virtual void Cleanup() = 0;

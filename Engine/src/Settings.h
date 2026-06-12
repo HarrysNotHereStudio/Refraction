@@ -7,8 +7,6 @@ public:
 	struct {
 		int ViewportWidth = 1280;
 		int ViewportHeight = 720;
-		float ClipPlaneNear = 0.1f;
-		float ClipPlaneFar = 1000.0f;
 		int MaxFrameRate = 0;
 		bool WireframeEnabled = false;
 	} Graphics;

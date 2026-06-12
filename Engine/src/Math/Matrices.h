@@ -7,6 +7,7 @@
 #include <Math/Common.h>
 #include <Math/Vector3.h>
 #include <Math/Vector4.h>
+#include <Math/Frustum.h>
 
 namespace {
 	class Matrix {
@@ -104,14 +105,14 @@ namespace {
 			return result;
 		}
 
-		inline std::string ToString(bool pretty = true) const {
+		inline std::string ToString(Refraction::Math::PrintFormatArgs fmtArgs = Refraction::Math::PrintFormatArgs()) const {
 			std::string out;
-			if (pretty) {
+			if (fmtArgs.Pretty) {
 				for (size_t row = 0; row < m.size(); row++) {
 					out += "{ ";
 					for (size_t col = 0; col < m.size(); col++) {
 						if (col > 0) out += ", ";
-						out += std::to_string(m[row][col]);
+						out += fmtArgs.AsInt ? std::to_string((int)(m[row][col])) : std::to_string(m[row][col]);
 					}
 					out += " }\n";
 				}
@@ -121,13 +122,13 @@ namespace {
 					out += "{ ";
 					for (size_t col = 0; col < m.size(); col++) {
 						if (col > 0) out += ", ";
-						out += std::to_string(m[row][col]);
+						out += fmtArgs.AsInt ? std::to_string((int)(m[row][col])) : std::to_string(m[row][col]);
 					}
 					out += " }";
 				}
 			}
 			return out;
-		};
+		}
 	};
 }
 
@@ -239,6 +240,7 @@ namespace Refraction::Math {
 
 		static Matrix4 LookAt(const Vector3& from, const Vector3& at, const Vector3& up = Vector3::Up());
 		static Matrix4 Perspective(float fovY, float aspectRatio, float zNear, float zFar);
+		static Matrix4 Perspective(const Frustum& frustum);
 		static Matrix4 FromTranslation(const Vector3& translation);
 		static Matrix4 FromRotationX(const float& angle);
 		static Matrix4 FromRotationY(const float& angle);

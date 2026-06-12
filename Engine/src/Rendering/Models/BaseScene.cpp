@@ -1,4 +1,4 @@
-#include <Core/Constants.h>
+#include <Core/Common.h>
 #include <Math/Vector3.h>
 #include <EngineClasses/Components/Mesh.h>
 #include <EngineClasses/Components/APhysics.h>
@@ -20,7 +20,7 @@ BaseScene::BaseScene() {
 
 	auto backpack = Common::NewRef<Objects::BasicObject>();
 	backpack->GetComponent<Components::Mesh>()->LoadModel(Constants::GetResourcePath() + "/models/survivalBackpack/backpack.obj");
-	backpack->mTransform = Math::Transform::FromLookAt(Vector3(0, 4, 10), Vector3::Zero());
+	backpack->mTransform = Math::Transform::FromLookAt(Vector3(0, 14, 10), Vector3::Zero());
 	mObjects.push_back(backpack);
 
 	Refraction::Log::Info("Instantiating lights...");
@@ -60,7 +60,7 @@ void BaseScene::Tick(float deltaTime) {
 	for (auto& object : mObjects) {
 		auto comps = object->GetComponents();
 		for (size_t i = 0; i < comps->size(); i++) {
-			(*comps)[i]->Tick(deltaTime);
+			comps->at(i)->Tick(deltaTime);
 		}
 	}
 }
@@ -69,7 +69,7 @@ void BaseScene::Render() {
 	for (auto& object : mObjects) {
 		auto comps = object->GetComponents();
 		for (size_t i = 0; i < comps->size(); i++) {
-			(*comps)[i]->Render();
+			comps->at(i)->Render();
 		}
 	}
 }

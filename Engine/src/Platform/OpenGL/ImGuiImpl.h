@@ -7,8 +7,7 @@ namespace Refraction::Platform::OpenGL {
 	public:
 		ImGuiImpl();
 
-		void Draw() override;
-		void GetGuiInputState(Refraction::Enums::WindowInputState* inputState) override;
-		void HideMouse() override;
+		void BeginDraw() override;
+		void EndDraw() override;
 	};
 }

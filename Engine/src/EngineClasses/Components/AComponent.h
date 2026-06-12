@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include <Core/Constants.h>
+#include <Core/Common.h>
 #include <Core/Utilities.h>
 #include <Core/Log.h>
 #include <EngineClasses/Objects/AObject.h>
@@ -23,6 +23,7 @@ namespace Refraction::Components {
 		virtual void PostRender() {};
 
 		std::string GetUUID() const { return mUUID; }
+		std::string GetDisplayName() { return mDisplayName; };
 
 	protected:
 		std::string mDisplayName = "BaseComponent";

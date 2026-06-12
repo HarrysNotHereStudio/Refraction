@@ -111,7 +111,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_LIB;GLFW_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -127,7 +127,7 @@
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)Libs\x64_Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp.lib;glfw3.lib;cpptrace.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp.lib;glfw3dll.lib;cpptrace.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -149,6 +149,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Math\Frustum.h" />
+    <ClInclude Include="src\Math\Rect.h" />
     <ClInclude Include="src\EngineClasses\Components\APhysics.h" />
     <ClInclude Include="src\EngineClasses\Objects\BasicObject.h" />
     <ClInclude Include="src\Math\Matrices.h" />
@@ -175,7 +177,7 @@
     <ClInclude Include="src\Rendering\Models\Billboard.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Core\Log.h" />
-    <ClInclude Include="src\Core\Constants.h" />
+    <ClInclude Include="src\Core\Common.h" />
     <ClInclude Include="src\Rendering\Buffers\BaseBuffer.h" />
     <ClInclude Include="src\Rendering\Buffers\GBuffer.h" />
     <ClInclude Include="src\Rendering\Buffers\UniformBufferObject.h" />
@@ -196,10 +198,13 @@
     <ClInclude Include="src\Math\Vector4.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Math\Frustum.cpp" />
+    <ClCompile Include="src\Math\Rect.cpp" />
     <ClCompile Include="src\EngineClasses\Components\APhysics.cpp" />
     <ClCompile Include="src\EngineClasses\Objects\BasicObject.cpp" />
     <ClCompile Include="src\Math\Matrices.cpp" />
     <ClCompile Include="src\Math\Quaternion.cpp" />
+    <ClCompile Include="src\Platform\AImGuiImpl.cpp" />
     <ClCompile Include="src\Platform\OpenGL\ImGuiImpl.cpp" />
     <ClCompile Include="lib\include\imgui\imgui.cpp" />
     <ClCompile Include="lib\include\imgui\imgui_demo.cpp" />

@@ -15,13 +15,13 @@ public:
 	~GBuffer();
 
 	bool Init(unsigned int viewWidth, unsigned int viewHeight);
+	bool Regenerate(unsigned int viewWidth, unsigned int viewHeight);
 
 	void BindForWrite();
 	void BindForRead();
 	void BindFull();
 	void BindTextures();
 private:
-	GLuint mGBuffer = 0;
 	GLuint mTextures[GBUFFER_iTEXTURECOUNT];
 	GLuint mRBODepth = 0;
 };

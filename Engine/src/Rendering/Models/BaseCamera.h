@@ -1,17 +1,11 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-
-#include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
 
 #include <Core/Log.h>
 #include <Math/Transform.h>
 #include <Math/Vector3.h>
+#include <Math/Frustum.h>
 #include <Math/Matrices.h>
 
 class BaseCamera
@@ -20,7 +14,7 @@ public:
 	static BaseCamera* ActiveCamera;
 
 	Refraction::Math::Transform mTransform;
-	float mFOVy = 70.0f;
+	Refraction::Math::Frustum mFrustum;
 
 	BaseCamera();
 

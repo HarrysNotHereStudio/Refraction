@@ -1,12 +1,17 @@
+#include <GLAD/glad.h>
+#include <GLFW/glfw3.h>
 
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
+#include <EngineClasses/Components/Mesh.h>
 #include "Models/Billboard.h"
 #include "Models/BaseLight.h"
 #include "Models/PointLight.h"
 
 #include "Renderer.h"
-
-#define VIEW_WIDTH Settings::CurrentSettings->Window.Width
-#define VIEW_HEIGHT Settings::CurrentSettings->Window.Height
 
 using namespace Refraction;
 
@@ -34,55 +39,38 @@ void Renderer::DestroyInstance() {
 	}
 }
 
-ImGuiStyle GetDefaultStyle() {
-	ImGuiStyle style = ImGuiStyle();
-	style.WindowPadding = ImVec2(6, 6);
-	style.FramePadding = ImVec2(2, 2);
-	style.ItemSpacing = ImVec2(8, 2);
-	style.ItemInnerSpacing = ImVec2(4, 2);
-	style.WindowBorderSize = 1;
-	style.ChildBorderSize = 1;
-	style.PopupBorderSize = 1;
-	style.FrameBorderSize = 0;
-	style.WindowRounding = 1;
-	style.ChildRounding = 0;
-	style.FrameRounding = 0;
-	style.PopupRounding = 0;
-	style.GrabRounding = 0;
-	style.ScrollbarSize = 8;
-	style.ScrollbarRounding = 0;
-	style.ScrollbarPadding = 2;
-	style.TabBorderSize = 0;
-	style.TabBarBorderSize = 1;
-	style.TabRounding = 0;
-
-	return style;
-}
-
 std::vector<unsigned int> VAOs = {};
 std::vector<unsigned int> VBOs = {};
 
 Math::Matrix4 projectionMatrix;
 std::chrono::steady_clock::time_point timeLast;
 
-int Renderer::Init() {
+void Renderer::InitWindow() {
+	RenderLog::Info("Instantiating window...");
+	mWindow = new Platform::Window();
+	mWindow->Init();
+}
+
+void Renderer::Init() {
 	mState = RendererState::INIT;
 	RenderLog::Info("Initializing...");
 
-	RenderLog::Info("Instantiating window...");
-	glfwInit();
-	mWindow = new Platform::Window();
-	mWindow->Init();
+	mViewportRect = Math::Rect(Settings::CurrentSettings->Window.Width, Settings::CurrentSettings->Window.Height);
+	mViewportRectLast = mViewportRect;
 
-
+	auto window = mWindow->GetNativeWindow();
+	GLFWwindow* window2 = (GLFWwindow*)window;
+	glfwMakeContextCurrent(window2);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
+
+	auto result = glfwGetCurrentContext();
 
 	RenderLog::Info("Instantiating camera...");
 	mCamera = new BaseCamera();
 	mWindow->SetCurrentCamera(mCamera);
-	//mCamera->SetCameraSpeed(mCurrentSettings.controls.cameraSpeed*6767676767676767);
-	//mCamera->SetCameraSensitivity(mCurrentSettings.controls.cameraSensitivity*414141414141);
+	mCamera->mFrustum.w = mViewportRect.w;
+	mCamera->mFrustum.h = mViewportRect.h;
 
 	Assets::Texture::EngineTexturesPath = Constants::GetResourcePath() + "textures/";
 
@@ -99,11 +87,10 @@ int Renderer::Init() {
 
 	RenderLog::Info("Creating G-Buffer...");
 	mGBuffer = new GBuffer();
-	mGBuffer->Init(VIEW_WIDTH, VIEW_HEIGHT);
+	if (!mGBuffer->Init(mViewportRect.w, mViewportRect.h)) throw;
 
 	RenderLog::Info("Creating uniform buffer object...");
-	float aspectRatio = VIEW_WIDTH / (float)(VIEW_HEIGHT);
-	projectionMatrix = Math::Matrix4::Perspective(Math::ToRadians(mCamera->mFOVy), aspectRatio, Settings::CurrentSettings->Graphics.ClipPlaneNear, Settings::CurrentSettings->Graphics.ClipPlaneFar);
+	projectionMatrix = Math::Matrix4::Perspective(mCamera->mFrustum);
 	sUBO initData = {
 		Utilities::NativeToGLMMat4(mCamera->GetViewMatrix()),
 		Utilities::NativeToGLMMat4(projectionMatrix)
@@ -113,21 +100,9 @@ int Renderer::Init() {
 	RenderLog::Info("Loading test scene...");
 	mLoadedScene = new BaseScene();
 
-	RenderLog::Info("Initialising ImGui...");
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	ImGui::StyleColorsDark();
-	ImGui::GetStyle() = GetDefaultStyle();
-
 	RenderLog::Info("Initialisation complete");
 
-	mStartRenderTime = std::chrono::steady_clock::now();
-	timeLast = mStartRenderTime;
-	MainLoop();
-
-	return 0;
+	return;
 }
 
 unsigned int quadVAO = 0;
@@ -157,7 +132,9 @@ void renderQuad() {
 	glBindVertexArray(0);
 }
 
-void Renderer::MainLoop() {
+void Renderer::Run() {
+	mStartRenderTime = std::chrono::steady_clock::now();
+	timeLast = mStartRenderTime;
 	mState = RendererState::RUNNING;
 	GLFWwindow* windowInstance = (GLFWwindow*)mWindow->GetNativeWindow();
 
@@ -174,6 +151,8 @@ void Renderer::MainLoop() {
 
 		mLoadedScene->Tick((float)mDeltaRenderTime);
 
+		Components::Mesh::FrameMeshCount = 0;
+		Components::Mesh::FrameVertexCount = 0;
 		mWindow->mImGuiImpl->mDebugValues.elapsedTime = (float)mElapsedRenderTime;
 		mWindow->mImGuiImpl->mDebugValues.deltaTime = (float)mDeltaRenderTime;
 		mWindow->mImGuiImpl->mDebugValues.fps = (float)(1.0 / mDeltaRenderTime);
@@ -195,7 +174,10 @@ void Renderer::MainLoop() {
 
 
 			// GUI
+			mWindow->mImGuiImpl->mDebugValues.meshCount = Components::Mesh::FrameMeshCount;
+			mWindow->mImGuiImpl->mDebugValues.vertexCount = Components::Mesh::FrameVertexCount;
 			mWindow->mImGuiImpl->Draw();
+			mEditorInterfaceDrawCallback();
 
 			// [Finalise Tick] //
 			//-----------------//
@@ -210,6 +192,14 @@ void Renderer::MainLoop() {
 void Renderer::UpdateUniformBuffers() const {
 	sUBO newData{};
 	newData.viewMatrix = Utilities::NativeToGLMMat4(mCamera->GetViewMatrix());
+
+	if (mViewportRect != mViewportRectLast) {
+		if (!mGBuffer->Regenerate(mViewportRect.w, mViewportRect.h)) throw;
+		glViewport(mViewportRect.x, mViewportRect.y, mViewportRect.w, mViewportRect.h);
+		mCamera->mFrustum.w = mViewportRect.w;
+		mCamera->mFrustum.h = mViewportRect.h;
+		projectionMatrix = Math::Matrix4::Perspective(mCamera->mFrustum);
+	}
 	newData.perspectiveMatrix = Utilities::NativeToGLMMat4(projectionMatrix);
 	mUBO->UploadNewData(newData);
 }
@@ -269,6 +259,10 @@ void Renderer::DSPassFinal() const {
 	mGBuffer->BindForRead();
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-	glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0, 0, VIEW_WIDTH, VIEW_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	int viewX0 = mViewportRect.x;
+	int viewY0 = mViewportRect.y;
+	int viewX1 = viewX0 + mViewportRect.w;
+	int viewY1 = viewY0 + mViewportRect.h;
+	glBlitFramebuffer(0, 0, mViewportRect.w, mViewportRect.h, viewX0, viewY0, viewX1, viewY1, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

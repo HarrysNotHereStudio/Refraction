@@ -39,11 +39,16 @@ namespace Refraction::Components {
 	public:
 		Math::Transform mTransform;
 
+		static int FrameMeshCount;
+		static int FrameVertexCount;
+
 		Mesh();
 
 		void LoadModel(std::string path);
 		void Tick(float delta) override {};
 		void Render() override;
+
+		std::string GetSource() { return mSourcePath; };
 	private:
 		std::string mSourcePath;
 		std::vector<MeshFragment*> mFragments;
