@@ -115,14 +115,14 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;GLFW_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)lib\include;$(ProjectDir)src;$(SolutionDir)Engine\src;$(SolutionDir)Runtime\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\include;$(ProjectDir)src;$(SolutionDir)Engine\src;$(SolutionDir)Engine\lib\include;$(SolutionDir)Runtime\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TranslateIncludes>false</TranslateIncludes>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)Libs\x64_Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>RefractionEngine.lib;glfw3dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -147,19 +147,17 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="lib\include\imgui\imgui.cpp" />
-    <ClCompile Include="lib\include\imgui\imgui_demo.cpp" />
-    <ClCompile Include="lib\include\imgui\imgui_draw.cpp" />
-    <ClCompile Include="lib\include\imgui\imgui_impl_glfw.cpp" />
-    <ClCompile Include="lib\include\imgui\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="lib\include\imgui\imgui_tables.cpp" />
-    <ClCompile Include="lib\include\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\EditorState.cpp" />
+    <ClCompile Include="src\EditorPanels\PropertiesPanel\PropertiesPanel.cpp" />
+    <ClCompile Include="src\EditorLayer.cpp" />
     <ClCompile Include="src\Editor.cpp" />
     <ClCompile Include="src\EditorPlatform\AImGuiImpl.cpp" />
     <ClCompile Include="src\EditorPlatform\OpenGL\ImGuiImpl.cpp" />
-    <ClCompile Include="src\glad.c" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Engine\Engine.vcxproj">
+      <Project>{6414aa4a-f9f1-4cd7-88df-baadba8b8029}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Runtime\Runtime.vcxproj">
       <Project>{a3c49e0b-8fd8-4a6d-8634-1ffa9c9a809a}</Project>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
@@ -167,15 +165,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lib\include\imgui\imconfig.h" />
-    <ClInclude Include="lib\include\imgui\imgui.h" />
-    <ClInclude Include="lib\include\imgui\imgui_impl_glfw.h" />
-    <ClInclude Include="lib\include\imgui\imgui_impl_opengl3.h" />
-    <ClInclude Include="lib\include\imgui\imgui_impl_opengl3_loader.h" />
-    <ClInclude Include="lib\include\imgui\imgui_internal.h" />
-    <ClInclude Include="lib\include\imgui\imstb_rectpack.h" />
-    <ClInclude Include="lib\include\imgui\imstb_textedit.h" />
-    <ClInclude Include="lib\include\imgui\imstb_truetype.h" />
+    <ClInclude Include="src\EditorState.h" />
+    <ClInclude Include="src\EditorPanels\PropertiesPanel\PropertiesPanel.h" />
+    <ClInclude Include="src\EditorPanels\AEditorPanel.h" />
+    <ClInclude Include="src\EditorLayer.h" />
     <ClInclude Include="src\EditorPlatform\AImGuiImpl.h" />
     <ClInclude Include="src\EditorPlatform\OpenGL\ImGuiImpl.h" />
   </ItemGroup>

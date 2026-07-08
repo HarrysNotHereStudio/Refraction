@@ -8,7 +8,7 @@
 #include <cpptrace/cpptrace.hpp>
 #include <cpptrace/formatting.hpp>
 
-#include "Log.h"
+#include "Common.h"
 
 
 namespace {
@@ -24,12 +24,12 @@ namespace {
 	std::string LastClassPrinted = "";
 	std::string LastMessagePrinted = "";
 
-	void LogPrint(std::string threadName, std::string message, std::string logType, std::string printColour, std::string typeColour = "") {
+	void LogPrint(std::string logName, std::string message, std::string logType, std::string printColour, std::string typeColour = "") {
 		using std::vformat, std::make_format_args, std::clog;
 
 		// Get print information
 		std::string timestamp = Refraction::Log::GenerateTimestamp();
-		auto trace = cpptrace::generate_trace();
+		auto trace = cpptrace::stacktrace::current();
 		// Use the 3rd frame
 		auto frameSymbols = cpptrace::prune_symbol(trace.frames[2].symbol);
 		std::string fullSymbolStr = frameSymbols;
@@ -50,7 +50,7 @@ namespace {
 		// Print class name only once
 		if (LastClassPrinted != className) {
 			LastClassPrinted = className;
-			clog << vformat(threadColour + "{} - " + classColour + "class {}" + separator + "\n", make_format_args(threadName, LastClassPrinted));
+			clog << vformat(threadColour + "{} - " + classColour + "class {}" + separator + "\n", make_format_args(logName, LastClassPrinted));
 		}
 
 		if (typeColour == "") typeColour = printColour;
@@ -61,37 +61,48 @@ namespace {
 	}
 }
 
-std::string Refraction::Log::GenerateTimestamp() {
-	using namespace std::chrono;
+namespace Refraction {
+	std::string Log::GenerateTimestamp() {
+		using namespace std::chrono;
 
-	// get time variables
-	const auto now = system_clock::now();
-	const auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
-	const auto timer = system_clock::to_time_t(now);
+		// get time variables
+		const auto now = system_clock::now();
+		const auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+		const auto timer = system_clock::to_time_t(now);
 
-	#pragma warning(suppress : 4996)
-	const std::tm bt = *std::localtime(&timer);
+		#pragma warning(suppress : 4996)
+		const std::tm bt = *std::localtime(&timer);
 
-	std::ostringstream oss;
+		std::ostringstream oss;
 
-	oss << std::put_time(&bt, "%H:%M:%S"); // HH:MM:SS
-	oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
+		oss << std::put_time(&bt, "%H:%M:%S"); // HH:MM:SS
+		oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
 
-	return oss.str();
-};
+		return oss.str();
+	};
 
-void Refraction::Log::Info(std::string message) {
-	LogPrint(ThreadName, message, "INFO", ANSI24RGB(255, 255, 255), ANSI24RGB(200, 255, 255));
+	void Log::SInfo(std::string message) {
+		LogPrint("Refraction", message, "INFO", ANSI24RGB(255, 255, 255), ANSI24RGB(200, 255, 255));
+	}
+	void Log::SWarn(std::string message) {
+		LogPrint("Refraction", message, "WARN", ANSI24RGB(255, 160, 70));
+	}
+	void Log::SError(std::string message) {
+		LogPrint("Refraction", message, "ERR", ANSI24RGB(255, 60, 60));
+	}
+
+	void Log::Info(std::string message) {
+		LogPrint(mName, message, "INFO", ANSI24RGB(255, 255, 255), ANSI24RGB(200, 255, 255));
+	}
+	void Log::Warn(std::string message) {
+		LogPrint(mName, message, "WARN", ANSI24RGB(255, 160, 70));
+	}
+	void Log::Error(std::string message) {
+		LogPrint(mName, message, "ERR", ANSI24RGB(255, 60, 60));
+	}
+
+	Log Log::Render = Log("Renderer");
+	Log Log::Physics = Log("Physics");
+	Log Log::Runtime = Log("Runtime");
+	Log Log::Editor = Log("Editor");
 }
-void Refraction::Log::Warn(std::string message) {
-	LogPrint(ThreadName, message, "WARN", ANSI24RGB(255, 160, 70));
-}
-void Refraction::Log::Error(std::string message) {
-	LogPrint(ThreadName, message, "ERR", ANSI24RGB(255, 60, 60));
-}
-
-
-std::string Refraction::Log::ThreadName = "Main";
-std::string Refraction::RenderLog::ThreadName = "Renderer";
-std::string Refraction::RuntimeLog::ThreadName = "Runtime";
-std::string Refraction::PhysicsLog::ThreadName = "Physics";

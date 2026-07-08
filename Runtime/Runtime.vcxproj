@@ -174,11 +174,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Common.h" />
-    <ClInclude Include="src\EngineExports.h" />
     <ClInclude Include="src\Lua.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\EngineExports.cpp" />
     <ClCompile Include="src\Lua.cpp" />
     <ClCompile Include="src\Runtime.cpp" />
   </ItemGroup>

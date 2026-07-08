@@ -1,0 +1,53 @@
+#pragma once
+
+#include <string>
+
+#include <Core/Common.h>
+#include <Classes/Components/AComponent.h>
+#include <Classes/Objects/AObject.h>
+#include <Math/Vector2.h>
+#include <Math/Vector3.h>
+#include <Math/Vector4.h>
+#include <Math/Quaternion.h>
+#include <Math/Rect.h>
+#include <Math/Frustum.h>
+#include <Math/Transform.h>
+
+namespace Refraction::Utilities {
+	class ClassSerialiser {
+	public:
+		static std::string Serialise(Common::Ref<Objects::AObject> object);
+		static std::string Serialise(Common::Ref<Components::AComponent> comp);
+		static Common::Ref<Objects::AObject> DeserialiseObject(std::string serialisedData);
+		static Common::Ref<Components::AComponent> DeserialiseComponent(std::string serialisedData);
+
+		template<typename ObjectType>
+		static Common::Ref<ObjectType> DeserialiseObject(std::string serialisedData) {
+			auto obj = DeserialiseObject(serialisedData);
+			return dynamic_pointer_cast<ObjectType>(obj);
+		}
+		template<typename ComponentType>
+		static Common::Ref<ComponentType> DeserialiseComponent(std::string serialisedData) {
+			auto comp = DeserialiseComponent(serialisedData);
+			return dynamic_pointer_cast<ComponentType>(comp);
+		}
+
+
+		static std::string Serialise(Math::Vector2 vec);
+		static std::string Serialise(Math::Vector3 vec);
+		static std::string Serialise(Math::Vector4 vec);
+		static std::string Serialise(Math::Quaternion quat);
+		static std::string Serialise(Math::Rect rect);
+		static std::string Serialise(Math::Frustum frustum);
+		static std::string Serialise(Math::Transform transform);
+		static Math::Vector2 DeserialiseVector2(std::string serialisedData);
+		static Math::Vector3 DeserialiseVector3(std::string serialisedData);
+		static Math::Vector4 DeserialiseVector4(std::string serialisedData);
+		static Math::Quaternion DeserialiseQuaternion(std::string serialisedData);
+		static Math::Rect DeserialiseRect(std::string serialisedData);
+		static Math::Frustum DeserialiseFrustum(std::string serialisedData);
+		static Math::Transform DeserialiseTransform(std::string serialisedData);
+	};
+}
+
+

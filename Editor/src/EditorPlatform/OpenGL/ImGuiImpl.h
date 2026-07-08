@@ -2,14 +2,15 @@
 
 #include <EditorPlatform/AImGuiImpl.h>
 
-namespace RefractionEditor::Platform::OpenGL {
+namespace Refraction::Editor::Platform::OpenGL {
 	class ImGuiImpl : public AImGuiImpl {
 	public:
-		ImGuiImpl();
+		using AImGuiImpl::AImGuiImpl;
 
 		void Init() override;
 	private:
 		void BeginDraw() override;
 		void EndDraw() override;
+		void CloseWindow() override;
 	};
 }

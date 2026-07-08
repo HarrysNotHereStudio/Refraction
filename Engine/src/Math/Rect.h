@@ -28,7 +28,7 @@ namespace Refraction::Math {
 		Rect() : x(0), y(0), w(0), h(0) {};
 
 		inline bool operator==(const Rect& other) const {
-			return (x == other.x) && (y == other.y) && (w == other.w) && (h == other.w);
+			return (x == other.x) && (y == other.y) && (w == other.w) && (h == other.h);
 		}
 
 		inline void ToVector2(Vector2& pos, Vector2& size) const {

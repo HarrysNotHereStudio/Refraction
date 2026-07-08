@@ -7,27 +7,46 @@
 #include <imgui/imgui.h>
 
 #include <Core/Common.h>
+#include <Math/Vector3.h>
+#include <Classes/Objects/AObject.h>
+#include <Platform/AWindow.h>
 
-namespace RefractionEditor::Platform {
+constexpr int ImGuiImpl_DeltaHistoryMax = 90;
+
+namespace Refraction::Editor::Platform {
 	class AImGuiImpl {
 	public:
+		Common::Ref<Objects::AObject> mSelectedObject = nullptr;
+
 		static ImGuiStyle GetDefaultStyle();
 
-		AImGuiImpl();
+		AImGuiImpl(Common::Ref<Engine::Platform::AWindow> window);
 
 		virtual void Init() = 0;
 		void Draw();
-		void GetGuiInputState(Refraction::Enums::WindowInputState* inputState);
 		void HideMouse();
 
+		inline bool ShouldQuit() const { return mShouldQuit; }
+
 	protected:
+		Common::Ref<Engine::Platform::AWindow> mWindow;
+
 		virtual void BeginDraw() = 0;
 		virtual void EndDraw() = 0;
+		virtual void CloseWindow() = 0;
 
 	private:
+		std::deque<float> mDeltaHistory = {};
+		bool mShouldQuit = false;
+
 		void DrawMenu();
 		void DrawRibbon();
 		void DrawExplorer();
+		void DrawProperties();
 		void DrawAssetDrawer();
+
+		void DrawDebugInfoWindow();
+		void DrawSelectedTransformControl();
+		void DrawSelectedComponentControls();
 	};
 }

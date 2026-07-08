@@ -10,26 +10,22 @@
 #include <imgui/imgui_impl_opengl3.h>
 
 #include <Core/Common.h>
-#include <EngineExports.h>
 
 #include "ImGuiImpl.h"
 
-namespace RefractionEditor::Platform::OpenGL {
-	ImGuiImpl::ImGuiImpl() {}
-
+namespace Refraction::Editor::Platform::OpenGL {
 	void ImGuiImpl::Init() {
 		IMGUI_CHECKVERSION();
-		GLFWwindow* window = glfwGetCurrentContext();
 		ImGui::CreateContext();
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		ImGui::StyleColorsDark();
 		ImGui::GetStyle() = Platform::AImGuiImpl::GetDefaultStyle();
 
-		if (!ImGui_ImplGlfw_InitForOpenGL(window, true)) throw std::runtime_error("Failed to init ImGui for GLFW");
+		if (!ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)mWindow->GetNativeWindow(), true)) throw std::runtime_error("Failed to init ImGui for GLFW");
 		if (!ImGui_ImplOpenGL3_Init("#version 330")) throw std::runtime_error("Failed to init ImGui for OpenGL");
 
-		RefractionRuntime::Print("ImGui Ready");
+		Log::Editor.Info("ImGui initialised");
 	}
 
 	void ImGuiImpl::BeginDraw() {
@@ -39,5 +35,8 @@ namespace RefractionEditor::Platform::OpenGL {
 
 	void ImGuiImpl::EndDraw() {
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
+	void Platform::OpenGL::ImGuiImpl::CloseWindow() {
+		glfwSetWindowShouldClose((GLFWwindow*)mWindow->GetNativeWindow(), true);
 	}
 }

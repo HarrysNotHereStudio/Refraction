@@ -5,75 +5,71 @@
 #include <thread>
 #include <vector>
 #include <chrono>
-#include <functional>
 
 #include <Core/Common.h>
-#include <Core/Log.h>
-#include <Core/Utilities.h>
 #include <Math/Rect.h>
 #include "Settings.h"
 #include <Platform/PlatformAPI.h>
 
-#include <EngineClasses/Assets/Shader.h>
+#include <Classes/Assets/Shader.h>
+#include <Classes/Objects/SceneRoot.h>
 #include "Models/BaseScene.h"
 #include "Models/BaseCamera.h"
 #include "Buffers/UniformBufferObject.h"
 #include "Buffers/GBuffer.h"
 
 
-enum class RendererState {
-	NONE,
-	INIT,
-	RUNNING,
-	CLEANUP,
-	EXIT
-};
+namespace Refraction::Engine {
+	enum class RendererState {
+		NONE,
+		INIT,
+		RUNNING,
+		CLEANUP,
+		EXIT
+	};
 
-class Renderer {
-public:
-	static Renderer* GetInstance();
-	static void DestroyInstance();
+	class Renderer {
+	public:
+		BaseCamera* mCamera = nullptr;
 
-	RendererState GetState() { return mState; }
-	Refraction::Platform::Window* GetWindow() { return mWindow; }
-	BaseCamera* GetCamera() { return mCamera; }
+		Renderer();
 
-	void InitWindow();
-	void Init();
-	void Run();
+		void Init();
+		void RenderFrame(Common::Ref<Objects::SceneRoot> scene);
 
-	void SetResourcePath(std::string path) { Refraction::Constants::ResourcePath = path; };
-	void SetViewport(Refraction::Math::Rect rect) { mViewportRect = rect; };
-	void SetEditorInterfaceDrawCallback(std::function<void()> callback) { mEditorInterfaceDrawCallback = callback; };
-private:
-	static Renderer* mInstance;
+		void SetViewport(Math::Rect rect) { mViewportRect = rect; };
 
-	Renderer();
-	void UpdateUniformBuffers() const;
-	void Cleanup();
+		RendererState GetState() { return mState; }
+		Common::Ref<Assets::Texture> GetFinalOutput() const { return mFinalOutput; }
+	private:
+		void UpdateUniformBuffers();
+		void Cleanup();
 
-	// Deferred shading functions
-	void DSPassGeometry() const;
-	void DSPassLighting() const;
-	void DSPassFinal() const;
+		// Deferred shading functions
+		void DSPassGeometry(Common::Ref<Objects::SceneRoot> scene) const;
+		void DSPassLighting(Common::Ref<Objects::SceneRoot> scene) const;
+		void DSPassFinal() const;
 
-	RendererState mState = RendererState::NONE;
-	Refraction::Platform::Window* mWindow = nullptr;
+		RendererState mState = RendererState::NONE;
 
-	UniformBufferObject* mUBO = nullptr;
-	Refraction::Assets::Shader* mGeomPassShader = nullptr;
-	Refraction::Assets::Shader* mLightingPassShader = nullptr;
-	GBuffer* mGBuffer = nullptr;
-	Refraction::Math::Rect mViewportRect;
-	Refraction::Math::Rect mViewportRectLast = mViewportRect;
+		UniformBufferObject* mUBO = nullptr;
+		Assets::Shader* mGeomPassShader = nullptr;
+		Assets::Shader* mLightingPassShader = nullptr;
+		GBuffer* mGBuffer = nullptr;
+		Math::Rect mViewportRect;
+		Math::Rect mViewportRectLast = mViewportRect;
+		Common::Ref<Assets::Texture> mFinalOutput;
 
-	BaseCamera* mCamera = nullptr;
-	BaseScene* mLoadedScene = nullptr;
+		BaseScene* mLoadedScene = nullptr;
 
-	bool mShouldRender = true;
-	bool mWireframeMode = false;
-	double mElapsedRenderTime = 0;
-	double mDeltaRenderTime = 0;
-	std::chrono::steady_clock::time_point mStartRenderTime;
-	std::function<void()> mEditorInterfaceDrawCallback;
-};
+		bool mShouldRender = true;
+		bool mWireframeMode = false;
+		double mElapsedRenderTime = 0;
+		double mDeltaRenderTime = 0;
+		double mElapsedTickTime = 0;
+		double mDeltaTickTime = 0;
+		std::chrono::steady_clock::time_point mStartRenderTime;
+		std::chrono::steady_clock::time_point mStartTickTime;
+	};
+
+}

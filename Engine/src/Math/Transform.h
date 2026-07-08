@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Core/Utilities.h>
 #include <Math/Common.h>
 #include <Math/Vector3.h>
 #include <Math/Quaternion.h>
@@ -44,5 +43,17 @@ namespace Refraction::Math {
 		inline Vector3 GetForwardVector() const { return mOrientation * Vector3::Front(); }
 		inline Vector3 GetRightVector() const { return mOrientation * Vector3::Right(); }
 		inline Vector3 GetUpVector() const { return mOrientation * Vector3::Up(); }
+
+		inline std::string ToString(PrintFormatArgs fmtArgs = PrintFormatArgs()) const {
+			auto gridIndexStr = mSpatialPosition.GridIndex.ToString({ .AsInt = true, .Pretty = fmtArgs.Pretty });
+			auto cellPosStr = mSpatialPosition.CellPosition.ToString({ .AsInt = fmtArgs.AsInt, .Pretty = fmtArgs.Pretty });
+			auto orientationStr = mOrientation.ToString({ .AsInt = fmtArgs.AsInt, .Pretty = fmtArgs.Pretty });
+			auto scaleStr = mScale.ToString({ .AsInt = fmtArgs.AsInt, .Pretty = fmtArgs.Pretty });
+			if (fmtArgs.Pretty) {
+				return std::string("Position: [GridIndex: " + gridIndexStr + ", CellPosition: " + cellPosStr + "]\nOrientation: " + orientationStr + "\nScale: " + scaleStr);
+			} else {
+				return std::string("{[" + gridIndexStr + ", " + cellPosStr + "], " + orientationStr + ", " + scaleStr + "}");
+			}
+		}
 	};
 }

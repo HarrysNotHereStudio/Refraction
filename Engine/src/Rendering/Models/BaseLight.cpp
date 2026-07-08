@@ -9,7 +9,7 @@ BaseLight::BaseLight() {
 	mTransform = new Transform();
 	mBillboard = new Billboard();
 	mBillboard->mTransform = mTransform;
-	mBillboard->SetTexture(Refraction::Assets::Texture::EngineTexturesPath + "Icons_Light.png");
+	mBillboard->SetTexture(Refraction::FileHandling::GetResourcesPath() / "textures" / "Icons_Light.png");
 }
 
 void BaseLight::UpdateShaderUniforms(unsigned int index) {

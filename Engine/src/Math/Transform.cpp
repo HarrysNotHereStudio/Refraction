@@ -7,6 +7,8 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp> 
 
+#include <Core/Utilities.h>
+
 #include "Transform.h"
 
 namespace RUtil = Refraction::Utilities;

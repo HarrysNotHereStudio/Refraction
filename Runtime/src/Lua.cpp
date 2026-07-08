@@ -1,10 +1,9 @@
-#include <Core/Log.h>
-#include <Engine.h>
+#include <Core/Common.h>
 
 #include "Lua.h"
 
 void InitLua() {
-	Refraction::RuntimeLog::Info("Initialising Lua...");
+	Refraction::Log::Runtime.Info("Initialising Lua...");
 	lua.open_libraries(sol::lib::base);
 
 	lua.script("print('hello moon!')");
@@ -15,6 +14,6 @@ void ParseLua(const char* source) {
 		lua.script(source);
 	} catch (sol::error e) {
 		std::string err(e.what());
-		Refraction::RuntimeLog::Info("Error while parsing Lua: " + err);
+		Refraction::Log::Runtime.Info("Error while parsing Lua: " + err);
 	}
 }

@@ -1,9 +1,9 @@
 #pragma once
 
 #ifdef _WIN32
-#include <Platform/Windows/Window.h>
+#include <Platform/Windows/GLFWWindow.h>
 #endif
 
-namespace Refraction::Platform {
+namespace Refraction::Engine::Platform {
 
 }

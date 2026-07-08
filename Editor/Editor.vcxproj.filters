@@ -24,28 +24,13 @@
     <ClCompile Include="src\EditorPlatform\OpenGL\ImGuiImpl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lib\include\imgui\imgui.cpp">
+    <ClCompile Include="src\EditorLayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lib\include\imgui\imgui_demo.cpp">
+    <ClCompile Include="src\EditorPanels\PropertiesPanel\PropertiesPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lib\include\imgui\imgui_draw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\include\imgui\imgui_impl_glfw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\include\imgui\imgui_impl_opengl3.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\include\imgui\imgui_tables.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\include\imgui\imgui_widgets.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\glad.c">
+    <ClCompile Include="src\EditorState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,31 +41,16 @@
     <ClInclude Include="src\EditorPlatform\OpenGL\ImGuiImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="lib\include\imgui\imconfig.h">
+    <ClInclude Include="src\EditorLayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="lib\include\imgui\imgui.h">
+    <ClInclude Include="src\EditorPanels\AEditorPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="lib\include\imgui\imgui_impl_glfw.h">
+    <ClInclude Include="src\EditorPanels\PropertiesPanel\PropertiesPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="lib\include\imgui\imgui_impl_opengl3.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\include\imgui\imgui_impl_opengl3_loader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\include\imgui\imgui_internal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\include\imgui\imstb_rectpack.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\include\imgui\imstb_textedit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\include\imgui\imstb_truetype.h">
+    <ClInclude Include="src\EditorState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

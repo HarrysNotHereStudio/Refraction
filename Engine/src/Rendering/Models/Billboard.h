@@ -1,6 +1,6 @@
 #pragma once
 
-#include <EngineClasses/Assets/Texture.h>
+#include <Classes/Assets/Texture.h>
 #include <Math/Transform.h>
 
 class Billboard {
@@ -13,7 +13,7 @@ public:
 	Billboard();
 	~Billboard();
 
-	void SetTexture(std::string path);
+	void SetTexture(std::filesystem::path path);
 protected:
 	virtual void Draw();
 private:

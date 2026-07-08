@@ -24,7 +24,7 @@
     <ClInclude Include="src\Rendering\Buffers\UniformBufferObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\Windows\Window.h">
+    <ClInclude Include="src\Platform\Windows\GLFWWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\Models\BaseCamera.h">
@@ -39,7 +39,7 @@
     <ClInclude Include="src\Rendering\Models\DirectionalLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EngineClasses\Components\Mesh.h">
+    <ClInclude Include="src\Classes\Components\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\Models\PointLight.h">
@@ -60,31 +60,25 @@
     <ClInclude Include="src\Core\Utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Log.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Engine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Rendering\Models\Billboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EngineClasses\Components\AComponent.h">
+    <ClInclude Include="src\Classes\Components\AComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EngineClasses\Assets\Asset.h">
+    <ClInclude Include="src\Classes\Assets\Asset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EngineClasses\Objects\AObject.h">
+    <ClInclude Include="src\Classes\Objects\AObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EngineClasses\Assets\Material.h">
+    <ClInclude Include="src\Classes\Assets\Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EngineClasses\Assets\Texture.h">
+    <ClInclude Include="src\Classes\Assets\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EngineClasses\Assets\Shader.h">
+    <ClInclude Include="src\Classes\Assets\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lib\include\imgui\imconfig.h">
@@ -117,12 +111,6 @@
     <ClInclude Include="src\Platform\AWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\AImGuiImpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Platform\OpenGL\ImGuiImpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Math\Vector2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -144,10 +132,10 @@
     <ClInclude Include="src\Platform\PlatformAPI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EngineClasses\Objects\BasicObject.h">
+    <ClInclude Include="src\Classes\Objects\BasicObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EngineClasses\Components\APhysics.h">
+    <ClInclude Include="src\Classes\Components\APhysics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Math\Rect.h">
@@ -156,11 +144,59 @@
     <ClInclude Include="src\Math\Frustum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Classes\Objects\SceneRoot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\LayerSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\EventSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\AInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Instance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\ARenderingAPI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLRenderingAPI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\RenderLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Interface\Project.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Interface\AssetImporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\FileHandling.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\UUID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Classes\Assets\Assembly.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Time.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\PhysicsLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Classes\ClassSerialiser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Classes\ClassHeaders.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Engine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Rendering\Buffers\BaseBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -170,7 +206,7 @@
     <ClCompile Include="src\Rendering\Buffers\UniformBufferObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Windows\Window.cpp">
+    <ClCompile Include="src\Platform\Windows\GLFWWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Rendering\Models\BaseCamera.cpp">
@@ -185,7 +221,7 @@
     <ClCompile Include="src\Rendering\Models\DirectionalLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EngineClasses\Components\Mesh.cpp">
+    <ClCompile Include="src\Classes\Components\Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Rendering\Models\PointLight.cpp">
@@ -209,22 +245,22 @@
     <ClCompile Include="src\Rendering\Models\Billboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EngineClasses\Components\AComponent.cpp">
+    <ClCompile Include="src\Classes\Components\AComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EngineClasses\Assets\Asset.cpp">
+    <ClCompile Include="src\Classes\Assets\Asset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EngineClasses\Objects\AObject.cpp">
+    <ClCompile Include="src\Classes\Objects\AObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EngineClasses\Assets\Material.cpp">
+    <ClCompile Include="src\Classes\Assets\Material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EngineClasses\Assets\Texture.cpp">
+    <ClCompile Include="src\Classes\Assets\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EngineClasses\Assets\Shader.cpp">
+    <ClCompile Include="src\Classes\Assets\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="lib\include\imgui\imgui.cpp">
@@ -248,9 +284,6 @@
     <ClCompile Include="lib\include\imgui\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\OpenGL\ImGuiImpl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Math\Quaternion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -260,19 +293,61 @@
     <ClCompile Include="src\Math\Vector4.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EngineClasses\Objects\BasicObject.cpp">
+    <ClCompile Include="src\Classes\Objects\BasicObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EngineClasses\Components\APhysics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Platform\AImGuiImpl.cpp">
+    <ClCompile Include="src\Classes\Components\APhysics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Math\Rect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Math\Frustum.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Classes\Objects\SceneRoot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\LayerSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Instance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\ARenderingAPI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLRenderingAPI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\RenderLayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\AWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Interface\Project.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Interface\AssetImporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\FileHandling.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\UUID.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Classes\Assets\Assembly.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Time.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\PhysicsLayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Classes\ClassSerialiser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

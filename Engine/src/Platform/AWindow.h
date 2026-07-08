@@ -1,13 +1,35 @@
 #pragma once
 
-#include <Core/Common.h>
-#include <Core/Utilities.h>
 #include <string>
 
-namespace Refraction::Platform {
+#include <Settings.h>
+#include <Core/Common.h>
+#include <Math/Rect.h>
+#include <Rendering/Models/BaseCamera.h>
+
+namespace Refraction::Engine::Platform {
+	struct WindowProperties {
+		std::string Name = "";
+		int Width = 0;
+		int Height = 0;
+	};
+
+	enum class WindowInputState {
+		VIEWPORT,
+		GUI,
+		NONE
+	};
+	enum class WindowAPI {
+		NONE = 0,
+		GLFW
+	};
+
 	class AWindow {
 	public:
-		Refraction::Enums::WindowInputState mInputState = Refraction::Enums::WindowInputState::NONE;
+		static Common::Ref<AWindow> Get();
+		static WindowAPI GetAPI() { return CurrentAPI; }
+
+		WindowInputState mInputState = WindowInputState::NONE;
 		struct {
 			double lastMouseX = Settings::CurrentSettings->Window.Width / 2.0;
 			double lastMouseY = Settings::CurrentSettings->Window.Height / 2.0;
@@ -30,12 +52,22 @@ namespace Refraction::Platform {
 		virtual void InitInput() = 0;
 		virtual void OnUpdate() = 0;
 		virtual void Cleanup() = 0;
-		virtual uint32_t GetWidth() const { return mWidth; };
-		virtual uint32_t GetHeight() const { return mHeight; };
+		virtual Math::Rect GetRect() const { return mRect; }
 		virtual void* GetNativeWindow() const = 0;
+		virtual bool ShouldClose() const = 0;
+		virtual bool ShouldFramebufferRegenerate() const { return mShouldFramebufferRegen; }
+		// Sets the position and size of the window
+		virtual void SetRect(Math::Rect newRect) = 0;
+
+		BaseCamera* GetCurrentCamera() { return mCurrentCamera; }
+		void SetCurrentCamera(BaseCamera* pNewCamera) { mCurrentCamera = pNewCamera; }
 	protected:
-		Refraction::Enums::WindowInputState mInputStateLast = Refraction::Enums::WindowInputState::NONE;
-		uint32_t mWidth = 512;
-		uint32_t mHeight = 512;
+		WindowInputState mInputStateLast = WindowInputState::NONE;
+		Math::Rect mRect = Math::Rect(512);
+		bool mShouldFramebufferRegen = false;
+
+	private:
+		BaseCamera* mCurrentCamera = nullptr;
+		static WindowAPI CurrentAPI;
 	};
 }

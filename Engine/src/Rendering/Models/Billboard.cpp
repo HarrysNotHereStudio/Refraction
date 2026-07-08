@@ -1,7 +1,7 @@
 #include <vector>
 
 #include <Math/Vector3.h>
-#include <EngineClasses/Components/Mesh.h>
+#include <Classes/Components/Mesh.h>
 #include "BaseCamera.h"
 
 #include "Billboard.h"
@@ -31,7 +31,7 @@ Billboard::~Billboard() {
 }
 
 
-void Billboard::SetTexture(std::string path) {
+void Billboard::SetTexture(std::filesystem::path path) {
 	mTexture = Refraction::Assets::Texture::GetTexture(path, REFRACT_TEXTURE_TYPE_DIFFUSE);
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <EngineClasses/Assets/Shader.h>
+#include <Classes/Assets/Shader.h>
 #include "Billboard.h"
 
 class BaseLight

@@ -1,0 +1,27 @@
+#pragma once
+
+#include <filesystem>
+
+#include <Classes/Objects/AObject.h>
+#include <Math/Rect.h>
+
+namespace Refraction::Editor {
+	struct TempEditorState {
+		Common::Ref<Objects::AObject> SelectedObject = nullptr;
+		bool SimulatingGame = false;
+	};
+	struct PersistentEditorState {
+		std::filesystem::path ExecutableDir = "";
+		std::filesystem::path ResourcesDir = "";
+		Math::Rect WindowRect = Math::Rect(256, 256, 1280, 720);
+	};
+
+	class EditorState {
+	public:
+		static TempEditorState Temp;
+		static PersistentEditorState Persistent;
+
+		static bool Serialise();
+		static bool Deserialise();
+	};
+}

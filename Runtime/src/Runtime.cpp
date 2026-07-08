@@ -2,7 +2,6 @@
 
 #include "Common.h"
 
-#include "EngineExports.h"
 #include "Lua.h"
 
 #pragma unmanaged

@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include <Core/Log.h>
+#include <Core/Common.h>
 #include <Math/Transform.h>
 #include <Math/Vector3.h>
 #include <Math/Frustum.h>

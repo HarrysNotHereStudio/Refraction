@@ -1,5 +1,4 @@
 #include <Core/Utilities.h>
-#include <Core/Log.h>
 #include <Settings.h>
 
 #include "BaseCamera.h"

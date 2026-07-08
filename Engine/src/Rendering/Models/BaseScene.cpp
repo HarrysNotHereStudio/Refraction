@@ -1,8 +1,9 @@
 #include <Core/Common.h>
+#include <Core/Utilities.h>
 #include <Math/Vector3.h>
-#include <EngineClasses/Components/Mesh.h>
-#include <EngineClasses/Components/APhysics.h>
-#include <EngineClasses/Objects/BasicObject.h>
+#include <Classes/Components/Mesh.h>
+#include <Classes/Components/APhysics.h>
+#include <Classes/Objects/BasicObject.h>
 
 #include "BaseScene.h"
 
@@ -11,19 +12,7 @@ using Math::Vector3;
 
 
 BaseScene::BaseScene() {
-	Log::Info("Creating test model...");
-	auto nyen = Common::NewRef<Objects::BasicObject>();
-	nyen->GetComponent<Components::Mesh>()->LoadModel(Constants::GetResourcePath() + "/models/nyen/nyen plush.obj");
-	nyen->GetComponent<Components::APhysics>()->mAngularVelocity = Vector3(0, 64, 0);
-	mObjects.push_back(nyen);
-	mNyen = nyen;
-
-	auto backpack = Common::NewRef<Objects::BasicObject>();
-	backpack->GetComponent<Components::Mesh>()->LoadModel(Constants::GetResourcePath() + "/models/survivalBackpack/backpack.obj");
-	backpack->mTransform = Math::Transform::FromLookAt(Vector3(0, 14, 10), Vector3::Zero());
-	mObjects.push_back(backpack);
-
-	Refraction::Log::Info("Instantiating lights...");
+	Refraction::Log::SInfo("Instantiating lights...");
 	for (int i = 0; i < 27; i++) {
 		auto light = new PointLight();
 		light->mTransform->Translate(Vector3(Utilities::RandomI(20,-20), Utilities::RandomI(20, -20), Utilities::RandomI(20, -20)));
@@ -50,26 +39,4 @@ BaseScene::BaseScene() {
 	light5->mTransform->Translate(Vector3(4.0f, -2.0f, 12.0f));
 	light5->mLightColor = Vector3(1.0f, 1.0f, 1.0f);
 	mLights.push_back(light5);
-}
-
-// TODO: Implement file loading
-void BaseScene::LoadFromFile(std::string path) {
-}
-
-void BaseScene::Tick(float deltaTime) {
-	for (auto& object : mObjects) {
-		auto comps = object->GetComponents();
-		for (size_t i = 0; i < comps->size(); i++) {
-			comps->at(i)->Tick(deltaTime);
-		}
-	}
-}
-
-void BaseScene::Render() {
-	for (auto& object : mObjects) {
-		auto comps = object->GetComponents();
-		for (size_t i = 0; i < comps->size(); i++) {
-			comps->at(i)->Render();
-		}
-	}
 }
