@@ -59,6 +59,10 @@ namespace Refraction::Engine {
 		bool OpenScene(UUID sceneUUID);
 		// Returns the currently open scene
 		inline Common::Ref<Objects::SceneRoot> GetActiveScene() const { return mActiveScene; }
+		// Returns all scenes under this project
+		inline std::vector<Common::Ref<Objects::SceneRoot>> GetScenes() const { return mProjectData.Scenes; }
+		// Returns all global objects under this project
+		inline std::vector<Common::Ref<Objects::AObject>> GetGlobalObjects() const { return mProjectData.GlobalObjects; }
 
 		inline bool IsLoaded() const { return !mProjectPath.empty(); }
 	private:

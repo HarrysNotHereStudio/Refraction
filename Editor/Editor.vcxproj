@@ -117,6 +117,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)lib\include;$(ProjectDir)src;$(SolutionDir)Engine\src;$(SolutionDir)Engine\lib\include;$(SolutionDir)Runtime\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TranslateIncludes>false</TranslateIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,8 +148,9 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\EditorPanels\ExplorerPanel.cpp" />
     <ClCompile Include="src\EditorState.cpp" />
-    <ClCompile Include="src\EditorPanels\PropertiesPanel\PropertiesPanel.cpp" />
+    <ClCompile Include="src\EditorPanels\PropertiesPanel.cpp" />
     <ClCompile Include="src\EditorLayer.cpp" />
     <ClCompile Include="src\Editor.cpp" />
     <ClCompile Include="src\EditorPlatform\AImGuiImpl.cpp" />
@@ -165,12 +167,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\EditorPanels\ExplorerPanel.h" />
     <ClInclude Include="src\EditorState.h" />
-    <ClInclude Include="src\EditorPanels\PropertiesPanel\PropertiesPanel.h" />
+    <ClInclude Include="src\EditorPanels\PropertiesPanel.h" />
     <ClInclude Include="src\EditorPanels\AEditorPanel.h" />
     <ClInclude Include="src\EditorLayer.h" />
     <ClInclude Include="src\EditorPlatform\AImGuiImpl.h" />
     <ClInclude Include="src\EditorPlatform\OpenGL\ImGuiImpl.h" />
+    <ClInclude Include="src\ImGuiExtension.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

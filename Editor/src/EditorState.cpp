@@ -45,5 +45,6 @@ namespace Refraction::Editor {
 		} catch (const json::parse_error& err) {
 			throw std::runtime_error("Failed to parse JSON serialised EditorState data: " + std::string(err.what()));
 		}
+		return true;
 	}
 }

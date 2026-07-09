@@ -172,7 +172,7 @@ namespace Refraction::Components {
 			serialised["MeshAssetPath"] = mSourcePath.string();
 			return serialised.dump();
 		} catch (const json::parse_error& err) {
-			throw std::runtime_error("Failed to parse JSON");
+			throw std::runtime_error("Failed to parse JSON: " + std::string(err.what()));
 		}
 	}
 
@@ -185,7 +185,7 @@ namespace Refraction::Components {
 			mTransform = Utilities::ClassSerialiser::DeserialiseTransform(data.at("Transform"));
 			LoadModel(std::filesystem::path(data.at("MeshAssetPath").get<std::string>()));
 		} catch (const json::parse_error& err) {
-			throw std::runtime_error("Failed to parse JSON");
+			throw std::runtime_error("Failed to parse JSON: " + std::string(err.what()));
 		}
 	}
 

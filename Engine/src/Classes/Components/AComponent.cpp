@@ -33,7 +33,7 @@ namespace Refraction::Components {
 			mDisplayName = data.at("DisplayName").get<std::string>();
 			mUUID = UUID::Deserialise(data.at("UUID"));
 		} catch (const json::parse_error& err) {
-			throw std::runtime_error("Failed to parse JSON serialised Component data");
+			throw std::runtime_error("Failed to parse JSON serialised Component data: " + std::string(err.what()));
 		}
 	}
 }

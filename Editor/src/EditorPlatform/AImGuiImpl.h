@@ -13,6 +13,7 @@
 
 constexpr int ImGuiImpl_DeltaHistoryMax = 90;
 
+
 namespace Refraction::Editor::Platform {
 	class AImGuiImpl {
 	public:
@@ -23,30 +24,27 @@ namespace Refraction::Editor::Platform {
 		AImGuiImpl(Common::Ref<Engine::Platform::AWindow> window);
 
 		virtual void Init() = 0;
-		void Draw();
+		virtual void BeginDraw() = 0;
+		virtual void EndDraw() = 0;
+
 		void HideMouse();
+		void UpdateInputState();
+		void DrawMenu();
+		void DrawRibbon();
 
 		inline bool ShouldQuit() const { return mShouldQuit; }
 
 	protected:
 		Common::Ref<Engine::Platform::AWindow> mWindow;
 
-		virtual void BeginDraw() = 0;
-		virtual void EndDraw() = 0;
 		virtual void CloseWindow() = 0;
 
 	private:
 		std::deque<float> mDeltaHistory = {};
 		bool mShouldQuit = false;
 
-		void DrawMenu();
-		void DrawRibbon();
-		void DrawExplorer();
-		void DrawProperties();
 		void DrawAssetDrawer();
 
 		void DrawDebugInfoWindow();
-		void DrawSelectedTransformControl();
-		void DrawSelectedComponentControls();
 	};
 }

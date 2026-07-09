@@ -27,10 +27,13 @@
     <ClCompile Include="src\EditorLayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EditorPanels\PropertiesPanel\PropertiesPanel.cpp">
+    <ClCompile Include="src\EditorPanels\PropertiesPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\EditorState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EditorPanels\ExplorerPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,10 +50,16 @@
     <ClInclude Include="src\EditorPanels\AEditorPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EditorPanels\PropertiesPanel\PropertiesPanel.h">
+    <ClInclude Include="src\EditorPanels\PropertiesPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\EditorState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EditorPanels\ExplorerPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ImGuiExtension.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

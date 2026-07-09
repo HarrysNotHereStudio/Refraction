@@ -4,10 +4,12 @@
 
 #include <Classes/Objects/AObject.h>
 #include <Math/Rect.h>
+#include <Interface/Project.h>
 
 namespace Refraction::Editor {
 	struct TempEditorState {
 		Common::Ref<Objects::AObject> SelectedObject = nullptr;
+		Common::Ref<Engine::Project> ActiveProject = nullptr;
 		bool SimulatingGame = false;
 	};
 	struct PersistentEditorState {

@@ -2,6 +2,7 @@
 
 #include <Core/Common.h>
 #include <Core/EventSystem.h>
+#include <ImGuiExtension.h>
 
 namespace Refraction::Editor::Panels {
 	class AEditorPanel {

@@ -5,6 +5,7 @@
 #include <Platform/AWindow.h>
 #include <Interface/Project.h>
 #include <EditorPlatform/OpenGL/ImGuiImpl.h>
+#include <EditorPanels/AEditorPanel.h>
 
 namespace Refraction::Editor {
 	class EditorLayer : public Engine::ALayer {
@@ -21,5 +22,7 @@ namespace Refraction::Editor {
 		Common::Ref<Engine::Project> mProjectInstance;
 		Common::Ref<Engine::Platform::AWindow> mWindow;
 		Common::Ref<Editor::Platform::AImGuiImpl> mImGuiImpl;
+
+		std::vector<Common::URef<Panels::AEditorPanel>> mEditorPanels;
 	};
 }

@@ -8,6 +8,7 @@
 #include <Core/Utilities.h>
 #include <Classes/Components/Mesh.h>
 #include <Classes/Components/APhysics.h>
+#include <ImGuiExtension.h>
 
 #include "AImGuiImpl.h"
 
@@ -45,24 +46,7 @@ namespace Refraction::Editor {
 		mDeltaHistory.resize(ImGuiImpl_DeltaHistoryMax);
 	}
 
-	void Platform::AImGuiImpl::Draw() {
-		BeginDraw();
-		ImGui::NewFrame();
-
-		DrawMenu();
-		DrawRibbon();
-		DrawExplorer();
-		DrawAssetDrawer();
-
-		DrawDebugInfoWindow();
-		ImGui::Begin("Object Properties");
-		DrawSelectedTransformControl();
-		DrawSelectedComponentControls();
-		ImGui::End();
-
-		ImGui::Render();
-		EndDraw();
-
+	void Platform::AImGuiImpl::UpdateInputState() {
 		if (ImGui::GetIO().WantCaptureMouse && !(mWindow->mInputState == WindowInputState::VIEWPORT && ImGui::GetIO().MouseDown[1])) {
 			mWindow->mInputState = WindowInputState::GUI;
 		} else if (mWindow->mInputState == WindowInputState::GUI) {
@@ -102,13 +86,6 @@ namespace Refraction::Editor {
 	void Platform::AImGuiImpl::DrawRibbon() {
 	}
 
-	void Platform::AImGuiImpl::DrawExplorer() {
-	}
-
-	void Platform::AImGuiImpl::DrawProperties() {
-
-	}
-
 	void Platform::AImGuiImpl::DrawAssetDrawer() {
 	}
 
@@ -131,9 +108,9 @@ namespace Refraction::Editor {
 		if (ImGui::TreeNode("Rendering")) {
 			ImGui::Checkbox("Wireframe", &Settings::CurrentSettings->Graphics.WireframeEnabled);
 			ImGui::PlotLines("FPS", values, ImGuiImpl_DeltaHistoryMax, 0, std::format("Avg {:.3f}ms", average).c_str(), 0, 100.0f, ImVec2(0, 80.0f));
-			ImGui::Text(std::format("Elapsed: {:.3f}s", Time::GetSessionSec()).c_str());
-			ImGui::Text(std::format("Delta: {:.3f}ms", Time::RenderDelta * 1000).c_str());
-			ImGui::Text(std::format("FPS: {}", Utilities::DeltaToRate(Time::RenderDelta, 3)).c_str());
+			ImGui::Text(std::format("Elapsed: {:.3f}s", Time::GetSessionSec()));
+			ImGui::Text(std::format("Delta: {:.3f}ms", Time::RenderDelta * 1000));
+			ImGui::Text(std::format("FPS: {}", Utilities::DeltaToRate(Time::RenderDelta, 3)));
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Input")) {
@@ -143,124 +120,23 @@ namespace Refraction::Editor {
 			case WindowInputState::GUI: inputStateStr = "GUI"; break;
 			case WindowInputState::VIEWPORT: inputStateStr = "Viewport"; break;
 			}
-			ImGui::Text(std::format("Mouse focus: {}", inputStateStr).c_str());
+			ImGui::Text(std::format("Mouse focus: {}", inputStateStr));
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Camera")) {
 			auto camera = mWindow->GetCurrentCamera();
-			ImGui::Text(std::format("Camera frustum: {}", camera->mFrustum.ToString({ .AsInt = false, .Pretty = false })).c_str());
-			ImGui::Text(std::format("Camera speed: {}", Settings::CurrentSettings->Controls.CameraSpeed).c_str());
-			ImGui::Text(std::format("Camera grid index: {}", camera->mTransform.mSpatialPosition.GridIndex.ToString({ .AsInt = true, .Pretty = false })).c_str());
-			ImGui::Text(std::format("Camera cell position: {}", camera->mTransform.mSpatialPosition.CellPosition.ToString({ .AsInt = false, .Pretty = false })).c_str());
-			ImGui::Text(std::format("Camera world position: {}", camera->mTransform.GetWorldPosition().ToString({.AsInt = false, .Pretty = false})).c_str());
+			ImGui::Text(std::format("Camera frustum: {}", camera->mFrustum.ToString({ .AsInt = false, .Pretty = false })));
+			ImGui::Text(std::format("Camera speed: {}", Settings::CurrentSettings->Controls.CameraSpeed));
+			ImGui::Text(std::format("Camera grid index: {}", camera->mTransform.mSpatialPosition.GridIndex.ToString({ .AsInt = true, .Pretty = false })));
+			ImGui::Text(std::format("Camera cell position: {}", camera->mTransform.mSpatialPosition.CellPosition.ToString({ .AsInt = false, .Pretty = false })));
+			ImGui::Text(std::format("Camera world position: {}", camera->mTransform.GetWorldPosition().ToString({.AsInt = false, .Pretty = false})));
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Scene")) {
-			ImGui::Text(std::format("Mesh count: {}", Components::Mesh::FrameMeshCount).c_str());
-			ImGui::Text(std::format("Vertex count: {}", Components::Mesh::FrameVertexCount).c_str());
+			ImGui::Text(std::format("Mesh count: {}", Components::Mesh::FrameMeshCount));
+			ImGui::Text(std::format("Vertex count: {}", Components::Mesh::FrameVertexCount));
 			ImGui::TreePop();
 		}
 		ImGui::End();
-	}
-
-	void Platform::AImGuiImpl::DrawSelectedTransformControl() {
-		if (!mSelectedObject) {
-			float tmpX = 0;
-			float tmpY = 0;
-			float tmpZ = 0;
-
-			ImGui::Text("Instance name:");
-			ImGui::Separator();
-			ImGui::BeginDisabled();
-			ImGui::Text("Transform");
-			ImGui::Text("Position");
-			ImGui::PushItemWidth(100);
-			ImGui::DragScalar("X##Pos", ImGuiDataType_Float, &tmpX); ImGui::SameLine();
-			ImGui::DragScalar("Y##Pos", ImGuiDataType_Float, &tmpY); ImGui::SameLine();
-			ImGui::DragScalar("Z##Pos", ImGuiDataType_Float, &tmpZ);
-			ImGui::PopItemWidth();
-			ImGui::Text("Rotation");
-			ImGui::PushItemWidth(100);
-			ImGui::DragScalar("X##Rot", ImGuiDataType_Float, &tmpX); ImGui::SameLine();
-			ImGui::DragScalar("Y##Rot", ImGuiDataType_Float, &tmpY); ImGui::SameLine();
-			ImGui::DragScalar("Z##Rot", ImGuiDataType_Float, &tmpZ);
-			ImGui::PopItemWidth();
-			ImGui::Text("Scale");
-			ImGui::PushItemWidth(100);
-			ImGui::DragScalar("X##Scl", ImGuiDataType_Float, &tmpX); ImGui::SameLine();
-			ImGui::DragScalar("Y##Scl", ImGuiDataType_Float, &tmpY); ImGui::SameLine();
-			ImGui::DragScalar("Z##Scl", ImGuiDataType_Float, &tmpZ);
-			ImGui::PopItemWidth();
-			ImGui::EndDisabled();
-		} else {
-			// Handle rotation differently because it's not a Vector3
-			auto objectRotation = mSelectedObject->mTransform.mOrientation.ToEulerAngles();
-			auto displayedRotation = objectRotation;
-
-			ImGui::Text(std::string("Instance name: " + mSelectedObject->mInstanceName).c_str());
-			ImGui::Text("Transform");
-			ImGui::Text("Position");
-			ImGui::PushItemWidth(100);
-			ImGui::DragScalar("X##Pos", ImGuiDataType_Float, &mSelectedObject->mTransform.mSpatialPosition.CellPosition.x); ImGui::SameLine();
-			ImGui::DragScalar("Y##Pos", ImGuiDataType_Float, &mSelectedObject->mTransform.mSpatialPosition.CellPosition.y); ImGui::SameLine();
-			ImGui::DragScalar("Z##Pos", ImGuiDataType_Float, &mSelectedObject->mTransform.mSpatialPosition.CellPosition.z);
-			ImGui::PopItemWidth();
-			ImGui::Text("Rotation");
-			ImGui::PushItemWidth(100);
-			ImGui::DragScalar("X##Rot", ImGuiDataType_Float, &displayedRotation.x); ImGui::SameLine();
-			ImGui::DragScalar("Y##Rot", ImGuiDataType_Float, &displayedRotation.y); ImGui::SameLine();
-			ImGui::DragScalar("Z##Rot", ImGuiDataType_Float, &displayedRotation.z);
-			ImGui::Text(std::format("Quaternion value: {}", mSelectedObject->mTransform.mOrientation.ToString({ .AsInt = false, .Pretty = false })).c_str());
-			ImGui::PopItemWidth();
-			ImGui::Text("Scale");
-			ImGui::PushItemWidth(100);
-			ImGui::DragScalar("X##Scl", ImGuiDataType_Float, &mSelectedObject->mTransform.mScale.x); ImGui::SameLine();
-			ImGui::DragScalar("Y##Scl", ImGuiDataType_Float, &mSelectedObject->mTransform.mScale.y); ImGui::SameLine();
-			ImGui::DragScalar("Z##Scl", ImGuiDataType_Float, &mSelectedObject->mTransform.mScale.z);
-			ImGui::PopItemWidth();
-
-			if (objectRotation != displayedRotation) {
-				mSelectedObject->mTransform.mOrientation = Math::Quaternion::FromEulerAngles(displayedRotation);
-			}
-		}
-	}
-
-	void DrawComponentControl(Common::Ref<Components::AComponent>& comp) {
-		auto asAPhysics = dynamic_cast<Components::APhysics*>(comp.get());
-		ImGui::Text(std::format("Name: {}", comp->GetDisplayName()).c_str());
-		ImGui::Text(std::format("UUID: {}", comp->GetUUID().AsString()).c_str());
-		if (asAPhysics) {
-			ImGui::Separator();
-			ImGui::Text("Rigid Physics Component");
-			ImGui::Text("Linear Velocity");
-			ImGui::PushItemWidth(100);
-			ImGui::DragScalar("X##RigidPhysicsLinear", ImGuiDataType_Float, &asAPhysics->mLinearVelocity.x); ImGui::SameLine();
-			ImGui::DragScalar("Y##RigidPhysicsLinear", ImGuiDataType_Float, &asAPhysics->mLinearVelocity.y); ImGui::SameLine();
-			ImGui::DragScalar("Z##RigidPhysicsLinear", ImGuiDataType_Float, &asAPhysics->mLinearVelocity.z);
-			ImGui::PopItemWidth();
-			ImGui::Text("Angular Velocity");
-			ImGui::PushItemWidth(100);
-			ImGui::DragScalar("X##RigidPhysicsAngular", ImGuiDataType_Float, &asAPhysics->mAngularVelocity.x); ImGui::SameLine();
-			ImGui::DragScalar("Y##RigidPhysicsAngular", ImGuiDataType_Float, &asAPhysics->mAngularVelocity.y); ImGui::SameLine();
-			ImGui::DragScalar("Z##RigidPhysicsAngular", ImGuiDataType_Float, &asAPhysics->mAngularVelocity.z);
-			ImGui::PopItemWidth();
-			return;
-		}
-
-		auto asMesh = dynamic_cast<Components::Mesh*>(comp.get());
-		if (asMesh) {
-			ImGui::Separator();
-			ImGui::Text("Mesh Component");
-			ImGui::Text(std::format("Source: {}", asMesh->GetSource().string()).c_str());
-			return;
-		}
-	}
-
-	void Platform::AImGuiImpl::DrawSelectedComponentControls() {
-		if (!mSelectedObject) return;
-		auto comps = mSelectedObject->GetComponents();
-		for (size_t i = 0; i < comps->size(); i++) {
-			DrawComponentControl(comps->at(i));
-		}
 	}
 }
