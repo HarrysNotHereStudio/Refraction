@@ -78,20 +78,26 @@ namespace Refraction::Engine {
 
 	bool Project::New(const std::filesystem::path& projectPath, bool eraseExisting) {
 		auto pathStr = projectPath.string();
-		Log::SInfo("Creating project at " + pathStr);
+		if (!std::filesystem::is_directory(projectPath)) {
+			Log::SError(pathStr + " is not a valid directory");
+			return false;
+		}
 
-		if (std::filesystem::exists(projectPath)) {
+		if (std::filesystem::exists(projectPath) && !std::filesystem::is_empty(projectPath)) {
 			if (!eraseExisting) {
-				Log::SError(pathStr + " already exists and eraseExisting is false, aborting");
+				Log::SError(pathStr + " already exists and eraseExisting is false");
 				return false;
 			} else {
 				std::filesystem::remove_all(projectPath);
 			}
+		} else if (!std::filesystem::exists(projectPath)) {
+			if (!std::filesystem::create_directory(projectPath)) {
+				Log::SError("Failed to create project directory at " + pathStr);
+				return false;
+			}
 		}
-		if (!std::filesystem::create_directory(projectPath)) {
-			Log::SError("Failed to create project directory at " + pathStr);
-			return false;
-		}
+
+		Log::SInfo("Creating project at " + pathStr);
 
 		mProjectPath = projectPath;
 		mProjectData = ProjectData{};
@@ -111,6 +117,9 @@ namespace Refraction::Engine {
 			Log::SError("Attempt to open invalid project path at " + pathStr);
 			return false;
 		}
+
+		// Close any active project
+		if (IsLoaded()) Close();
 
 		auto projectFolderPath = projectFilePath.parent_path();
 		mProjectPath = projectFolderPath;
@@ -138,7 +147,7 @@ namespace Refraction::Engine {
 
 	bool Project::Save() {
 		if (!IsLoaded()) {
-			Log::SError("Attempt to save project when one isn't loaded");
+			Log::SWarn("Attempt to save project when one isn't loaded");
 			return false;
 		}
 
@@ -154,12 +163,18 @@ namespace Refraction::Engine {
 
 	void Project::Close() {
 		if (!IsLoaded()) {
-			Log::SError("Attempt to close project when one isn't loaded");
+			Log::SWarn("Attempt to close project when one isn't loaded");
 			return;
 		}
 
 		Log::SInfo("Closing project at " + mProjectPath.string());
 
+		for (auto& scene : mProjectData.Scenes) {
+			scene.reset();
+		}
+		for (auto& globalObject : mProjectData.GlobalObjects) {
+			globalObject.reset();
+		}
 		mProjectPath.clear();
 		mProjectData = ProjectData{};
 

@@ -16,6 +16,7 @@ namespace Refraction::Editor {
 		std::filesystem::path ExecutableDir = "";
 		std::filesystem::path ResourcesDir = "";
 		Math::Rect WindowRect = Math::Rect(256, 256, 1280, 720);
+		std::vector<std::filesystem::path> RecentProjects = {};
 	};
 
 	class EditorState {

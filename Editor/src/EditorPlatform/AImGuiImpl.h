@@ -10,6 +10,7 @@
 #include <Math/Vector3.h>
 #include <Classes/Objects/AObject.h>
 #include <Platform/AWindow.h>
+#include <Interface/Project.h>
 
 constexpr int ImGuiImpl_DeltaHistoryMax = 90;
 
@@ -21,7 +22,7 @@ namespace Refraction::Editor::Platform {
 
 		static ImGuiStyle GetDefaultStyle();
 
-		AImGuiImpl(Common::Ref<Engine::Platform::AWindow> window);
+		AImGuiImpl(Common::Ref<Engine::Platform::AWindow> window, Common::Ref<Engine::Project> project);
 
 		virtual void Init() = 0;
 		virtual void BeginDraw() = 0;
@@ -36,6 +37,7 @@ namespace Refraction::Editor::Platform {
 
 	protected:
 		Common::Ref<Engine::Platform::AWindow> mWindow;
+		Common::Ref<Engine::Project> mProject;
 
 		virtual void CloseWindow() = 0;
 

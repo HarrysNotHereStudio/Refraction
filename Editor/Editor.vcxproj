@@ -149,6 +149,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\EditorPanels\ExplorerPanel.cpp" />
+    <ClCompile Include="src\EditorPlatform\Windows\Dialogs.cpp" />
     <ClCompile Include="src\EditorState.cpp" />
     <ClCompile Include="src\EditorPanels\PropertiesPanel.cpp" />
     <ClCompile Include="src\EditorLayer.cpp" />
@@ -167,7 +168,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\EditorPlatform\Linux\Dialogs.h" />
+    <ClInclude Include="src\EditorPlatform\Windows\Dialogs.h" />
     <ClInclude Include="src\EditorPanels\ExplorerPanel.h" />
+    <ClInclude Include="src\EditorPlatform\ADialogs.h" />
     <ClInclude Include="src\EditorState.h" />
     <ClInclude Include="src\EditorPanels\PropertiesPanel.h" />
     <ClInclude Include="src\EditorPanels\AEditorPanel.h" />

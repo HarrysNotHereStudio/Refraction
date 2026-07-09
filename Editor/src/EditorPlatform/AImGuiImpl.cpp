@@ -8,7 +8,9 @@
 #include <Core/Utilities.h>
 #include <Classes/Components/Mesh.h>
 #include <Classes/Components/APhysics.h>
+#include <EditorState.h>
 #include <ImGuiExtension.h>
+#include <EditorPlatform/ADialogs.h>
 
 #include "AImGuiImpl.h"
 
@@ -42,7 +44,7 @@ namespace Refraction::Editor {
 		return style;
 	}
 
-	Platform::AImGuiImpl::AImGuiImpl(Common::Ref<Engine::Platform::AWindow> window) : mWindow(window) {
+	Platform::AImGuiImpl::AImGuiImpl(Common::Ref<Engine::Platform::AWindow> window, Common::Ref<Engine::Project> project) : mWindow(window), mProject(project) {
 		mDeltaHistory.resize(ImGuiImpl_DeltaHistoryMax);
 	}
 
@@ -61,8 +63,25 @@ namespace Refraction::Editor {
 	void Platform::AImGuiImpl::DrawMenu() {
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
+				if (ImGui::MenuItem("Save")) {
+					mProject->Save();
+				}
 				if (ImGui::MenuItem("New")) {
-					
+					mProject->New(Dialogs::SelectFolder("Select Project Folder"));
+				}
+				if (ImGui::MenuItem("Open")) {
+					auto path = Dialogs::SelectFile(REFRACTION_PROJECT_EXTENSION, "Select Project File");
+					EditorState::Persistent.RecentProjects.push_back(path);
+					mProject->Open(path);
+				}
+				if (ImGui::BeginMenu("Open Recent")) {
+					for (std::filesystem::path& path : EditorState::Persistent.RecentProjects) {
+						if (!std::filesystem::exists(path)) continue;
+						if (ImGui::MenuItem(path.filename().string().c_str())) {
+							mProject->Open(path);
+						}
+					}
+					ImGui::EndMenu();
 				}
 				if (ImGui::MenuItem("Quit")) {
 					mShouldQuit = true;

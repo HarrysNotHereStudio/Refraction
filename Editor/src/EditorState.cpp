@@ -16,6 +16,11 @@ namespace Refraction::Editor {
 		json serialised;
 		serialised["ResourcesDir"] = Persistent.ResourcesDir;
 		serialised["WindowRect"] = Utilities::ClassSerialiser::Serialise(Persistent.WindowRect);
+		serialised["RecentProjects"] = {};
+		std::remove_if(Persistent.RecentProjects.begin(), Persistent.RecentProjects.end(), [&](std::filesystem::path path) {
+			if (!std::filesystem::is_regular_file(path)) return true;
+			serialised["RecentProjects"].push_back(path.string());
+		});
 
 		auto stateFilePath = Persistent.ExecutableDir / "EditorState.rfc";
 		std::ofstream dataFile(stateFilePath);
@@ -40,8 +45,11 @@ namespace Refraction::Editor {
 		auto serialised = FileHandling::ReadFile(stateFilePath);
 		try {
 			json data = json::parse(serialised);
-			Persistent.ResourcesDir = std::filesystem::path(data.at("ResourcesDir").get<std::string>());
-			Persistent.WindowRect = Utilities::ClassSerialiser::DeserialiseRect(data.at("WindowRect"));
+			if (data.contains("ResourcesDir")) Persistent.ResourcesDir = std::filesystem::path(data.at("ResourcesDir").get<std::string>());
+			if (data.contains("WindowRect")) Persistent.WindowRect = Utilities::ClassSerialiser::DeserialiseRect(data.at("WindowRect"));
+			if (data.contains("RecentProjects")) std::for_each(data.at("RecentProjects").begin(), data.at("RecentProjects").end(), [&](std::string path) {
+				Persistent.RecentProjects.push_back(std::filesystem::path(path));
+			});
 		} catch (const json::parse_error& err) {
 			throw std::runtime_error("Failed to parse JSON serialised EditorState data: " + std::string(err.what()));
 		}
