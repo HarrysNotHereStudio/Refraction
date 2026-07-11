@@ -76,7 +76,7 @@ namespace Refraction::Engine {
 
 	unsigned int quadVAO = 0;
 	unsigned int quadVBO;
-	void renderQuad() {
+	static void renderQuad() {
 		if (quadVAO == 0) {
 			float quadVertices[] = {
 				// positions        // texture Coords
@@ -113,6 +113,8 @@ namespace Refraction::Engine {
 
 		UpdateUniformBuffers();
 
+		mGBuffer->StartFrame();
+
 		// Draw scene
 		DSPassGeometry(scene);
 		DSPassLighting(scene);
@@ -124,13 +126,12 @@ namespace Refraction::Engine {
 		newData.viewMatrix = Utilities::NativeToGLMMat4(mCamera->GetViewMatrix());
 
 		if (mViewportRectLast != mViewportRect) {
-			Log::Render.Info("Resizing viewport to " + mViewportRect.ToString({ .Pretty = false }));
 			if (!mGBuffer->Regenerate(mViewportRect.w, mViewportRect.h)) throw;
-			glViewport(mViewportRect.x, mViewportRect.y, mViewportRect.w, mViewportRect.h);
-			mViewportRectLast = mViewportRect;
+			glViewport(0, 0, mViewportRect.w, mViewportRect.h);
 			mCamera->mFrustum.w = mViewportRect.w;
 			mCamera->mFrustum.h = mViewportRect.h;
 			projectionMatrix = Math::Matrix4::Perspective(mCamera->mFrustum);
+			mViewportRectLast = mViewportRect;
 		}
 		newData.perspectiveMatrix = Utilities::NativeToGLMMat4(projectionMatrix);
 		mUBO->UploadNewData(newData);
@@ -148,7 +149,7 @@ namespace Refraction::Engine {
 	// Deferred Shading
 
 	void Renderer::DSPassGeometry(Common::Ref<Objects::SceneRoot> scene) const {
-		mGBuffer->BindFull();
+		mGBuffer->BindGeometryPass();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		mGeomPassShader->Activate();
 
@@ -159,19 +160,13 @@ namespace Refraction::Engine {
 		// Draw models
 		scene->RenderScene();
 
-		// Draw billboards
-		Billboard::DrawAll();
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 		if (Settings::CurrentSettings->Graphics.WireframeEnabled) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 	}
 
 	void Renderer::DSPassLighting(Common::Ref<Objects::SceneRoot> scene) const {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		mGBuffer->BindForLighting();
+		mGBuffer->BindLightingPass();
 
 		mLightingPassShader->Activate();
 		for (auto i = 0; i < mLoadedScene->mLights.size(); i++) {
@@ -179,18 +174,25 @@ namespace Refraction::Engine {
 			light->UpdateShaderUniforms(i);
 		}
 		mLightingPassShader->SetUniformVec3("viewPos", mCamera->mTransform.GetWorldPosition());
-		// finally render quad
+
+		glDepthMask(GL_FALSE);
+		// Render sky
+		Assets::Shader::GetShaderByName("DefaultSky")->Activate();
+		renderQuad();
+		// Render grid
+		//Assets::Shader::GetShaderByName("EditorGrid")->Activate();
+		//renderQuad();
+		glDepthMask(GL_TRUE);
+
+		mLightingPassShader->Activate();
+		// Render lit objects
 		renderQuad();
 	}
 
 	void Renderer::DSPassFinal() const {
-		mGBuffer->BindForFinal();
+		mGBuffer->BindFinalPass();
 
-		int viewX0 = mViewportRect.x;
-		int viewY0 = mViewportRect.y;
-		int viewX1 = viewX0 + mViewportRect.w;
-		int viewY1 = viewY0 + mViewportRect.h;
-		glBlitFramebuffer(0, 0, mViewportRect.w, mViewportRect.h, viewX0, viewY0, viewX1, viewY1, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		glBlitFramebuffer(0, 0, mViewportRect.w, mViewportRect.h, 0, 0, mViewportRect.w, mViewportRect.h, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 

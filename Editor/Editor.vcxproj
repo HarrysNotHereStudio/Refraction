@@ -156,6 +156,7 @@
     <ClCompile Include="src\Editor.cpp" />
     <ClCompile Include="src\EditorPlatform\AImGuiImpl.cpp" />
     <ClCompile Include="src\EditorPlatform\OpenGL\ImGuiImpl.cpp" />
+    <ClCompile Include="src\EditorPanels\ViewportPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.vcxproj">
@@ -179,6 +180,7 @@
     <ClInclude Include="src\EditorPlatform\AImGuiImpl.h" />
     <ClInclude Include="src\EditorPlatform\OpenGL\ImGuiImpl.h" />
     <ClInclude Include="src\ImGuiExtension.h" />
+    <ClInclude Include="src\EditorPanels\ViewportPanel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

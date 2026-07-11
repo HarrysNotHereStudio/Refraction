@@ -45,6 +45,8 @@ namespace Refraction::Engine::Platform {
 			bool mouseLeft = false;
 			bool mouseRight = false;
 		} mInput;
+		bool mShouldFramebufferRegen = false;
+		bool mIgnoreWindowResize = false;
 
 		virtual ~AWindow() = default;
 
@@ -55,7 +57,6 @@ namespace Refraction::Engine::Platform {
 		virtual Math::Rect GetRect() const { return mRect; }
 		virtual void* GetNativeWindow() const = 0;
 		virtual bool ShouldClose() const = 0;
-		virtual bool ShouldFramebufferRegenerate() const { return mShouldFramebufferRegen; }
 		// Sets the position and size of the window
 		virtual void SetRect(Math::Rect newRect) = 0;
 
@@ -64,7 +65,6 @@ namespace Refraction::Engine::Platform {
 	protected:
 		WindowInputState mInputStateLast = WindowInputState::NONE;
 		Math::Rect mRect = Math::Rect(512);
-		bool mShouldFramebufferRegen = false;
 
 	private:
 		BaseCamera* mCurrentCamera = nullptr;

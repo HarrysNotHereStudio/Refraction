@@ -39,6 +39,9 @@
     <ClCompile Include="src\EditorPlatform\Windows\Dialogs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\EditorPanels\ViewportPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\EditorPlatform\AImGuiImpl.h">
@@ -72,6 +75,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\EditorPlatform\Linux\Dialogs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EditorPanels\ViewportPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,6 +2,7 @@
 #include <EditorState.h>
 #include <EditorPanels/ExplorerPanel.h>
 #include <EditorPanels/PropertiesPanel.h>
+#include <EditorPanels/ViewportPanel.h>
 
 #include "EditorLayer.h"
 
@@ -10,6 +11,7 @@ namespace Refraction::Editor {
 		: mEventDispatcher(eventDispatcher), mProjectInstance(projectInstance), mWindow(window), mImGuiImpl(imGuiImpl) {
 		mEditorPanels.push_back(Common::NewURef<Panels::ExplorerPanel>());
 		mEditorPanels.push_back(Common::NewURef<Panels::PropertiesPanel>());
+		mEditorPanels.push_back(Common::NewURef<Panels::ViewportPanel>(eventDispatcher));
 	}
 
 	void EditorLayer::OnAttach() {
@@ -19,6 +21,7 @@ namespace Refraction::Editor {
 			Log::Editor.Warn("Failed to deserialise EditorState");
 		}
 		EditorState::Temp.ActiveProject = mProjectInstance;
+		mWindow->mIgnoreWindowResize = true;
 		mImGuiImpl->Init();
 
 		for (auto& panel : mEditorPanels) {
@@ -27,6 +30,7 @@ namespace Refraction::Editor {
 	}
 
 	void EditorLayer::OnDetach() {
+		EditorState::Persistent.WindowRect = mWindow->GetRect();
 		if (!EditorState::Serialise()) {
 			Log::Editor.Warn("Failed to serialise EditorState");
 		}
@@ -67,7 +71,6 @@ namespace Refraction::Editor {
 		ImGuiStyle& style = ImGui::GetStyle();
 		float minSizeX = style.WindowMinSize.x;
 		style.WindowMinSize.x = 300.0f;
-		//ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 		ImGui::DockSpace(ImGui::GetID("EditorDockspace"));
 		style.WindowMinSize.x = minSizeX;
 
@@ -76,17 +79,23 @@ namespace Refraction::Editor {
 		}
 		ImGui::End();
 
+		mImGuiImpl->DrawDebugInfoWindow();
 		mImGuiImpl->EndDraw();
 		mImGuiImpl->UpdateInputState();
 		
 		if (mImGuiImpl->ShouldQuit()) {
 			mEventDispatcher->Dispatch(Common::NewRef<Events::ProgramCloseEvent>());
 		}
+
+		if (EditorState::Temp.ViewportHovered) {
+			mWindow->mInputState = Engine::Platform::WindowInputState::VIEWPORT;
+		} else {
+			mWindow->mInputState = Engine::Platform::WindowInputState::GUI;
+		}
 	}
 
 	void EditorLayer::OnEvent(Common::Ref<Events::Event> event) {
 		if (auto e = Common::AsA<Events::ViewportResizedEvent>(event)) {
-			EditorState::Persistent.WindowRect = e->mViewportRect;
 		} else if (auto e = Common::AsA<Events::ProgramCloseEvent>(event)) {
 			// TODO: close confirmation modal
 		}

@@ -11,6 +11,7 @@ namespace Refraction::Editor {
 		Common::Ref<Objects::AObject> SelectedObject = nullptr;
 		Common::Ref<Engine::Project> ActiveProject = nullptr;
 		bool SimulatingGame = false;
+		bool ViewportHovered = false;
 	};
 	struct PersistentEditorState {
 		std::filesystem::path ExecutableDir = "";

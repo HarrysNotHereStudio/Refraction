@@ -32,6 +32,7 @@ namespace Refraction::Editor::Platform {
 		void UpdateInputState();
 		void DrawMenu();
 		void DrawRibbon();
+		void DrawDebugInfoWindow();
 
 		inline bool ShouldQuit() const { return mShouldQuit; }
 
@@ -47,6 +48,5 @@ namespace Refraction::Editor::Platform {
 
 		void DrawAssetDrawer();
 
-		void DrawDebugInfoWindow();
 	};
 }

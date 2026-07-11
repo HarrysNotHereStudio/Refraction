@@ -23,7 +23,7 @@ namespace Refraction::Engine {
 	void RenderLayer::OnEvent(Common::Ref<Events::Event> event) {
 		// Update renderer for a resized viewport
 		if (auto e = Common::AsA<Events::ViewportResizedEvent>(event)) {
-			mRenderer.SetViewport(Math::Rect(0, 0, e->mViewportRect.w, e->mViewportRect.h));
+			mRenderer.SetViewport(Math::Rect(e->mViewportRect.x, e->mViewportRect.y, e->mViewportRect.w, e->mViewportRect.h));
 		} else if (auto e = Common::AsA<Events::ProgramCloseEvent>(event)) {
 
 		}

@@ -104,6 +104,7 @@ namespace Refraction::Editor::Panels {
 				}
 			}
 		}
+		if (EditorState::Temp.SimulatingGame) ImGui::EndDisabled();
 		ImGui::End();
 	}
 }

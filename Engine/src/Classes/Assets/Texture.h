@@ -27,7 +27,8 @@ namespace Refraction::Assets {
 
 		void Activate(unsigned int unitOffset);
 
-		AssetMetadata& GetMetadata() override { return mMetadata; }
+		unsigned int GetID() const { return mID; }
+		TextureMetadata& GetMetadata() override { return mMetadata; }
 	protected:
 
 		void LoadAsset(const std::filesystem::path& source) override;

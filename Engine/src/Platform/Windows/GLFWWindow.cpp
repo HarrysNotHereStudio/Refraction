@@ -50,6 +50,7 @@ namespace Refraction::Engine::Platform {
 	}
 
 	void GLFWWindow::OnUpdate() {
+
 		if (mInput.inputEnabled) {
 			using Math::Vector3;
 			using Math::Vector2;
@@ -91,9 +92,11 @@ namespace Refraction::Engine::Platform {
 			} else {
 				glfwSetInputMode(mHandle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			}
+
 			mInput.lastMouseX = currentMouseX;
 			mInput.lastMouseY = currentMouseY;
 		}
+
 
 		glfwPollEvents();
 		glfwSwapBuffers(mHandle);
@@ -103,7 +106,7 @@ namespace Refraction::Engine::Platform {
 		glfwGetFramebufferSize(mHandle, &currentRect.w, &currentRect.h);
 		if (currentRect != mRect) {
 			mRect = currentRect;
-			mShouldFramebufferRegen = true;
+			if(!mIgnoreWindowResize) mShouldFramebufferRegen = true;
 		}
 	}
 

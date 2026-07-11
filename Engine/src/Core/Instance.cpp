@@ -21,8 +21,9 @@ namespace Refraction::Engine {
 		mWindow->InitInput();
 		while (!mWindow->ShouldClose()) {
 			mWindow->OnUpdate();
-			if (mWindow->ShouldFramebufferRegenerate()) {
+			if (mWindow->mShouldFramebufferRegen) {
 				mLayerStack->Dispatch(Common::NewRef<Events::ViewportResizedEvent>(mWindow->GetRect()));
+				mWindow->mShouldFramebufferRegen = false;
 			}
 			mRenderingAPI->Clear(Math::Vector4(0, 0, 0, 1));
 			mLayerStack->OnPass();

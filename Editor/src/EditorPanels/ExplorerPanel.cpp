@@ -46,6 +46,7 @@ namespace Refraction::Editor::Panels {
 				MakeTree(globalObj);
 			}
 		}
+		if (EditorState::Temp.SimulatingGame) ImGui::EndDisabled();
 		ImGui::End();
 	}
 }

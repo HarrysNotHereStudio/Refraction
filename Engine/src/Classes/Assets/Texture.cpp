@@ -45,9 +45,10 @@ namespace Refraction::Assets {
 
 		// Gather metadata
 		glBindTexture(GL_TEXTURE_2D, mID);
-		glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WIDTH, &mMetadata.Width);
-		glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_HEIGHT, &mMetadata.Height);
-		glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_COMPONENTS, &mMetadata.Channels);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &mMetadata.Width);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &mMetadata.Height);
+		//glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPONENTS, &mMetadata.Channels);
+		mMetadata.Channels = 3; // hardcode this shi for now
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 

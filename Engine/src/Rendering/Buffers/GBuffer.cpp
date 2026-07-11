@@ -119,19 +119,32 @@ bool GBuffer::Regenerate(unsigned int viewWidth, unsigned int viewHeight) {
 	return true;
 }
 
-void GBuffer::BindForWrite() {
+void GBuffer::StartFrame() {
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mID);
+	glDrawBuffer(GL_COLOR_ATTACHMENT4);
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void GBuffer::BindFramebufferWrite() {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mID);
 }
 
-void GBuffer::BindForRead() {
+void GBuffer::BindFramebufferRead() {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, mID);
 }
 
-void GBuffer::BindFull() {
+void GBuffer::BindFramebufferFull() {
 	glBindFramebuffer(GL_FRAMEBUFFER, mID);
 }
 
-void GBuffer::BindForLighting() {
+void GBuffer::BindGeometryPass() {
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mID);
+
+	GLenum drawBuffs[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(GBUFFER_iTEXTURECOUNT, drawBuffs);
+}
+
+void GBuffer::BindLightingPass() {
 	glDrawBuffer(GL_COLOR_ATTACHMENT4);
 
 	for (unsigned int i = 0; i < GBUFFER_iTEXTURECOUNT; i++) {
@@ -140,7 +153,7 @@ void GBuffer::BindForLighting() {
 	}
 }
 
-void GBuffer::BindForFinal() {
+void GBuffer::BindFinalPass() {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, mID);
 	glReadBuffer(GL_COLOR_ATTACHMENT4);

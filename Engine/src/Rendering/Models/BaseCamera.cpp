@@ -7,7 +7,7 @@ namespace RMath = Refraction::Math;
 
 BaseCamera* BaseCamera::ActiveCamera = nullptr;
 
-BaseCamera::BaseCamera() : mFrustum(Settings::CurrentSettings->Graphics.ViewportWidth, Settings::CurrentSettings->Graphics.ViewportHeight, 70.0f, 0.01f, 1000.0f) {
+BaseCamera::BaseCamera() : mFrustum(Settings::CurrentSettings->Graphics.ViewportWidth, Settings::CurrentSettings->Graphics.ViewportHeight, 90.0f, 0.01f, 1000.0f) {
 	mTransform = RMath::Transform();
 	mTransform.Translate(RMath::Vector3::Front()*-5.0f);
 	mTransform.mOrientation = RMath::Quaternion::LookAt(mTransform.GetWorldPosition(), RMath::Vector3::Zero(), RMath::Vector3::Up());
