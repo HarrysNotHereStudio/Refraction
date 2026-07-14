@@ -38,7 +38,7 @@ namespace Refraction::Math {
 		void LookAt(Vector3 target, Vector3 targetUp = Vector3::Up());
 
 		// Generates the Transform's matrix
-		Matrix4 GetTransform() const;
+		Matrix4 ToMatrix() const;
 		inline Vector3 GetWorldPosition() const { return mSpatialPosition.ToWorld(); }
 		inline Vector3 GetForwardVector() const { return mOrientation * Vector3::Front(); }
 		inline Vector3 GetRightVector() const { return mOrientation * Vector3::Right(); }

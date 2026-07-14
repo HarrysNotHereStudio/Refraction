@@ -15,7 +15,7 @@ namespace Refraction::Editor {
 	class EditorInstance : public Engine::Instance {
 	public:
 		EditorInstance() : Engine::Instance() {
-			mImGuiImpl = Common::NewRef<Editor::Platform::OpenGL::ImGuiImpl>(mWindow, mProjectInstance);
+			mImGuiImpl = Common::NewRef<Editor::Platform::OpenGL::ImGuiImpl>(mWindow);
 			mLayerStack->PushLayer(Common::NewRef<EditorLayer>(mLayerStack, mProjectInstance, mWindow, mImGuiImpl));
 		}
 

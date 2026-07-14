@@ -11,7 +11,7 @@ namespace Refraction::Time {
 
 	double GetSystemSec() {
 		auto duration = system_clock::now().time_since_epoch();
-		return (double)duration_cast<seconds>(duration).count();
+		return (double)duration_cast<milliseconds>(duration).count() / 1000;
 	}
 	uint64_t GetSystemMSec() {
 		auto duration = system_clock::now().time_since_epoch();

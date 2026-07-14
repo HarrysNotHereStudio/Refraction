@@ -9,8 +9,10 @@ namespace Refraction::Objects {
 			mInstanceName = "SceneRoot";
 		}
 
-		void TickScene();
-		void RenderScene();
+		// Ticks all objects in this scene. Must pass global objects to tick them too.
+		void TickScene(std::vector<Common::Ref<AObject>> globalObjects);
+		// Renders all objects in this scene. Must pass global objects to render them too.
+		void RenderScene(std::vector<Common::Ref<AObject>> globalObjects);
 
 		std::string Serialise() override;
 		void Deserialise(std::string serialised) override;

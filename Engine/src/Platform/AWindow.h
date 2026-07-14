@@ -5,7 +5,7 @@
 #include <Settings.h>
 #include <Core/Common.h>
 #include <Math/Rect.h>
-#include <Rendering/Models/BaseCamera.h>
+#include <Classes/Objects/Camera.h>
 
 namespace Refraction::Engine::Platform {
 	struct WindowProperties {
@@ -52,22 +52,18 @@ namespace Refraction::Engine::Platform {
 
 		virtual void Init() = 0;
 		virtual void InitInput() = 0;
-		virtual void OnUpdate() = 0;
+		virtual void OnUpdate(Common::Ref<Objects::Camera> camera) = 0;
 		virtual void Cleanup() = 0;
 		virtual Math::Rect GetRect() const { return mRect; }
 		virtual void* GetNativeWindow() const = 0;
 		virtual bool ShouldClose() const = 0;
 		// Sets the position and size of the window
 		virtual void SetRect(Math::Rect newRect) = 0;
-
-		BaseCamera* GetCurrentCamera() { return mCurrentCamera; }
-		void SetCurrentCamera(BaseCamera* pNewCamera) { mCurrentCamera = pNewCamera; }
 	protected:
 		WindowInputState mInputStateLast = WindowInputState::NONE;
 		Math::Rect mRect = Math::Rect(512);
 
 	private:
-		BaseCamera* mCurrentCamera = nullptr;
 		static WindowAPI CurrentAPI;
 	};
 }

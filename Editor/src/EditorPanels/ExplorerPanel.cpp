@@ -28,14 +28,13 @@ namespace Refraction::Editor::Panels {
 
 	}
 
-	ExplorerPanel::ExplorerPanel() {}
-
 	void ExplorerPanel::OnDraw() {
+		if (!EditorState::Temp.PanelExplorerVisible) return;
 		ImGui::SetNextWindowSizeConstraints({ 150, 50 }, { FLT_MAX, FLT_MAX });
-		ImGui::Begin("Explorer");
+		ImGui::Begin("Explorer", &EditorState::Temp.PanelExplorerVisible);
 		if (EditorState::Temp.SimulatingGame) ImGui::BeginDisabled();
 
-		auto& project = EditorState::Temp.ActiveProject;
+		auto& project = EditorState::Temp.ProjectInstance;
 		if (!project) {
 			ImGui::Text("No project loaded");
 		} else {

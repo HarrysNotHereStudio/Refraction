@@ -5,12 +5,12 @@
 namespace Refraction::Editor::Panels {
 	class ExplorerPanel : public AEditorPanel {
 	public:
-		ExplorerPanel();
+		using AEditorPanel::AEditorPanel;
 		~ExplorerPanel() = default;
 
-		inline void Init() override {}
+		void Init() override {}
 		void OnDraw() override;
-		inline void OnEvent(Common::Ref<Events::Event> event) override {}
+		void OnEvent(Common::Ref<Events::Event> event) override {}
 
 	private:
 

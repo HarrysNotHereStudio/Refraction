@@ -9,7 +9,7 @@
 
 namespace Refraction::Editor::Panels {
 	static void DrawTransformControls(Math::Transform& transform) {
-		if (ImGui::TreeNode("Transform")) {
+		if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 			// Handle rotation differently because it's not a Vector3
 			auto objectRotation = transform.mOrientation.ToEulerAngles();
 			auto displayedRotation = objectRotation;
@@ -73,11 +73,10 @@ namespace Refraction::Editor::Panels {
 		ImGui::Separator();
 	}
 
-	PropertiesPanel::PropertiesPanel() {}
-
 	void PropertiesPanel::OnDraw() {
+		if (!EditorState::Temp.PanelPropertiesVisible) return;
 		ImGui::SetNextWindowSizeConstraints({ 150, 50 }, { FLT_MAX, FLT_MAX });
-		ImGui::Begin("Properties");
+		ImGui::Begin("Properties", &EditorState::Temp.PanelPropertiesVisible);
 		if (EditorState::Temp.SimulatingGame) ImGui::BeginDisabled();
 
 		auto& obj = EditorState::Temp.SelectedObject;
@@ -95,7 +94,7 @@ namespace Refraction::Editor::Panels {
 
 			ImGui::Separator();
 
-			if (ImGui::CollapsingHeader(std::format("Components ({})", obj->GetComponents()->size()).c_str())) {
+			if (ImGui::CollapsingHeader(std::format("Components ({})", obj->GetComponents()->size()).c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
 				for (auto& comp : *obj->GetComponents()) {
 					if (ImGui::TreeNode(comp->GetDisplayName())) {
 						DrawComponentProperties(comp);

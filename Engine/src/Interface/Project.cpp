@@ -1,4 +1,5 @@
 #include <fstream>
+#include <thread>
 
 #include <json.hpp>
 
@@ -24,7 +25,7 @@ namespace Refraction::Engine {
 
 		json serialised;
 		serialised["InitSceneUUID"] = projectData.InitSceneUUID.Serialise();
-		Log::SInfo("Saved InitSceneUUID as " + projectData.InitSceneUUID.AsString());
+		serialised["ActiveCameraUUID"] = projectData.ActiveCamera->GetUUID().Serialise();
 		serialised["Scenes"] = {};
 		for (auto& scene : projectData.Scenes) {
 			serialised["Scenes"][scene->GetUUID().Serialise()] = Utilities::ClassSerialiser::Serialise(scene);
@@ -64,9 +65,22 @@ namespace Refraction::Engine {
 				Log::SInfo("Loaded Scene with UUID " + scene->GetUUID().AsString());
 				deserialised.Scenes.push_back(scene);
 			}
+
+			bool cameraDefined = data.contains("ActiveCameraUUID");
+			UUID cameraUUID;
+			if (cameraDefined) cameraUUID = UUID::Deserialise(data["ActiveCameraUUID"]);
+
 			for (auto& globalObjData : data.at("GlobalObjects")) {
 				auto object = Utilities::ClassSerialiser::DeserialiseObject(globalObjData);
 				deserialised.GlobalObjects.push_back(object);
+				if (cameraDefined && (object->GetUUID() == cameraUUID)) deserialised.ActiveCamera = dynamic_pointer_cast<Objects::Camera>(object);
+			}
+
+			if (!cameraDefined || !deserialised.ActiveCamera) {
+				Log::SWarn("No active camera set, creating new camera");
+				auto camera = Common::NewRef<Objects::Camera>();
+				deserialised.ActiveCamera = camera;
+				deserialised.GlobalObjects.push_back(camera);
 			}
 
 			return std::make_optional(deserialised);
@@ -187,6 +201,11 @@ namespace Refraction::Engine {
 		mProjectData.Scenes.push_back(newScene);
 
 		// Instantiate default objects/components
+		///
+		auto camera = Common::NewRef<Objects::Camera>();
+		mProjectData.ActiveCamera = camera;
+		mProjectData.GlobalObjects.push_back(camera);
+
 		auto nyenObj = Common::NewRef<Objects::BasicObject>();
 		nyenObj->mInstanceName = "Nyen";
 		nyenObj->GetComponent<Components::Mesh>()->LoadModel(FileHandling::GetResourcesPath() / "models/nyen/nyen plush.obj");

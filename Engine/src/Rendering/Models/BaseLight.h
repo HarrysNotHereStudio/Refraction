@@ -1,7 +1,7 @@
 #pragma once
 
+#include <Math/Transform.h>
 #include <Classes/Assets/Shader.h>
-#include "Billboard.h"
 
 class BaseLight
 {
@@ -16,5 +16,4 @@ public:
 
 	void UpdateShaderUniforms(unsigned int index);
 private:
-	Billboard* mBillboard = nullptr;
 };

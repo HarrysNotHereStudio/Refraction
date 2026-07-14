@@ -1,6 +1,8 @@
 #pragma once
 
+#include <vector>
 #include <string>
+#include <functional>
 #include <stdexcept>
 #include <memory>
 
@@ -56,10 +58,21 @@ namespace Refraction {
 
 	class Log {
 	public:
+		struct Colour {
+			int R, G, B;
+			bool operator==(const Colour& other) const {
+				return (R == other.R) && (G == other.G) && (B == other.B);
+			}
+		};
+		// Takes the colour, the body, and whether to put this on a new line
+		typedef std::function<void(Colour, std::string, bool)> LogCallback;
+
 		static std::string GenerateTimestamp();
 		static void SInfo(std::string message);
 		static void SWarn(std::string message);
 		static void SError(std::string message);
+		static void AddLogCallback(LogCallback callback) { Callbacks.push_back(callback); }
+		static void InitConsoleLog();
 
 		static Log Render;
 		static Log Physics;
@@ -73,6 +86,9 @@ namespace Refraction {
 		void Warn(std::string message);
 		void Error(std::string message);
 	protected:
+		static std::vector<LogCallback> Callbacks;
 		std::string mName;
+	private:
+		static void GenerateLog(std::string logName, std::string message, std::string logType, Colour printColour, Colour typeColour = { 0,0,0 });
 	};
 }

@@ -8,8 +8,9 @@
 #include <Core/UUID.h>
 #include <Classes/Objects/AObject.h>
 #include <Classes/Objects/SceneRoot.h>
+#include <Classes/Objects/Camera.h>
 
-#define REFRACTION_PROJECT_EXTENSION ".rfp"
+constexpr auto REFRACTION_PROJECT_EXTENSION = ".rfp";
 
 namespace Refraction::Engine {
 
@@ -18,6 +19,7 @@ namespace Refraction::Engine {
 
 		std::vector<Common::Ref<Objects::SceneRoot>> Scenes = {};
 		std::vector<Common::Ref<Objects::AObject>> GlobalObjects = {};
+		Common::Ref<Objects::Camera> ActiveCamera = nullptr;
 	};
 
 	bool SaveProjectData(const std::filesystem::path& projectFilePath, const ProjectData& projectData);
@@ -63,6 +65,8 @@ namespace Refraction::Engine {
 		inline std::vector<Common::Ref<Objects::SceneRoot>> GetScenes() const { return mProjectData.Scenes; }
 		// Returns all global objects under this project
 		inline std::vector<Common::Ref<Objects::AObject>> GetGlobalObjects() const { return mProjectData.GlobalObjects; }
+		// Returns the active camera
+		inline Common::Ref<Objects::Camera> GetActiveCamera() const { return mProjectData.ActiveCamera; }
 
 		inline bool IsLoaded() const { return !mProjectPath.empty(); }
 	private:

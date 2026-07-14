@@ -150,6 +150,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Classes\Objects\Camera.h" />
     <ClInclude Include="src\Classes\ClassHeaders.h" />
     <ClInclude Include="src\Classes\ClassSerialiser.h" />
     <ClInclude Include="src\Physics\PhysicsLayer.h" />
@@ -212,6 +213,7 @@
     <ClInclude Include="src\Core\Time.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Classes\Objects\Camera.cpp" />
     <ClCompile Include="src\Classes\ClassSerialiser.cpp" />
     <ClCompile Include="src\Physics\PhysicsLayer.cpp" />
     <ClCompile Include="src\Classes\Assets\Assembly.cpp" />

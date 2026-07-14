@@ -5,18 +5,14 @@ namespace Refraction::Engine {
 		: mEventDispatcher(eventDispatcher), mProjectInstance(projectInstance) {}
 
 	void RenderLayer::OnAttach() {
-		mCamera = Common::NewRef<BaseCamera>();
-		mRenderer.mCamera = mCamera.get();
 		mRenderer.Init();
 	}
 	void RenderLayer::OnDetach() {}
 
 	void RenderLayer::OnPass() {
 		if (mProjectInstance->IsLoaded()) {
-			if (auto scene = mProjectInstance->GetActiveScene()) {
-				mRenderer.RenderFrame(mProjectInstance->GetActiveScene());
-				mEventDispatcher->Dispatch(Common::NewRef<Events::FrameRenderedEvent>(mRenderer.GetFinalOutput()));
-			}
+			mRenderer.RenderFrame(mProjectInstance);
+			mEventDispatcher->Dispatch(Common::NewRef<Events::FrameRenderedEvent>(mRenderer.GetFinalOutput()));
 		}
 	}
 
@@ -27,9 +23,5 @@ namespace Refraction::Engine {
 		} else if (auto e = Common::AsA<Events::ProgramCloseEvent>(event)) {
 
 		}
-	}
-
-	BaseCamera* RenderLayer::GetCurrentCamera() {
-		return mCamera.get();
 	}
 }

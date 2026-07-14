@@ -155,7 +155,7 @@ namespace Refraction::Components {
 	void Mesh::Render() {
 		auto shader = Assets::Shader::GetShaderByName("gbufferShader");
 		shader->Activate();
-		shader->SetUniformMat4("modelTransform", mParent->mTransform.GetTransform());
+		shader->SetUniformMat4("modelTransform", mParent->mTransform.ToMatrix());
 		for (auto& mesh : mFragments) {
 			mesh->Draw();
 			FrameVertexCount += (int)mesh->mVertices.size();
@@ -164,29 +164,18 @@ namespace Refraction::Components {
 	}
 
 	std::string Mesh::Serialise() {
-		using nlohmann::json;
-
-		try {
-			json serialised = json::parse(AComponent::Serialise());
-			serialised["Transform"] = Utilities::ClassSerialiser::Serialise(mTransform);
-			serialised["MeshAssetPath"] = mSourcePath.string();
-			return serialised.dump();
-		} catch (const json::parse_error& err) {
-			throw std::runtime_error("Failed to parse JSON: " + std::string(err.what()));
-		}
+		return Utilities::ClassSerialiser::TryAppendJSON(AComponent::Serialise(), [&](nlohmann::json& json) {
+			json["Transform"] = Utilities::ClassSerialiser::Serialise(mTransform);
+			json["MeshAssetPath"] = mSourcePath.string();
+		});
 	}
 
 	void Mesh::Deserialise(std::string serialised) {
-		using nlohmann::json;
-
-		try {
-			AComponent::Deserialise(serialised);
-			json data = json::parse(serialised);
-			mTransform = Utilities::ClassSerialiser::DeserialiseTransform(data.at("Transform"));
-			LoadModel(std::filesystem::path(data.at("MeshAssetPath").get<std::string>()));
-		} catch (const json::parse_error& err) {
-			throw std::runtime_error("Failed to parse JSON: " + std::string(err.what()));
-		}
+		AComponent::Deserialise(serialised);
+		Utilities::ClassSerialiser::TryParseJSON(serialised, [&](nlohmann::json& json) {
+			mTransform = Utilities::ClassSerialiser::DeserialiseTransform(json.at("Transform"));
+			LoadModel(std::filesystem::path(json.at("MeshAssetPath").get<std::string>()));
+		});
 	}
 
 	void Mesh::LoadModel(std::filesystem::path path) {

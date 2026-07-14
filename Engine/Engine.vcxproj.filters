@@ -195,6 +195,9 @@
     <ClInclude Include="src\Classes\ClassHeaders.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Classes\Objects\Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Rendering\Buffers\BaseBuffer.cpp">
@@ -348,6 +351,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Classes\ClassSerialiser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Classes\Objects\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

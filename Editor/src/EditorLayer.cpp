@@ -1,17 +1,25 @@
 #include <Rendering/RenderLayer.h>
 #include <EditorState.h>
+#include <EditorTheme.h>
 #include <EditorPanels/ExplorerPanel.h>
 #include <EditorPanels/PropertiesPanel.h>
 #include <EditorPanels/ViewportPanel.h>
+#include <EditorPanels/LogPanel.h>
+#include <EditorPanels/StatsPanel.h>
 
 #include "EditorLayer.h"
+
+constexpr int ImGuiMenuHeight = 16;
+constexpr int ImGuiRibbonHeight = 48;
 
 namespace Refraction::Editor {
 	EditorLayer::EditorLayer(Common::Ref<Events::AEventDispatcher> eventDispatcher, Common::Ref<Engine::Project> projectInstance, Common::Ref<Engine::Platform::AWindow> window, Common::Ref<Editor::Platform::AImGuiImpl> imGuiImpl)
 		: mEventDispatcher(eventDispatcher), mProjectInstance(projectInstance), mWindow(window), mImGuiImpl(imGuiImpl) {
-		mEditorPanels.push_back(Common::NewURef<Panels::ExplorerPanel>());
-		mEditorPanels.push_back(Common::NewURef<Panels::PropertiesPanel>());
-		mEditorPanels.push_back(Common::NewURef<Panels::ViewportPanel>(eventDispatcher));
+		mEditorPanels.push_back(Common::NewURef<Panels::ExplorerPanel>(eventDispatcher, mWindow));
+		mEditorPanels.push_back(Common::NewURef<Panels::PropertiesPanel>(eventDispatcher, mWindow));
+		mEditorPanels.push_back(Common::NewURef<Panels::ViewportPanel>(eventDispatcher, mWindow));
+		mEditorPanels.push_back(Common::NewURef<Panels::LogPanel>(eventDispatcher, mWindow));
+		mEditorPanels.push_back(Common::NewURef<Panels::StatsPanel>(eventDispatcher, mWindow));
 	}
 
 	void EditorLayer::OnAttach() {
@@ -20,9 +28,18 @@ namespace Refraction::Editor {
 		} else {
 			Log::Editor.Warn("Failed to deserialise EditorState");
 		}
-		EditorState::Temp.ActiveProject = mProjectInstance;
+		EditorState::Temp.ProjectInstance = mProjectInstance;
 		mWindow->mIgnoreWindowResize = true;
 		mImGuiImpl->Init();
+
+		auto themeFilePath = FileHandling::GetWorkingDirectory() / ("EditorTheme" + std::string(REFRACTION_THEME_EXTENSION));
+		if (std::filesystem::exists(themeFilePath)) {
+			EditorTheme::LoadFromFile(themeFilePath);
+			EditorTheme::ApplyTheme();
+		} else {
+			EditorTheme::LoadDefault();
+			EditorTheme::ApplyTheme();
+		}
 
 		for (auto& panel : mEditorPanels) {
 			panel->Init();
@@ -30,6 +47,8 @@ namespace Refraction::Editor {
 	}
 
 	void EditorLayer::OnDetach() {
+		EditorState::Temp.SelectedObject = nullptr;
+		EditorState::Temp.ProjectInstance = nullptr;
 		EditorState::Persistent.WindowRect = mWindow->GetRect();
 		if (!EditorState::Serialise()) {
 			Log::Editor.Warn("Failed to serialise EditorState");
@@ -51,8 +70,9 @@ namespace Refraction::Editor {
 
 		ImGuiViewport* viewport = ImGui::GetMainViewport();
 		//Log::Editor.Info(Math::Vector2(viewport->Size.x, viewport->Size.y).ToString());
-		ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + 16));
-		ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, viewport->Size.y - 16));
+		auto totalOffset = ImGuiMenuHeight + ImGuiRibbonHeight;
+		ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + totalOffset));
+		ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, viewport->Size.y - totalOffset));
 		ImGui::SetNextWindowViewport(viewport->ID);
 		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
 			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
@@ -79,7 +99,6 @@ namespace Refraction::Editor {
 		}
 		ImGui::End();
 
-		mImGuiImpl->DrawDebugInfoWindow();
 		mImGuiImpl->EndDraw();
 		mImGuiImpl->UpdateInputState();
 		

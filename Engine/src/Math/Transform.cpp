@@ -85,7 +85,7 @@ namespace Refraction::Math {
 		Rotate(Quaternion::LookAt(GetWorldPosition(), target, targetUp));
 	}
 
-	Matrix4 Transform::GetTransform() const {
+	Matrix4 Transform::ToMatrix() const {
 		glm::mat4 transform = glm::mat4(1.0f);
 		glm::vec3 rotation = RUtil::NativeToGLMVec3(mOrientation.ToEulerAngles());
 		transform = glm::translate(transform, RUtil::NativeToGLMVec3(GetWorldPosition()));

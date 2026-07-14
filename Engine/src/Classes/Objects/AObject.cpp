@@ -70,30 +70,25 @@ namespace Refraction::Objects {
 		return serialised.dump();
 	}
 	void AObject::Deserialise(std::string serialised) {
-		using nlohmann::json;
-		
-		try {
-			json data = json::parse(serialised);
-			mUUID = UUID::Deserialise(data.at("UUID"));
-			mDisplayName = data.at("DisplayName").get<std::string>();
-			mInstanceName = data.at("InstanceName").get<std::string>();
-			mTransform = Utilities::ClassSerialiser::DeserialiseTransform(data.at("Transform"));
+		Utilities::ClassSerialiser::TryParseJSON(serialised, [&](nlohmann::json& json) {
+			mUUID = UUID::Deserialise(json.at("UUID"));
+			mDisplayName = json.at("DisplayName").get<std::string>();
+			mInstanceName = json.at("InstanceName").get<std::string>();
+			mTransform = Utilities::ClassSerialiser::DeserialiseTransform(json.at("Transform"));
 			mComponents.clear();
-			for (auto& compData : data.at("Components")) {
+			for (auto& compData : json.at("Components")) {
 				auto newComp = Utilities::ClassSerialiser::DeserialiseComponent(compData);
 				newComp->mParent = this;
 				mComponents.push_back(newComp);
 			}
 			mChildren.clear();
-			for (auto& childData : data.at("Children")) {
+			for (auto& childData : json.at("Children")) {
 				auto newChild = Utilities::ClassSerialiser::DeserialiseObject(childData);
 				newChild->mParent = this;
 				mChildren.push_back(newChild);
 			}
 
 			Log::SInfo("Deserialised object " + mInstanceName + " with UUID " + mUUID.AsString());
-		} catch (const json::parse_error& err) {
-			throw std::runtime_error("Failed to parse JSON serialised Object data: " + std::string(err.what()));
-		}
+		});
 	}
 }

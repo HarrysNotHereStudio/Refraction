@@ -7,21 +7,20 @@
 #include "ViewportPanel.h"
 
 namespace Refraction::Editor::Panels {
-	ViewportPanel::ViewportPanel(Common::Ref<Events::AEventDispatcher> eventDispatcher) : mEventDispatcher(eventDispatcher) {}
-
-	inline void ViewportPanel::Init() {
+	void ViewportPanel::Init() {
 	}
 
 	void ViewportPanel::OnDraw() {
+		if (!EditorState::Temp.PanelViewportVisible) return;
 		ImGui::SetNextWindowSizeConstraints({ 640, 480 }, { FLT_MAX, FLT_MAX });
-		ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoCollapse);
+		ImGui::Begin("Viewport", &EditorState::Temp.PanelViewportVisible, ImGuiWindowFlags_NoCollapse);
 
 		if (mFirstDraw) {
 			mLastViewportRect = Math::Rect(Math::FromImVec2(ImGui::GetWindowPos()), Math::FromImVec2(ImGui::GetContentRegionAvail()));
 			mFirstDraw = false;
 		}
-		// Skip if no frame
-		if (mFrame == nullptr) {
+		// Skip if no frame or no project is open
+		if (mFrame == nullptr || !EditorState::Temp.ProjectInstance->IsLoaded()) {
 			ImGui::End();
 			return;
 		}
@@ -41,9 +40,9 @@ namespace Refraction::Editor::Panels {
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 		ImVec2 topLeft{ (float)mViewportRect.x, (float)mViewportRect.y };
 		ImVec2 bottomRight{ (float)mViewportRect.x + (float)mViewportRect.w, (float)mViewportRect.y + (float)mViewportRect.h };
-		ImVec2 imageSize = ImVec2(mFrame->GetMetadata().Width, mFrame->GetMetadata().Height);
+		ImVec2 imageSize = ImVec2((float)mFrame->GetMetadata().Width, (float)mFrame->GetMetadata().Height);
 		ImVec2 pos = ImGui::GetCursorScreenPos();
-		drawList->AddImage((void*)mFrame->GetID(), ImVec2(pos.x, pos.y), ImVec2(pos.x + windowWidth, pos.y + windowHeight), ImVec2(0, 1), ImVec2(1, 0));
+		drawList->AddImage((ImTextureID)mFrame->GetID(), ImVec2(pos.x, pos.y), ImVec2(pos.x + windowWidth, pos.y + windowHeight), ImVec2(0, 1), ImVec2(1, 0));
 		
 
 		// Don't update if RMB is down
@@ -55,8 +54,8 @@ namespace Refraction::Editor::Panels {
 
 		mLastViewportRect = mViewportRect;
 	}
-	inline void ViewportPanel::OnEvent(Common::Ref<Events::Event> event) {
-		//Log::SInfo(event->GetName());
+
+	void ViewportPanel::OnEvent(Common::Ref<Events::Event> event) {
 		if (auto e = Common::AsA<Events::FrameRenderedEvent>(event)) {
 			mFrame = e->mFrame;
 		}

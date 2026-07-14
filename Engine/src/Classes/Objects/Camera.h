@@ -1,0 +1,26 @@
+#pragma once
+
+#include <Math/Vector3.h>
+#include <Math/Matrices.h>
+#include <Math/Rect.h>
+#include <Math/Frustum.h>
+
+#include "AObject.h"
+
+namespace Refraction::Objects {
+	class Camera : public AObject {
+	public:
+		Math::Frustum mFrustum;
+
+		Camera();
+
+		void ProcessInput(Math::Vector3 dirInput, Math::Vector3 angInput);
+		Math::Matrix4 GetViewMatrix() const { return Math::Matrix4::LookAt(mTransform.GetWorldPosition(), mCameraTarget, mTransform.GetUpVector()); };
+
+		std::string Serialise() override;
+		void Deserialise(std::string serialised) override;
+	private:
+		Math::Vector3 mCameraTarget = Math::Vector3::Front();
+		float mPitch = 0, mYaw = 0;
+	};
+}

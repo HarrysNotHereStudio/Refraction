@@ -1,7 +1,5 @@
 #include <fstream>
 
-#include <json.hpp>
-
 #include <Core/FileHandling.h>
 #include <Classes/ClassSerialiser.h>
 
@@ -17,7 +15,7 @@ namespace Refraction::Editor {
 		serialised["ResourcesDir"] = Persistent.ResourcesDir;
 		serialised["WindowRect"] = Utilities::ClassSerialiser::Serialise(Persistent.WindowRect);
 		serialised["RecentProjects"] = {};
-		std::remove_if(Persistent.RecentProjects.begin(), Persistent.RecentProjects.end(), [&](std::filesystem::path path) {
+		std::erase_if(Persistent.RecentProjects, [&](std::filesystem::path path) {
 			if (!std::filesystem::is_regular_file(path)) return true;
 			serialised["RecentProjects"].push_back(path.string());
 		});
@@ -33,8 +31,6 @@ namespace Refraction::Editor {
 	}
 
 	bool EditorState::Deserialise() {
-		using nlohmann::json;
-
 		Persistent.ExecutableDir = FileHandling::GetWorkingDirectory();
 		auto stateFilePath = Persistent.ExecutableDir / "EditorState.rfc";
 		if (!std::filesystem::exists(stateFilePath)) {
@@ -43,16 +39,13 @@ namespace Refraction::Editor {
 		}
 
 		auto serialised = FileHandling::ReadFile(stateFilePath);
-		try {
-			json data = json::parse(serialised);
-			if (data.contains("ResourcesDir")) Persistent.ResourcesDir = std::filesystem::path(data.at("ResourcesDir").get<std::string>());
-			if (data.contains("WindowRect")) Persistent.WindowRect = Utilities::ClassSerialiser::DeserialiseRect(data.at("WindowRect"));
-			if (data.contains("RecentProjects")) std::for_each(data.at("RecentProjects").begin(), data.at("RecentProjects").end(), [&](std::string path) {
-				Persistent.RecentProjects.push_back(std::filesystem::path(path));
+		Utilities::ClassSerialiser::TryParseJSON(serialised, [&](nlohmann::json& json) {
+			if (json.contains("ResourcesDir")) Persistent.ResourcesDir = std::filesystem::path(json.at("ResourcesDir").get<std::string>());
+			if (json.contains("WindowRect")) Persistent.WindowRect = Utilities::ClassSerialiser::DeserialiseRect(json.at("WindowRect"));
+			if (json.contains("RecentProjects")) std::for_each(json.at("RecentProjects").begin(), json.at("RecentProjects").end(), [&](std::string path) {
+				Persistent.RecentProjects.insert(std::filesystem::path(path));
 			});
-		} catch (const json::parse_error& err) {
-			throw std::runtime_error("Failed to parse JSON serialised EditorState data: " + std::string(err.what()));
-		}
+		});
 		return true;
 	}
 }

@@ -12,20 +12,79 @@
 
 
 namespace {
-	std::string ANSI24RGB(int R, int G, int B) {
-		return std::format("\033[38;2;{};{};{}m", R, G, B);
+	using Refraction::Log;
+	std::string ANSI24RGB(Log::Colour colour) {
+		return std::format("\033[38;2;{};{};{}m", colour.R, colour.G, colour.B);
 	};
-	std::string separator = ANSI24RGB(255, 255, 255) + " - ";
-	std::string threadColour = ANSI24RGB(255, 255, 255);
-	std::string timestampColour = ANSI24RGB(64, 210, 255);
-	std::string classColour = ANSI24RGB(64, 255, 64);
-	std::string functionColour = ANSI24RGB(96, 200, 96);
+	Log::Colour white = { 255,255,255 };
+	Log::Colour black = { 0,0,0 };
+	Log::Colour separatorColour = white;
+	Log::Colour threadColour = white;
+	Log::Colour timestampColour = { 64, 210, 255 };
+	Log::Colour classColour = { 64, 255, 64 };
+	Log::Colour functionColour = { 96, 200, 96 };
+	std::string separatorStr = ANSI24RGB(separatorColour) + " - ";
+	std::string threadColourStr = ANSI24RGB(threadColour);
+	std::string timestampColourStr = ANSI24RGB(timestampColour);
+	std::string classColourStr = ANSI24RGB(classColour);
+	std::string functionColourStr = ANSI24RGB(functionColour);
 
 	std::string LastClassPrinted = "";
 	std::string LastMessagePrinted = "";
+}
 
-	void LogPrint(std::string logName, std::string message, std::string logType, std::string printColour, std::string typeColour = "") {
+namespace Refraction {
+	void OnConsoleLog(Log::Colour colour, std::string message, bool newLine) {
 		using std::vformat, std::make_format_args, std::clog;
+
+		if (newLine) clog << '\n';
+		clog << ANSI24RGB(colour) << message << ANSI24RGB(white); // Reset to white after printing
+	}
+
+	std::string Log::GenerateTimestamp() {
+		using namespace std::chrono;
+
+		// get time variables
+		const auto now = system_clock::now();
+		const auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+		const auto timer = system_clock::to_time_t(now);
+
+		#pragma warning(suppress : 4996)
+		const std::tm bt = *std::localtime(&timer);
+
+		std::ostringstream oss;
+
+		oss << std::put_time(&bt, "%H:%M:%S"); // HH:MM:SS
+		oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
+
+		return oss.str();
+	};
+
+	void Log::SInfo(std::string message) {
+		GenerateLog("Refraction", message, "INFO", white, Colour{ 200, 255, 255 });
+	}
+	void Log::SWarn(std::string message) {
+		GenerateLog("Refraction", message, "WARN", Colour{ 255, 160, 70 });
+	}
+	void Log::SError(std::string message) {
+		GenerateLog("Refraction", message, "ERR", Colour{ 255, 60, 60 });
+	}
+
+	void Log::InitConsoleLog() {
+		Log::AddLogCallback(OnConsoleLog);
+	}
+
+	void Log::Info(std::string message) {
+		GenerateLog(mName, message, "INFO", white, Colour{ 200, 255, 255 });
+	}
+	void Log::Warn(std::string message) {
+		GenerateLog(mName, message, "WARN", Colour{ 255, 160, 70 });
+	}
+	void Log::Error(std::string message) {
+			GenerateLog(mName, message, "ERR", Colour{ 255, 60, 60 });
+	}
+
+	void Log::GenerateLog(std::string logName, std::string message, std::string logType, Colour printColour, Colour typeColour) {
 
 		// Get print information
 		std::string timestamp = Refraction::Log::GenerateTimestamp();
@@ -50,56 +109,28 @@ namespace {
 		// Print class name only once
 		if (LastClassPrinted != className) {
 			LastClassPrinted = className;
-			clog << vformat(threadColour + "{} - " + classColour + "class {}" + separator + "\n", make_format_args(logName, LastClassPrinted));
+
+			for (auto& callback : Callbacks) {
+				callback(threadColour, logName + " - ", true);
+				callback(classColour, "class " + LastClassPrinted, false);
+				callback(separatorColour, " - ", false);
+			}
 		}
 
-		if (typeColour == "") typeColour = printColour;
+		if (typeColour == black) typeColour = printColour;
 
-		// Print message
-		LastMessagePrinted = vformat(timestampColour + "[{}]" + separator + typeColour + "{} " + functionColour + "{}" + separator + printColour + "{}\n", make_format_args(timestamp, logType, functionName, message));
-		clog << LastMessagePrinted << ANSI24RGB(255, 255, 255); // Reset colour to white after printing
-	}
-}
-
-namespace Refraction {
-	std::string Log::GenerateTimestamp() {
-		using namespace std::chrono;
-
-		// get time variables
-		const auto now = system_clock::now();
-		const auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
-		const auto timer = system_clock::to_time_t(now);
-
-		#pragma warning(suppress : 4996)
-		const std::tm bt = *std::localtime(&timer);
-
-		std::ostringstream oss;
-
-		oss << std::put_time(&bt, "%H:%M:%S"); // HH:MM:SS
-		oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
-
-		return oss.str();
-	};
-
-	void Log::SInfo(std::string message) {
-		LogPrint("Refraction", message, "INFO", ANSI24RGB(255, 255, 255), ANSI24RGB(200, 255, 255));
-	}
-	void Log::SWarn(std::string message) {
-		LogPrint("Refraction", message, "WARN", ANSI24RGB(255, 160, 70));
-	}
-	void Log::SError(std::string message) {
-		LogPrint("Refraction", message, "ERR", ANSI24RGB(255, 60, 60));
+		// Send to callbacks
+		for (auto& callback : Callbacks) {
+			callback(timestampColour, "[" + timestamp + "]", true);
+			callback(separatorColour, " - ", false);
+			callback(typeColour, logType + " ", false);
+			callback(functionColour, functionName, false);
+			callback(separatorColour, " - ", false);
+			callback(printColour, message, false);
+		}
 	}
 
-	void Log::Info(std::string message) {
-		LogPrint(mName, message, "INFO", ANSI24RGB(255, 255, 255), ANSI24RGB(200, 255, 255));
-	}
-	void Log::Warn(std::string message) {
-		LogPrint(mName, message, "WARN", ANSI24RGB(255, 160, 70));
-	}
-	void Log::Error(std::string message) {
-		LogPrint(mName, message, "ERR", ANSI24RGB(255, 60, 60));
-	}
+	std::vector<Log::LogCallback> Log::Callbacks = {};
 
 	Log Log::Render = Log("Renderer");
 	Log Log::Physics = Log("Physics");

@@ -6,7 +6,6 @@
 #include <Math/Rect.h>
 #include <Classes/Assets/Texture.h>
 #include <Rendering/Renderer.h>
-#include <Rendering/Models/BaseCamera.h>
 #include <Interface/Project.h>
 
 namespace Refraction::Events {
@@ -35,11 +34,8 @@ namespace Refraction::Engine {
 		void OnDetach() override;
 		void OnPass() override;
 		void OnEvent(Common::Ref<Events::Event> event) override;
-
-		BaseCamera* GetCurrentCamera();
 	private:
 		Common::Ref<Events::AEventDispatcher> mEventDispatcher;
-		Common::Ref<BaseCamera> mCamera;
 		Common::Ref<Project> mProjectInstance;
 
 		Renderer mRenderer;

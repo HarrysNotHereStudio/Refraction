@@ -1,6 +1,9 @@
 #pragma once
 
+#include <json.hpp>
+
 #include <string>
+#include <functional>
 
 #include <Core/Common.h>
 #include <Classes/Components/AComponent.h>
@@ -16,6 +19,11 @@
 namespace Refraction::Utilities {
 	class ClassSerialiser {
 	public:
+		// Tries to parse a json dump and outputs any error
+		static void TryParseJSON(std::string dump, std::function<void(nlohmann::json&)> fn);
+		// Tries to append to a parsed json dump and outputs any error
+		static std::string TryAppendJSON(std::string dump, std::function<void(nlohmann::json&)> fn);
+
 		static std::string Serialise(Common::Ref<Objects::AObject> object);
 		static std::string Serialise(Common::Ref<Components::AComponent> comp);
 		static Common::Ref<Objects::AObject> DeserialiseObject(std::string serialisedData);

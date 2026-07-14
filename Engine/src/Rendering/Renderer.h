@@ -13,8 +13,8 @@
 
 #include <Classes/Assets/Shader.h>
 #include <Classes/Objects/SceneRoot.h>
+#include <Interface/Project.h>
 #include "Models/BaseScene.h"
-#include "Models/BaseCamera.h"
 #include "Buffers/UniformBufferObject.h"
 #include "Buffers/GBuffer.h"
 
@@ -30,24 +30,22 @@ namespace Refraction::Engine {
 
 	class Renderer {
 	public:
-		BaseCamera* mCamera = nullptr;
-
 		Renderer();
 
 		void Init();
-		void RenderFrame(Common::Ref<Objects::SceneRoot> scene);
+		void RenderFrame(Common::Ref<Project> projectInstance);
 
 		void SetViewport(Math::Rect rect) { mViewportRect = rect; };
 
 		RendererState GetState() { return mState; }
 		Common::Ref<Assets::Texture> GetFinalOutput() const { return mFinalOutput; }
 	private:
-		void UpdateUniformBuffers();
+		void UpdateUniformBuffers(Common::Ref<Project> projectInstance);
 		void Cleanup();
 
 		// Deferred shading functions
-		void DSPassGeometry(Common::Ref<Objects::SceneRoot> scene) const;
-		void DSPassLighting(Common::Ref<Objects::SceneRoot> scene) const;
+		void DSPassGeometry(Common::Ref<Project> projectInstance) const;
+		void DSPassLighting(Common::Ref<Project> projectInstance) const;
 		void DSPassFinal() const;
 
 		RendererState mState = RendererState::NONE;

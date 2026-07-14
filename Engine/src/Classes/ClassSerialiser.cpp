@@ -7,6 +7,24 @@
 using nlohmann::json;
 
 namespace Refraction::Utilities {
+	void ClassSerialiser::TryParseJSON(std::string dump, std::function<void(json&)> fn) {
+		try {
+			json data = json::parse(dump);
+			fn(data);
+		} catch (const json::parse_error& err) {
+			throw std::runtime_error("JSON Parse Error: " + std::string(err.what()));
+		}
+	}
+
+	std::string ClassSerialiser::TryAppendJSON(std::string dump, std::function<void(json&)> fn) {
+		std::string result;
+		TryParseJSON(dump, [&](json& data) {
+			fn(data);
+			result = data.dump();
+		});
+		return result;
+	}
+
 	std::string ClassSerialiser::Serialise(Common::Ref<Objects::AObject> object) {
 		return object->Serialise();
 	}
@@ -27,6 +45,8 @@ namespace Refraction::Utilities {
 				deserialised = Common::NewRef<Objects::BasicObject>();
 			} else if (className == typeid(Objects::SceneRoot).name()) {
 				deserialised = Common::NewRef<Objects::SceneRoot>();
+			} else if (className == typeid(Objects::Camera).name()) {
+				deserialised = Common::NewRef<Objects::Camera>();
 			}
 			Log::SInfo("Deserialising object of type " + className);
 			deserialised->Deserialise(serialisedData);

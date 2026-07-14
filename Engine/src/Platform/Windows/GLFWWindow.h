@@ -22,7 +22,7 @@ namespace Refraction::Engine::Platform {
 
 		void Init() override;
 		void InitInput() override;
-		void OnUpdate() override;
+		void OnUpdate(Common::Ref<Objects::Camera> camera) override;
 		void Cleanup() override;
 
 		void* GetNativeWindow() const override { return mHandle; }

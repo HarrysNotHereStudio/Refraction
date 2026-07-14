@@ -148,6 +148,8 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\EditorTheme.cpp" />
+    <ClCompile Include="src\EditorPanels\LogPanel.cpp" />
     <ClCompile Include="src\EditorPanels\ExplorerPanel.cpp" />
     <ClCompile Include="src\EditorPlatform\Windows\Dialogs.cpp" />
     <ClCompile Include="src\EditorState.cpp" />
@@ -157,6 +159,7 @@
     <ClCompile Include="src\EditorPlatform\AImGuiImpl.cpp" />
     <ClCompile Include="src\EditorPlatform\OpenGL\ImGuiImpl.cpp" />
     <ClCompile Include="src\EditorPanels\ViewportPanel.cpp" />
+    <ClCompile Include="src\EditorPanels\StatsPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.vcxproj">
@@ -169,6 +172,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\EditorTheme.h" />
+    <ClInclude Include="src\EditorPanels\LogPanel.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\EditorPlatform\Linux\Dialogs.h" />
     <ClInclude Include="src\EditorPlatform\Windows\Dialogs.h" />
@@ -182,6 +187,7 @@
     <ClInclude Include="src\EditorPlatform\OpenGL\ImGuiImpl.h" />
     <ClInclude Include="src\ImGuiExtension.h" />
     <ClInclude Include="src\EditorPanels\ViewportPanel.h" />
+    <ClInclude Include="src\EditorPanels\StatsPanel.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />

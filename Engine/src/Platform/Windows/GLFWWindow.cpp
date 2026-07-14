@@ -49,11 +49,8 @@ namespace Refraction::Engine::Platform {
 		mInput.inputEnabled = true;
 	}
 
-	void GLFWWindow::OnUpdate() {
-
+	void GLFWWindow::OnUpdate(Common::Ref<Objects::Camera> camera) {
 		if (mInput.inputEnabled) {
-			using Math::Vector3;
-			using Math::Vector2;
 
 			// Get inputs
 			mInput.keyW = (glfwGetKey(mHandle, GLFW_KEY_W) == GLFW_PRESS);
@@ -85,10 +82,10 @@ namespace Refraction::Engine::Platform {
 			// Camera movement
 			if (mInput.inputFocus && mInput.mouseRight) {
 				glfwSetInputMode(mHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-				auto mouseDelta = Vector2((float)(currentMouseX - mInput.lastMouseX), (float)(mInput.lastMouseY - currentMouseY));
-				auto angInput = Vector3(mouseDelta.y, mouseDelta.x, 0.0f);
+				auto mouseDelta = Math::Vector2((float)(currentMouseX - mInput.lastMouseX), (float)(mInput.lastMouseY - currentMouseY));
+				auto angInput = Math::Vector3(mouseDelta.y, mouseDelta.x, 0.0f);
 
-				GetCurrentCamera()->Move(dirInput, angInput);
+				camera->ProcessInput(dirInput, angInput);
 			} else {
 				glfwSetInputMode(mHandle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			}

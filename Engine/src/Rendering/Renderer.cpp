@@ -4,11 +4,11 @@
 #include <Core/Time.h>
 #include <Core/Utilities.h>
 #include <Classes/Components/Mesh.h>
-#include "Models/Billboard.h"
 #include "Models/BaseLight.h"
 #include "Models/PointLight.h"
 
 #include "Renderer.h"
+
 
 namespace Refraction::Engine {
 	Renderer::Renderer() = default;
@@ -19,6 +19,8 @@ namespace Refraction::Engine {
 	Math::Matrix4 projectionMatrix;
 	std::chrono::steady_clock::time_point timeRenderLast;
 	std::chrono::steady_clock::time_point timeTickLast;
+	Math::Frustum defaultProjection = Math::Frustum(1, 1, 90.0f, 0.1f, 1000.0f);
+	Math::Transform defaultView = Math::Transform();
 
 	void Renderer::Init() {
 		mState = RendererState::INIT;
@@ -32,9 +34,6 @@ namespace Refraction::Engine {
 
 		auto result = glfwGetCurrentContext();
 
-		mCamera->mFrustum.w = mViewportRect.w;
-		mCamera->mFrustum.h = mViewportRect.h;
-
 		Log::Render.Info("Loading shaders...");
 		Assets::Shader::LoadAllShaders();
 
@@ -45,6 +44,7 @@ namespace Refraction::Engine {
 		mLightingPassShader->SetUniformInt("gPosition", 0);
 		mLightingPassShader->SetUniformInt("gNormal", 1);
 		mLightingPassShader->SetUniformInt("gAlbedoSpec", 2);
+		mLightingPassShader->SetUniformVec3("ambient", Math::Vector3(0.2f));
 
 		Log::Render.Info("Creating G-Buffer...");
 		mGBuffer = new GBuffer();
@@ -52,9 +52,9 @@ namespace Refraction::Engine {
 		mFinalOutput = Common::NewRef<Assets::Texture>(mGBuffer->GetFinalTextureID());
 
 		Log::Render.Info("Creating uniform buffer object...");
-		projectionMatrix = Math::Matrix4::Perspective(mCamera->mFrustum);
+		projectionMatrix = Math::Matrix4::Perspective(defaultProjection);
 		sUBO initData = {
-			Utilities::NativeToGLMMat4(mCamera->GetViewMatrix()),
+			Utilities::NativeToGLMMat4(defaultView.ToMatrix()),
 			Utilities::NativeToGLMMat4(projectionMatrix)
 		};
 		mUBO = new UniformBufferObject(initData);
@@ -101,7 +101,7 @@ namespace Refraction::Engine {
 		glBindVertexArray(0);
 	}
 
-	void Renderer::RenderFrame(Common::Ref<Objects::SceneRoot> scene) {
+	void Renderer::RenderFrame(Common::Ref<Project> projectInstance) {
 		auto timeNow = std::chrono::steady_clock::now();
 		mDeltaRenderTime = std::chrono::duration<double>(timeNow - timeRenderLast).count();
 		Time::RenderDelta = mDeltaRenderTime;
@@ -111,26 +111,32 @@ namespace Refraction::Engine {
 		Components::Mesh::FrameMeshCount = 0;
 		Components::Mesh::FrameVertexCount = 0;
 
-		UpdateUniformBuffers();
+		// Skip if no project or scene loaded (projects may load asynchronously so this prevents issues)
+		if (!projectInstance->IsLoaded()) return;
+		if (!projectInstance->GetActiveScene()) return;
+
+		UpdateUniformBuffers(projectInstance);
+
 
 		mGBuffer->StartFrame();
 
 		// Draw scene
-		DSPassGeometry(scene);
-		DSPassLighting(scene);
+		DSPassGeometry(projectInstance);
+		DSPassLighting(projectInstance);
 		DSPassFinal();
 	}
 
-	void Renderer::UpdateUniformBuffers() {
+	void Renderer::UpdateUniformBuffers(Common::Ref<Project> projectInstance) {
+		auto camera = projectInstance->GetActiveCamera();
 		sUBO newData{};
-		newData.viewMatrix = Utilities::NativeToGLMMat4(mCamera->GetViewMatrix());
+		newData.viewMatrix = Utilities::NativeToGLMMat4(camera->GetViewMatrix());
 
 		if (mViewportRectLast != mViewportRect) {
 			if (!mGBuffer->Regenerate(mViewportRect.w, mViewportRect.h)) throw;
 			glViewport(0, 0, mViewportRect.w, mViewportRect.h);
-			mCamera->mFrustum.w = mViewportRect.w;
-			mCamera->mFrustum.h = mViewportRect.h;
-			projectionMatrix = Math::Matrix4::Perspective(mCamera->mFrustum);
+			camera->mFrustum.w = mViewportRect.w;
+			camera->mFrustum.h = mViewportRect.h;
+			projectionMatrix = Math::Matrix4::Perspective(camera->mFrustum);
 			mViewportRectLast = mViewportRect;
 		}
 		newData.perspectiveMatrix = Utilities::NativeToGLMMat4(projectionMatrix);
@@ -148,7 +154,7 @@ namespace Refraction::Engine {
 
 	// Deferred Shading
 
-	void Renderer::DSPassGeometry(Common::Ref<Objects::SceneRoot> scene) const {
+	void Renderer::DSPassGeometry(Common::Ref<Project> projectInstance) const {
 		mGBuffer->BindGeometryPass();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		mGeomPassShader->Activate();
@@ -158,14 +164,14 @@ namespace Refraction::Engine {
 		}
 
 		// Draw models
-		scene->RenderScene();
+		projectInstance->GetActiveScene()->RenderScene(projectInstance->GetGlobalObjects());
 
 		if (Settings::CurrentSettings->Graphics.WireframeEnabled) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 	}
 
-	void Renderer::DSPassLighting(Common::Ref<Objects::SceneRoot> scene) const {
+	void Renderer::DSPassLighting(Common::Ref<Project> projectInstance) const {
 		mGBuffer->BindLightingPass();
 
 		mLightingPassShader->Activate();
@@ -173,7 +179,7 @@ namespace Refraction::Engine {
 			const auto light = mLoadedScene->mLights[i];
 			light->UpdateShaderUniforms(i);
 		}
-		mLightingPassShader->SetUniformVec3("viewPos", mCamera->mTransform.GetWorldPosition());
+		mLightingPassShader->SetUniformVec3("viewPos", projectInstance->GetActiveCamera()->mTransform.GetWorldPosition());
 
 		glDepthMask(GL_FALSE);
 		// Render sky

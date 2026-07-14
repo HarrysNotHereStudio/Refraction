@@ -4,23 +4,32 @@
 #include <imgui/imgui.h>
 
 #include <Settings.h>
-#include <Core/Time.h>
-#include <Core/Utilities.h>
-#include <Classes/Components/Mesh.h>
 #include <Classes/Components/APhysics.h>
 #include <EditorState.h>
+#include <EditorTheme.h>
 #include <ImGuiExtension.h>
 #include <EditorPlatform/ADialogs.h>
+#include <EditorPanels/ViewportPanel.h>
+#include <EditorPanels/PropertiesPanel.h>
+#include <EditorPanels/ExplorerPanel.h>
 
 #include "AImGuiImpl.h"
-
-std::deque<float> deltaHistory;
 
 namespace Refraction::Editor {
 	using Engine::Platform::WindowInputState;
 
-	ImGuiStyle Platform::AImGuiImpl::GetDefaultStyle() {
-		ImGuiStyle style = ImGuiStyle();
+	Platform::AImGuiImpl::AImGuiImpl(Common::Ref<Engine::Platform::AWindow> window) : mWindow(window) {
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+		ImGui::StyleColorsDark();
+
+		ImGuiStyle& style = ImGui::GetStyle();
 		style.WindowPadding = ImVec2(6, 6);
 		style.FramePadding = ImVec2(2, 2);
 		style.ItemSpacing = ImVec2(8, 2);
@@ -40,12 +49,6 @@ namespace Refraction::Editor {
 		style.TabBorderSize = 0;
 		style.TabBarBorderSize = 1;
 		style.TabRounding = 0;
-
-		return style;
-	}
-
-	Platform::AImGuiImpl::AImGuiImpl(Common::Ref<Engine::Platform::AWindow> window, Common::Ref<Engine::Project> project) : mWindow(window), mProject(project) {
-		mDeltaHistory.resize(ImGuiImpl_DeltaHistoryMax);
 	}
 
 	void Platform::AImGuiImpl::UpdateInputState() {
@@ -61,29 +64,36 @@ namespace Refraction::Editor {
 	}
 
 	void Platform::AImGuiImpl::DrawMenu() {
+		auto& project = EditorState::Temp.ProjectInstance;
+
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
-				if (ImGui::MenuItem("Save")) {
-					mProject->Save();
-				}
 				if (ImGui::MenuItem("New")) {
-					mProject->New(Dialogs::SelectFolder("Select Project Folder"));
+					project->New(Dialogs::SelectFolder("Select Project Folder"));
 				}
 				if (ImGui::MenuItem("Open")) {
 					auto path = Dialogs::SelectFile(REFRACTION_PROJECT_EXTENSION, "Select Project File");
-					EditorState::Persistent.RecentProjects.push_back(path);
-					mProject->Open(path);
+					EditorState::Persistent.RecentProjects.insert(path);
+					project->Open(path);
 				}
 				if (ImGui::BeginMenu("Open Recent")) {
-					for (std::filesystem::path& path : EditorState::Persistent.RecentProjects) {
+					for (auto& path : EditorState::Persistent.RecentProjects) {
 						if (!std::filesystem::exists(path)) continue;
 						if (ImGui::MenuItem(path.filename().string().c_str())) {
-							mProject->Open(path);
+							project->Open(path);
 						}
 					}
 					ImGui::EndMenu();
 				}
-				if (ImGui::MenuItem("Quit")) {
+				ImGui::Separator();
+				if (ImGui::MenuItem("Save", "Ctrl+S", nullptr, project->IsLoaded())) {
+					project->Save();
+				}
+				if (ImGui::MenuItem("Close", 0, nullptr, project->IsLoaded())) {
+					project->Close();
+				}
+				ImGui::Separator();
+				if (ImGui::MenuItem("Quit", "Alt+F4")) {
 					mShouldQuit = true;
 					CloseWindow();
 				}
@@ -98,64 +108,31 @@ namespace Refraction::Editor {
 				if (ImGui::MenuItem("Paste", "Ctrl+V")) {}
 				ImGui::EndMenu();
 			}
+			if (ImGui::BeginMenu("View")) {
+				ImGui::MenuItem("Wireframe", 0, &Settings::CurrentSettings->Graphics.WireframeEnabled);
+				ImGui::Separator();
+				ImGui::MenuItem("Viewport", 0, &EditorState::Temp.PanelViewportVisible);
+				ImGui::MenuItem("Properties", 0, &EditorState::Temp.PanelPropertiesVisible);
+				ImGui::MenuItem("Explorer", 0, &EditorState::Temp.PanelExplorerVisible);
+				ImGui::MenuItem("Statistics", 0, &EditorState::Temp.PanelStatisticsVisible);
+				ImGui::MenuItem("Log", 0, &EditorState::Temp.PanelLogVisible);
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Tools")) {
+				ImGui::MenuItem("Theme Editor", 0, &mShowThemeEditor);
+				ImGui::Separator();
+				ImGui::MenuItem("ImGui Demo Window", 0, &mShowDemoWindow);
+				ImGui::EndMenu();
+			}
 			ImGui::EndMainMenuBar();
 		}
+
+		if (mShowDemoWindow) ImGui::ShowDemoWindow(&mShowDemoWindow);
+		if (mShowThemeEditor) {
+			EditorTheme::DrawThemeEditor(&mShowThemeEditor);
+		};
 	}
 
 	void Platform::AImGuiImpl::DrawRibbon() {
-	}
-
-	void Platform::AImGuiImpl::DrawAssetDrawer() {
-	}
-
-	void Platform::AImGuiImpl::DrawDebugInfoWindow() {
-		mDeltaHistory.push_back((float)Time::RenderDelta * 1000);
-		if (mDeltaHistory.size() > ImGuiImpl_DeltaHistoryMax) {
-			mDeltaHistory.pop_front();
-			mDeltaHistory.shrink_to_fit();
-		}
-		float values[ImGuiImpl_DeltaHistoryMax] = {};
-		float average = 0.0f;
-		for (int i = 0; i < mDeltaHistory.size(); i++) {
-			values[i] = mDeltaHistory[i];
-			average += mDeltaHistory[i];
-		}
-		average /= mDeltaHistory.size();
-
-		ImGui::Begin("Debug Information");
-		ImGui::Text("gurt: yo");
-		if (ImGui::TreeNode("Rendering")) {
-			ImGui::Checkbox("Wireframe", &Settings::CurrentSettings->Graphics.WireframeEnabled);
-			ImGui::PlotLines("FPS", values, ImGuiImpl_DeltaHistoryMax, 0, std::format("Avg {:.3f}ms", average).c_str(), 0, 100.0f, ImVec2(0, 80.0f));
-			ImGui::Text(std::format("Elapsed: {:.3f}s", Time::GetSessionSec()));
-			ImGui::Text(std::format("Delta: {:.3f}ms", Time::RenderDelta * 1000));
-			ImGui::Text(std::format("FPS: {}", Utilities::DeltaToRate(Time::RenderDelta, 3)));
-			ImGui::TreePop();
-		}
-		if (ImGui::TreeNode("Input")) {
-			std::string inputStateStr;
-			switch (mWindow->mInputState) {
-			case WindowInputState::NONE: inputStateStr = "None"; break;
-			case WindowInputState::GUI: inputStateStr = "GUI"; break;
-			case WindowInputState::VIEWPORT: inputStateStr = "Viewport"; break;
-			}
-			ImGui::Text(std::format("Mouse focus: {}", inputStateStr));
-			ImGui::TreePop();
-		}
-		if (ImGui::TreeNode("Camera")) {
-			auto camera = mWindow->GetCurrentCamera();
-			ImGui::Text(std::format("Camera frustum: {}", camera->mFrustum.ToString({ .AsInt = false, .Pretty = false })));
-			ImGui::Text(std::format("Camera speed: {}", Settings::CurrentSettings->Controls.CameraSpeed));
-			ImGui::Text(std::format("Camera grid index: {}", camera->mTransform.mSpatialPosition.GridIndex.ToString({ .AsInt = true, .Pretty = false })));
-			ImGui::Text(std::format("Camera cell position: {}", camera->mTransform.mSpatialPosition.CellPosition.ToString({ .AsInt = false, .Pretty = false })));
-			ImGui::Text(std::format("Camera world position: {}", camera->mTransform.GetWorldPosition().ToString({.AsInt = false, .Pretty = false})));
-			ImGui::TreePop();
-		}
-		if (ImGui::TreeNode("Scene")) {
-			ImGui::Text(std::format("Mesh count: {}", Components::Mesh::FrameMeshCount));
-			ImGui::Text(std::format("Vertex count: {}", Components::Mesh::FrameVertexCount));
-			ImGui::TreePop();
-		}
-		ImGui::End();
 	}
 }

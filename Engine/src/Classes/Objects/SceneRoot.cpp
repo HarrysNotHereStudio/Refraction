@@ -4,16 +4,22 @@
 #include "SceneRoot.h"
 
 namespace Refraction::Objects {
-	void SceneRoot::TickScene() {
+	void SceneRoot::TickScene(std::vector<Common::Ref<AObject>> globalObjects) {
 		PreTick(this);
+		for (auto& obj : globalObjects) PreTick(obj.get());
 		Tick(this);
+		for (auto& obj : globalObjects) Tick(obj.get());
 		PostTick(this);
+		for (auto& obj : globalObjects) PostTick(obj.get());
 	}
 
-	void SceneRoot::RenderScene() {
+	void SceneRoot::RenderScene(std::vector<Common::Ref<AObject>> globalObjects) {
 		PreRender(this);
+		for (auto& obj : globalObjects) PreRender(obj.get());
 		Render(this);
+		for (auto& obj : globalObjects) Render(obj.get());
 		PostRender(this);
+		for (auto& obj : globalObjects) PostRender(obj.get());
 	}
 
 	std::string SceneRoot::Serialise() {

@@ -13,7 +13,7 @@ namespace Refraction::Engine {
 	void PhysicsLayer::OnPass() {
 		if (mProjectInstance->IsLoaded()) {
 			if (auto scene = mProjectInstance->GetActiveScene()) {
-				scene->TickScene();
+				scene->TickScene(mProjectInstance->GetGlobalObjects());
 			}
 		}
 	}

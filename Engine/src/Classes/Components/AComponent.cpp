@@ -1,6 +1,7 @@
 #include <json.hpp>
 
 #include <Core/Utilities.h>
+#include <Classes/ClassSerialiser.h>
 
 #include "AComponent.h"
 
@@ -26,14 +27,9 @@ namespace Refraction::Components {
 	}
 
 	void AComponent::Deserialise(std::string serialised) {
-		using nlohmann::json;
-
-		try {
-			json data = json::parse(serialised);
-			mDisplayName = data.at("DisplayName").get<std::string>();
-			mUUID = UUID::Deserialise(data.at("UUID"));
-		} catch (const json::parse_error& err) {
-			throw std::runtime_error("Failed to parse JSON serialised Component data: " + std::string(err.what()));
-		}
+		Utilities::ClassSerialiser::TryParseJSON(serialised, [&](nlohmann::json& json) {
+			mDisplayName = json.at("DisplayName").get<std::string>();
+			mUUID = UUID::Deserialise(json.at("UUID"));
+		});
 	}
 }

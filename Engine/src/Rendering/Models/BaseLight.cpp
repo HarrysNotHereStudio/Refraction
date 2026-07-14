@@ -7,9 +7,6 @@ using RMath::Transform;
 BaseLight::BaseLight() {
 	mLightShader = Refraction::Assets::Shader::GetShaderByName("lightingShader");
 	mTransform = new Transform();
-	mBillboard = new Billboard();
-	mBillboard->mTransform = mTransform;
-	mBillboard->SetTexture(Refraction::FileHandling::GetResourcesPath() / "textures" / "Icons_Light.png");
 }
 
 void BaseLight::UpdateShaderUniforms(unsigned int index) {
