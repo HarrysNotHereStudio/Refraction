@@ -12,8 +12,8 @@ namespace Refraction {
 		static UUID Null() { return UUID(0); }
 
 		// Initialises a UUID using its int64 value and adds it to the generator history
-		// Note: Returns a null UUID if the provided UUID is already in generator history
-		static UUID FromExisting(uint64_t id);
+		// Note: Returns a null UUID if the provided UUID is already in generator history, unless specified not to
+		static UUID FromExisting(uint64_t id, bool ignoreExisting = false);
 		// Initialises a UUID from a UUID::Serialise() string and adds it to the generator history
 		// Note: Returns a null UUID if the provided UUID is already in generator history
 		static UUID Deserialise(std::string serialised);

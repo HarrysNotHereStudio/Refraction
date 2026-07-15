@@ -17,15 +17,17 @@ static std::string IntToHex(int i, uint16_t width) {
 namespace Refraction {
 	std::unordered_set<uint64_t> UUID::UUIDHistory = { 0 };
 
-	UUID UUID::FromExisting(uint64_t id) {
+	UUID UUID::FromExisting(uint64_t id, bool ignoreExisting) {
 		UUID newID;
 		newID.mElapsedSeconds = uint16_t(id >> 48);
 		newID.mElapsedMilliseconds = uint16_t(id >> 32);
 		newID.mRandomFirst = uint16_t(id >> 16);
 		newID.mRandomSecond = uint16_t(id);
 
-		if (UUIDHistory.count(newID.AsInt())) return UUID::Null();
-		UUIDHistory.insert(newID.AsInt());
+		if (!ignoreExisting) {
+			if (UUIDHistory.count(newID.AsInt())) return UUID::Null();
+			UUIDHistory.insert(newID.AsInt());
+		}
 		return newID;
 	}
 

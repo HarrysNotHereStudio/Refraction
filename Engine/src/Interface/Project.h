@@ -20,6 +20,7 @@ namespace Refraction::Engine {
 		std::vector<Common::Ref<Objects::SceneRoot>> Scenes = {};
 		std::vector<Common::Ref<Objects::AObject>> GlobalObjects = {};
 		Common::Ref<Objects::Camera> ActiveCamera = nullptr;
+		bool IsRemote = false; // Determines whether some operations should be ignored as it isn't a local project
 	};
 
 	bool SaveProjectData(const std::filesystem::path& projectFilePath, const ProjectData& projectData);
@@ -43,10 +44,20 @@ namespace Refraction::Engine {
 		return projectPath / (projectName + REFRACTION_PROJECT_EXTENSION);
 	}
 
+	enum class RemoteProjectCommand {
+		AddObject,
+		AddComponent,
+		UpdateObject,
+		UpdateComponent,
+		RemoveInstance,
+	};
+
 	class Project {
 	public:
 		// Creates a new project at the given path, returns success
 		bool New(const std::filesystem::path& projectPath, bool eraseExisting = false);
+		// Initialises as a remote project (live collaboration), returns success
+		bool NewRemote();
 		// Opens a project at the given path, returns success
 		bool Open(const std::filesystem::path& projectPath);
 
@@ -54,6 +65,9 @@ namespace Refraction::Engine {
 		bool Save();
 		// Closes the currently loaded project
 		void Close();
+
+		// Handles a message sent by a live collaboration server
+		void ProcessRemoteMessage(std::string message);
 
 		// Creates a new scene under the active project, returns the new SceneRoot (empty ptr if failed)
 		Common::Ref<Objects::SceneRoot> NewScene();
@@ -69,6 +83,7 @@ namespace Refraction::Engine {
 		inline Common::Ref<Objects::Camera> GetActiveCamera() const { return mProjectData.ActiveCamera; }
 
 		inline bool IsLoaded() const { return !mProjectPath.empty(); }
+		inline bool IsRemote() const { return mProjectData.IsRemote; }
 	private:
 		std::filesystem::path mProjectPath;
 		ProjectData mProjectData;

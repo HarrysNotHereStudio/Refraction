@@ -148,6 +148,8 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\EditorPanels\LiveCollabPanel.cpp" />
+    <ClCompile Include="src\EditorNet.cpp" />
     <ClCompile Include="src\EditorTheme.cpp" />
     <ClCompile Include="src\EditorPanels\LogPanel.cpp" />
     <ClCompile Include="src\EditorPanels\ExplorerPanel.cpp" />
@@ -172,6 +174,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\EditorPanels\LiveCollabPanel.h" />
+    <ClInclude Include="src\EditorNet.h" />
     <ClInclude Include="src\EditorTheme.h" />
     <ClInclude Include="src\EditorPanels\LogPanel.h" />
     <ClInclude Include="resource.h" />

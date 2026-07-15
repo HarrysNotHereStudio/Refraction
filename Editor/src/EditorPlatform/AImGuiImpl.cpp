@@ -6,6 +6,7 @@
 #include <Settings.h>
 #include <Classes/Components/APhysics.h>
 #include <EditorState.h>
+#include <EditorNet.h>
 #include <EditorTheme.h>
 #include <ImGuiExtension.h>
 #include <EditorPlatform/ADialogs.h>
@@ -115,6 +116,7 @@ namespace Refraction::Editor {
 				ImGui::MenuItem("Properties", 0, &EditorState::Temp.PanelPropertiesVisible);
 				ImGui::MenuItem("Explorer", 0, &EditorState::Temp.PanelExplorerVisible);
 				ImGui::MenuItem("Statistics", 0, &EditorState::Temp.PanelStatisticsVisible);
+				ImGui::MenuItem("Collaboration", 0, &EditorState::Temp.PanelLiveCollabVisible);
 				ImGui::MenuItem("Log", 0, &EditorState::Temp.PanelLogVisible);
 				ImGui::EndMenu();
 			}

@@ -21,6 +21,9 @@ namespace Refraction::Objects {
 		std::string mInstanceName = "Object";
 		Objects::AObject* mParent = nullptr;
 
+		// Returns an object under the given parent with the target UUID (or with a component with the target UUID)
+		static AObject* GetInstanceWithUUID(UUID target, AObject* parent);
+
 		AObject() {}
 		AObject(const AObject& object);
 		~AObject();
@@ -65,6 +68,9 @@ namespace Refraction::Objects {
 
 		// Adds a given child object
 		void AddChild(Common::Ref<AObject> child);
+
+		// Removes a given child object/component by UUID
+		void RemoveChild(UUID target);
 
 		// Creates a copy of this object and its descendants
 		Common::Ref<AObject> Clone();

@@ -19,6 +19,7 @@ namespace Refraction::Editor {
 		bool PanelPropertiesVisible = true;
 		bool PanelExplorerVisible = true;
 		bool PanelStatisticsVisible = true;
+		bool PanelLiveCollabVisible = false;
 		bool PanelLogVisible = true;
 	};
 	struct PersistentEditorState {

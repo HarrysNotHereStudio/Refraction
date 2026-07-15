@@ -14,6 +14,9 @@ namespace Refraction::Objects {
 		// Renders all objects in this scene. Must pass global objects to render them too.
 		void RenderScene(std::vector<Common::Ref<AObject>> globalObjects);
 
+		// Removes the object/component with the specified UUID
+		void Remove(UUID target);
+
 		std::string Serialise() override;
 		void Deserialise(std::string serialised) override;
 	private:

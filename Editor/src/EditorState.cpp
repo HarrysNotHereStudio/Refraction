@@ -18,6 +18,7 @@ namespace Refraction::Editor {
 		std::erase_if(Persistent.RecentProjects, [&](std::filesystem::path path) {
 			if (!std::filesystem::is_regular_file(path)) return true;
 			serialised["RecentProjects"].push_back(path.string());
+			return false;
 		});
 
 		auto stateFilePath = Persistent.ExecutableDir / "EditorState.rfc";

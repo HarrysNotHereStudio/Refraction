@@ -7,6 +7,17 @@
 
 
 namespace Refraction::Objects {
+	AObject* AObject::GetInstanceWithUUID(UUID target, AObject* parent) {
+		for (auto& comp : *parent->GetComponents()) {
+			if (comp->GetUUID() == target) return parent;
+		}
+		AObject* obj = nullptr;
+		for (auto& child : *parent->GetChildren()) {
+			obj = GetInstanceWithUUID(target, child.get());
+		}
+		return obj;
+	}
+
 	AObject::AObject(const AObject& object) {
 		mTransform = object.mTransform;
 		mInstanceName = object.mInstanceName;
@@ -42,6 +53,27 @@ namespace Refraction::Objects {
 		if (child->mParent == this) return; // Child is already parented to this object
 		child->mParent = this;
 		mChildren.push_back(child);
+	}
+
+	void AObject::RemoveChild(UUID target) {
+		for (size_t i = 0; i < mChildren.size(); i++) {
+			auto& child = mChildren[i];
+			if (child->GetUUID() != target) continue;
+			child->mParent = nullptr;
+			mChildren.erase(std::next(mChildren.begin(), i - 1));
+			return;
+		}
+
+		// It isn't a child object, try components
+		for (size_t i = 0; i < mComponents.size(); i++) {
+			auto& comp = mComponents[i];
+			if (comp->GetUUID() != target) continue;
+			comp->mParent = nullptr;
+			mComponents.erase(std::next(mComponents.begin(), i - 1));
+			return;
+		}
+
+		// Well it isn't a child component either. Get mad at the caller.
 	}
 
 	Common::Ref<AObject> AObject::Clone() {

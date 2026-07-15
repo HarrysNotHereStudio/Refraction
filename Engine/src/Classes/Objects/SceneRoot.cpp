@@ -22,6 +22,23 @@ namespace Refraction::Objects {
 		for (auto& obj : globalObjects) PostRender(obj.get());
 	}
 
+	void SceneRoot::Remove(UUID target) {
+		auto targetInst = GetInstanceWithUUID(target, this);
+		if (!targetInst) return; // Target doesn't exist
+
+		// If it's not the object, check components
+		if (targetInst->GetUUID() != target) {
+			for (auto& comp : *targetInst->GetComponents()) {
+				if (comp->GetUUID() != target) continue;
+				comp->mParent = nullptr;
+				break;
+			}
+		} else {
+			targetInst->mParent = nullptr;
+		}
+		Log::SInfo("Successfully removed " + target.AsString());
+	}
+
 	std::string SceneRoot::Serialise() {
 		return AObject::Serialise();
 	}
