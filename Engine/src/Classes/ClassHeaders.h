@@ -7,3 +7,4 @@
 #include <Classes/Components/AComponent.h>
 #include <Classes/Components/APhysics.h>
 #include <Classes/Components/Mesh.h>
+#include <Classes/Components/Billboard.h>

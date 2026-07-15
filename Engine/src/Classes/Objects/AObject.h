@@ -30,9 +30,9 @@ namespace Refraction::Objects {
 
 		// Returns a child component of a given type (if it exists)
 		template<typename T>
-		inline T* GetComponent() {
+		inline Common::Ref<T> GetComponent() {
 			for (auto& comp : mComponents) {
-				T* casted = dynamic_cast<T*>(comp.get());
+				auto casted = dynamic_pointer_cast<T>(comp);
 				if (casted) return casted;
 			}
 			return nullptr;
@@ -43,25 +43,26 @@ namespace Refraction::Objects {
 
 		// Adds a new child component
 		template<typename T>
-		inline void AddComponent() {
-			Common::Ref<Components::AComponent> newComp = Common::NewRef<T>();
+		inline Common::Ref<T> AddComponent() {
+			Common::Ref<T> newComp = Common::NewRef<T>();
 			newComp->mParent = this;
 			mComponents.push_back(newComp);
+			return newComp;
 		}
 
 
 		// Returns a child object of a given type (if it exists)
 		template<typename T>
-		inline T* GetFirstChild() {
+		inline Common::Ref<T> GetFirstChild() {
 			for (auto& obj : mChildren) {
-				T* casted = dynamic_cast<T*>(obj.get());
+				auto casted = dynamic_pointer_cast<T>(obj);
 				if (casted) return casted;
 			}
 			return nullptr;
 		}
 
 		// Returns a child object with a given name (if it exists)
-		AObject* GetFirstChild(std::string name);
+		Common::Ref<AObject> GetFirstChild(std::string name);
 
 		// Returns all children objects
 		inline ObjectList* GetChildren() { return &mChildren; }
@@ -69,6 +70,8 @@ namespace Refraction::Objects {
 		// Adds a given child object
 		void AddChild(Common::Ref<AObject> child);
 
+		// Removes itself from its parent
+		void Remove();
 		// Removes a given child object/component by UUID
 		void RemoveChild(UUID target);
 
@@ -83,7 +86,7 @@ namespace Refraction::Objects {
 		// Loads data from the provided serialised object
 		virtual void Deserialise(std::string serialised);
 	protected:
-		std::string mDisplayName;
+		std::string mClassName;
 		ComponentList mComponents;
 		ObjectList mChildren;
 	private:

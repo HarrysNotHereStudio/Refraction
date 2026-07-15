@@ -31,6 +31,8 @@ namespace Refraction::Assets {
 		return;
 	}
 
+	std::unordered_map<uint64_t, Common::Ref<Asset>> Asset::AssetMap = {};
+
 	void Asset::LoadAsset(const std::filesystem::path& source) {
 		if (!std::filesystem::exists(source)) throw std::runtime_error("Invalid asset path " + source.string());
 		// Reset loaded metadata
@@ -44,6 +46,8 @@ namespace Refraction::Assets {
 			metadata.AssetPath = source;
 			metadata.FileSize = std::filesystem::file_size(source);
 		}
+
+		AddToMap(this);
 	}
 
 	void Asset::Save() {

@@ -26,23 +26,7 @@ namespace Refraction::Engine {
 	bool SaveProjectData(const std::filesystem::path& projectFilePath, const ProjectData& projectData);
 
 	std::optional<ProjectData> LoadProjectData(const std::filesystem::path& projectFilePath);
-
-	inline std::filesystem::path GetProjectFilePath(const std::filesystem::path& projectPath) {
-		if (!std::filesystem::exists(projectPath)) {
-			Log::SError("Project path " + projectPath.string() + " does not exist");
-			return std::filesystem::path();
-		}
-		if (projectPath.empty()) {
-			Log::SError("Project path " + projectPath.string() + " is empty");
-			return std::filesystem::path();
-		}
-		std::string projectName = projectPath.filename().string();
-		if (projectName.empty()) {
-			Log::SError("Could not get project name from path " + projectPath.string());
-			return std::filesystem::path();
-		}
-		return projectPath / (projectName + REFRACTION_PROJECT_EXTENSION);
-	}
+	inline std::filesystem::path GetProjectFilePath(const std::filesystem::path& projectPath);
 
 	enum class RemoteProjectCommand {
 		AddObject,
@@ -79,8 +63,6 @@ namespace Refraction::Engine {
 		inline std::vector<Common::Ref<Objects::SceneRoot>> GetScenes() const { return mProjectData.Scenes; }
 		// Returns all global objects under this project
 		inline std::vector<Common::Ref<Objects::AObject>> GetGlobalObjects() const { return mProjectData.GlobalObjects; }
-		// Returns the active camera
-		inline Common::Ref<Objects::Camera> GetActiveCamera() const { return mProjectData.ActiveCamera; }
 
 		inline bool IsLoaded() const { return !mProjectPath.empty(); }
 		inline bool IsRemote() const { return mProjectData.IsRemote; }
@@ -88,6 +70,8 @@ namespace Refraction::Engine {
 		std::filesystem::path mProjectPath;
 		ProjectData mProjectData;
 
+		// Contains all the scenes and global objects
+		Common::Ref<Objects::AObject> mRootObject = nullptr;
 		Common::Ref<Objects::SceneRoot> mActiveScene = nullptr;
 	};
 }

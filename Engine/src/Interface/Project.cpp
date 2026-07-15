@@ -73,12 +73,17 @@ namespace Refraction::Engine {
 			for (auto& globalObjData : data.at("GlobalObjects")) {
 				auto object = Utilities::ClassSerialiser::DeserialiseObject(globalObjData);
 				deserialised.GlobalObjects.push_back(object);
-				if (cameraDefined && (object->GetUUID() == cameraUUID)) deserialised.ActiveCamera = dynamic_pointer_cast<Objects::Camera>(object);
+				if (cameraDefined && (object->GetUUID() == cameraUUID)) {
+					auto camera = dynamic_pointer_cast<Objects::Camera>(object);
+					Objects::Camera::ActiveCamera = camera;
+					deserialised.ActiveCamera = camera;
+				};
 			}
 
 			if (!cameraDefined || !deserialised.ActiveCamera) {
 				Log::SWarn("No active camera set, creating new camera");
 				auto camera = Common::NewRef<Objects::Camera>();
+				Objects::Camera::ActiveCamera = camera;
 				deserialised.ActiveCamera = camera;
 				deserialised.GlobalObjects.push_back(camera);
 			}
@@ -89,6 +94,24 @@ namespace Refraction::Engine {
 			return std::nullopt;
 		}
 	}
+
+	std::filesystem::path GetProjectFilePath(const std::filesystem::path& projectPath) {
+		if (!std::filesystem::exists(projectPath)) {
+			Log::SError("Project path " + projectPath.string() + " does not exist");
+			return std::filesystem::path();
+		}
+		if (projectPath.empty()) {
+			Log::SError("Project path " + projectPath.string() + " is empty");
+			return std::filesystem::path();
+		}
+		std::string projectName = projectPath.filename().string();
+		if (projectName.empty()) {
+			Log::SError("Could not get project name from path " + projectPath.string());
+			return std::filesystem::path();
+		}
+		return projectPath / (projectName + REFRACTION_PROJECT_EXTENSION);
+	}
+
 
 	bool Project::New(const std::filesystem::path& projectPath, bool eraseExisting) {
 		auto pathStr = projectPath.string();
@@ -113,8 +136,16 @@ namespace Refraction::Engine {
 
 		Log::SInfo("Creating project at " + pathStr);
 
+		mRootObject = Common::NewRef<Objects::AObject>();
 		mProjectPath = projectPath;
 		mProjectData = ProjectData{};
+
+		// Default global objects
+		auto camera = Common::NewRef<Objects::Camera>();
+		Objects::Camera::ActiveCamera = camera;
+		camera->mParent = mRootObject.get();
+		mProjectData.ActiveCamera = camera;
+		mProjectData.GlobalObjects.push_back(camera);
 
 		if (!Save()) {
 			Log::SError("Failed to create initial save of project data at " + pathStr);
@@ -139,6 +170,9 @@ namespace Refraction::Engine {
 		// Close any active project
 		if (IsLoaded()) Close();
 
+		// Create new root
+		mRootObject = Common::NewRef<Objects::AObject>();
+
 		auto projectFolderPath = projectFilePath.parent_path();
 		mProjectPath = projectFolderPath;
 
@@ -147,6 +181,13 @@ namespace Refraction::Engine {
 		mProjectData = projectData.value_or(ProjectData{});
 
 		if (!projectData) Log::SWarn("Failed to load project data at " + pathStr);
+
+		for (auto& scene : mProjectData.Scenes) {
+			scene->mParent = mRootObject.get();
+		}
+		for (auto& globalObj : mProjectData.GlobalObjects) {
+			globalObj->mParent = mRootObject.get();
+		}
 
 		// Open init scene
 		if (mProjectData.InitSceneUUID != UUID::Null()) {
@@ -187,6 +228,7 @@ namespace Refraction::Engine {
 
 		Log::SInfo("Closing project at " + mProjectPath.string());
 
+		Objects::Camera::ActiveCamera = nullptr;
 		for (auto& scene : mProjectData.Scenes) {
 			scene.reset();
 		}
@@ -421,13 +463,11 @@ namespace Refraction::Engine {
 	Common::Ref<Objects::SceneRoot> Project::NewScene() {
 		Log::SInfo("Creating a new scene");
 		auto newScene = Common::NewRef<Objects::SceneRoot>();
+		newScene->mParent = mRootObject.get();
 		mProjectData.Scenes.push_back(newScene);
 
 		// Instantiate default objects/components
 		///
-		auto camera = Common::NewRef<Objects::Camera>();
-		mProjectData.ActiveCamera = camera;
-		mProjectData.GlobalObjects.push_back(camera);
 
 		auto nyenObj = Common::NewRef<Objects::BasicObject>();
 		nyenObj->mInstanceName = "Nyen";

@@ -148,7 +148,7 @@ namespace Refraction::Components {
 
 
 	Mesh::Mesh() {
-		mDisplayName = "MeshComponent";
+		mClassName = "MeshComponent";
 		mTransform = Math::Transform();
 	}
 

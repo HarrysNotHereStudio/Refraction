@@ -13,6 +13,7 @@ namespace Refraction::Editor::Panels {
 		void OnEvent(Common::Ref<Events::Event> event) override {}
 
 	private:
-
+		// TODO: filter objects in Explorer
+		ImGuiTextFilter mFilter;
 	};
 }

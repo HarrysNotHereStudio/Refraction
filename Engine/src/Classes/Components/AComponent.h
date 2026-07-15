@@ -10,6 +10,7 @@ namespace Refraction::Components {
 	class AComponent {
 	public:
 		Objects::AObject* mParent = nullptr;
+		bool mRequired = false; // Determines whether this component is required by its parent object
 
 		AComponent();
 		~AComponent();
@@ -22,7 +23,7 @@ namespace Refraction::Components {
 		virtual void PostRender() {};
 
 		inline UUID GetUUID() const { return mUUID; }
-		inline std::string GetDisplayName() const { return mDisplayName; };
+		inline std::string GetDisplayName() const { return mClassName; };
 
 		// Returns a serialised copy of the component
 		virtual std::string Serialise();
@@ -30,7 +31,7 @@ namespace Refraction::Components {
 		virtual void Deserialise(std::string serialised);
 
 	protected:
-		std::string mDisplayName = "BaseComponent";
+		std::string mClassName = "BaseComponent";
 	private:
 		UUID mUUID;
 	};

@@ -6,6 +6,7 @@
 #include <EditorPanels/ViewportPanel.h>
 #include <EditorPanels/LogPanel.h>
 #include <EditorPanels/StatsPanel.h>
+#include <EditorPanels/LiveCollabPanel.h>
 
 #include "EditorLayer.h"
 
@@ -20,6 +21,7 @@ namespace Refraction::Editor {
 		mEditorPanels.push_back(Common::NewURef<Panels::ViewportPanel>(eventDispatcher, mWindow));
 		mEditorPanels.push_back(Common::NewURef<Panels::LogPanel>(eventDispatcher, mWindow));
 		mEditorPanels.push_back(Common::NewURef<Panels::StatsPanel>(eventDispatcher, mWindow));
+		mEditorPanels.push_back(Common::NewURef<Panels::LiveCollabPanel>(eventDispatcher, mWindow));
 	}
 
 	void EditorLayer::OnAttach() {

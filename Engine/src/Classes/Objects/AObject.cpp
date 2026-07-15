@@ -42,9 +42,9 @@ namespace Refraction::Objects {
 		mUUID.Reset();
 	}
 
-	AObject* AObject::GetFirstChild(std::string name) {
+	Common::Ref<AObject> AObject::GetFirstChild(std::string name) {
 		for (auto& obj : mChildren) {
-			if (obj->mInstanceName == name) return obj.get();
+			if (obj->mInstanceName == name) return obj;
 		}
 		return nullptr;
 	}
@@ -55,12 +55,17 @@ namespace Refraction::Objects {
 		mChildren.push_back(child);
 	}
 
+	void AObject::Remove() {
+		if (!mParent) return;
+		mParent->RemoveChild(mUUID);
+	}
+
 	void AObject::RemoveChild(UUID target) {
 		for (size_t i = 0; i < mChildren.size(); i++) {
 			auto& child = mChildren[i];
 			if (child->GetUUID() != target) continue;
 			child->mParent = nullptr;
-			mChildren.erase(std::next(mChildren.begin(), i - 1));
+			mChildren.erase(std::next(mChildren.begin(), i));
 			return;
 		}
 
@@ -69,7 +74,7 @@ namespace Refraction::Objects {
 			auto& comp = mComponents[i];
 			if (comp->GetUUID() != target) continue;
 			comp->mParent = nullptr;
-			mComponents.erase(std::next(mComponents.begin(), i - 1));
+			mComponents.erase(std::next(mComponents.begin(), i));
 			return;
 		}
 
@@ -86,7 +91,7 @@ namespace Refraction::Objects {
 		serialised["UUID"] = mUUID.Serialise();
 		serialised["TypeName"] = typeid(*this).name();
 		Log::SInfo("Serialising as " + std::string(typeid(*this).name()));
-		serialised["DisplayName"] = mDisplayName;
+		serialised["ClassName"] = mClassName;
 		serialised["InstanceName"] = mInstanceName;
 		serialised["Transform"] = Utilities::ClassSerialiser::Serialise(mTransform);
 		serialised["Components"] = {};
@@ -104,7 +109,7 @@ namespace Refraction::Objects {
 	void AObject::Deserialise(std::string serialised) {
 		Utilities::ClassSerialiser::TryParseJSON(serialised, [&](nlohmann::json& json) {
 			mUUID = UUID::Deserialise(json.at("UUID"));
-			mDisplayName = json.at("DisplayName").get<std::string>();
+			mClassName = json.at("ClassName").get<std::string>();
 			mInstanceName = json.at("InstanceName").get<std::string>();
 			mTransform = Utilities::ClassSerialiser::DeserialiseTransform(json.at("Transform"));
 			mComponents.clear();

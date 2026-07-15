@@ -20,7 +20,7 @@ namespace Refraction::Engine {
 	void Instance::Start() {
 		mWindow->InitInput();
 		while (!mWindow->ShouldClose()) {
-			mWindow->OnUpdate(mProjectInstance->GetActiveCamera());
+			mWindow->OnUpdate(Objects::Camera::ActiveCamera);
 			if (mWindow->mShouldFramebufferRegen) {
 				mLayerStack->Dispatch(Common::NewRef<Events::ViewportResizedEvent>(mWindow->GetRect()));
 				mWindow->mShouldFramebufferRegen = false;

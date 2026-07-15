@@ -111,12 +111,12 @@ namespace Refraction::Engine {
 		Components::Mesh::FrameMeshCount = 0;
 		Components::Mesh::FrameVertexCount = 0;
 
-		// Skip if no project or scene loaded (projects may load asynchronously so this prevents issues)
+		// Skip if no project or scene loaded (projects may load asynchronously so this prevents issues) or no active camera
 		if (!projectInstance->IsLoaded()) return;
 		if (!projectInstance->GetActiveScene()) return;
+		if (!Objects::Camera::ActiveCamera) return;
 
 		UpdateUniformBuffers(projectInstance);
-
 
 		mGBuffer->StartFrame();
 
@@ -127,7 +127,7 @@ namespace Refraction::Engine {
 	}
 
 	void Renderer::UpdateUniformBuffers(Common::Ref<Project> projectInstance) {
-		auto camera = projectInstance->GetActiveCamera();
+		auto& camera = Objects::Camera::ActiveCamera;
 		sUBO newData{};
 		newData.viewMatrix = Utilities::NativeToGLMMat4(camera->GetViewMatrix());
 
@@ -179,7 +179,7 @@ namespace Refraction::Engine {
 			const auto light = mLoadedScene->mLights[i];
 			light->UpdateShaderUniforms(i);
 		}
-		mLightingPassShader->SetUniformVec3("viewPos", projectInstance->GetActiveCamera()->mTransform.GetWorldPosition());
+		mLightingPassShader->SetUniformVec3("viewPos", Objects::Camera::ActiveCamera->mTransform.GetWorldPosition());
 
 		glDepthMask(GL_FALSE);
 		// Render sky

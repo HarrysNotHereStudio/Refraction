@@ -150,6 +150,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Classes\Components\Billboard.h" />
     <ClInclude Include="src\Classes\Objects\Camera.h" />
     <ClInclude Include="src\Classes\ClassHeaders.h" />
     <ClInclude Include="src\Classes\ClassSerialiser.h" />
@@ -189,7 +190,6 @@
     <ClInclude Include="src\Classes\Components\AComponent.h" />
     <ClInclude Include="src\Platform\AWindow.h" />
     <ClInclude Include="src\Platform\PlatformAPI.h" />
-    <ClInclude Include="src\Rendering\Models\Billboard.h" />
     <ClInclude Include="src\Core\Common.h" />
     <ClInclude Include="src\Rendering\Buffers\BaseBuffer.h" />
     <ClInclude Include="src\Rendering\Buffers\GBuffer.h" />
@@ -213,6 +213,7 @@
     <ClInclude Include="src\Core\Time.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Classes\Components\Billboard.cpp" />
     <ClCompile Include="src\Classes\Objects\Camera.cpp" />
     <ClCompile Include="src\Classes\ClassSerialiser.cpp" />
     <ClCompile Include="src\Physics\PhysicsLayer.cpp" />
@@ -245,7 +246,6 @@
     <ClCompile Include="src\Classes\Objects\AObject.cpp" />
     <ClCompile Include="src\Classes\Assets\Asset.cpp" />
     <ClCompile Include="src\Classes\Components\AComponent.cpp" />
-    <ClCompile Include="src\Rendering\Models\Billboard.cpp" />
     <ClCompile Include="src\Core\Log.cpp" />
     <ClCompile Include="src\Rendering\glad.c" />
     <ClCompile Include="src\Rendering\Buffers\BaseBuffer.cpp" />

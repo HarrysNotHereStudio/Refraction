@@ -8,33 +8,33 @@
 #include "PropertiesPanel.h"
 
 namespace Refraction::Editor::Panels {
-	static void DrawTransformControls(Math::Transform& transform) {
+	static void DrawTransformControls(Math::Transform& transform, std::string uid) {
 		if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 			// Handle rotation differently because it's not a Vector3
 			auto objectRotation = transform.mOrientation.ToEulerAngles();
-			auto displayedRotation = objectRotation;
 
 			ImGuiSliderFlags flags = ImGuiSliderFlags_ColorMarkers;
  
+			auto& cellPos = transform.mSpatialPosition.CellPosition;
+			float guiPos[3] = { cellPos.x, cellPos.y, cellPos.z };
 			ImGui::Text("Position");
-			ImGui::PushItemWidth(100);
-			ImGui::DragScalar("X##Pos", ImGuiDataType_Float, &transform.mSpatialPosition.CellPosition.x, 0.01f, 0, 0, 0, flags); ImGui::SameLine();
-			ImGui::DragScalar("Y##Pos", ImGuiDataType_Float, &transform.mSpatialPosition.CellPosition.y, 0.01f, 0, 0, 0, flags); ImGui::SameLine();
-			ImGui::DragScalar("Z##Pos", ImGuiDataType_Float, &transform.mSpatialPosition.CellPosition.z, 0.01f, 0, 0, 0, flags);
-			ImGui::PopItemWidth();
+			ImGui::DragFloat3(std::format("##Position_{}", uid).c_str(), guiPos, 0.01f, 0, 0, "%.3f", flags);
+			cellPos.x = guiPos[0];
+			cellPos.y = guiPos[1];
+			cellPos.z = guiPos[2];
 			ImGui::Text("Rotation");
-			ImGui::PushItemWidth(100);
-			ImGui::DragScalar("X##Rot", ImGuiDataType_Float, &displayedRotation.x, 0.01f, 0, 0, 0, flags); ImGui::SameLine();
-			ImGui::DragScalar("Y##Rot", ImGuiDataType_Float, &displayedRotation.y, 0.01f, 0, 0, 0, flags); ImGui::SameLine();
-			ImGui::DragScalar("Z##Rot", ImGuiDataType_Float, &displayedRotation.z, 0.01f, 0, 0, 0, flags);
+			float guiRot[3] = { objectRotation.x, objectRotation.y, objectRotation.z };
+			ImGui::Text("Rotation");
+			ImGui::DragFloat3(std::format("##Rotation_{}", uid).c_str(), guiRot, 0.01f, 0, 0, "%.3f", flags);
 			ImGui::Text(std::format("Quaternion value: {}", transform.mOrientation.ToString({ .AsInt = false, .Pretty = false })));
-			ImGui::PopItemWidth();
+			//transform.mOrientation = Math::Quaternion::FromEulerAngles(Math::Vector3(widgetRot[0], widgetRot[1], widgetRot[2]));
+			auto& scale = transform.mScale;
+			float guiScale[3] = { scale.x, scale.y, scale.z };
 			ImGui::Text("Scale");
-			ImGui::PushItemWidth(100);
-			ImGui::DragScalar("X##Scl", ImGuiDataType_Float, &transform.mScale.x, 0.01f, 0, 0, 0, flags); ImGui::SameLine();
-			ImGui::DragScalar("Y##Scl", ImGuiDataType_Float, &transform.mScale.y, 0.01f, 0, 0, 0, flags); ImGui::SameLine();
-			ImGui::DragScalar("Z##Scl", ImGuiDataType_Float, &transform.mScale.z, 0.01f, 0, 0, 0, flags);
-			ImGui::PopItemWidth();
+			ImGui::DragFloat3(std::format("##Scale_{}", uid).c_str(), guiScale, 0.01f, 0, 0, "%.3f", flags);
+			scale.x = guiScale[0];
+			scale.y = guiScale[1];
+			scale.z = guiScale[2];
 
 			ImGui::TreePop();
 		}
@@ -50,25 +50,31 @@ namespace Refraction::Editor::Panels {
 		if (auto casted = Common::AsA<Components::Mesh>(component)) {
 			ImGui::Text("Mesh Source: " + casted->GetSource().string());
 			ImGui::Spacing();
-			DrawTransformControls(casted->mTransform);
+			DrawTransformControls(casted->mTransform, "Mesh");
 		} else if (auto casted = Common::AsA<Components::APhysics>(component)) {
 			ImGuiSliderFlags flags = ImGuiSliderFlags_ColorMarkers;
 			if (ImGui::TreeNode("Linear Velocity")) {
-				ImGui::PushItemWidth(100);
-				ImGui::DragScalar("X##RigidPhysicsLinear", ImGuiDataType_Float, &casted->mLinearVelocity.x, 0.01f, 0, 0, 0, flags); ImGui::SameLine();
-				ImGui::DragScalar("Y##RigidPhysicsLinear", ImGuiDataType_Float, &casted->mLinearVelocity.y, 0.01f, 0, 0, 0, flags); ImGui::SameLine();
-				ImGui::DragScalar("Z##RigidPhysicsLinear", ImGuiDataType_Float, &casted->mLinearVelocity.z, 0.01f, 0, 0, 0, flags);
-				ImGui::PopItemWidth();
+				auto& linearVel = casted->mLinearVelocity;
+				float guiLinearVel[3] = { linearVel.x, linearVel.y, linearVel.z };
+				ImGui::DragFloat3(std::format("##RigidPhysicsLinear").c_str(), guiLinearVel, 0.01f, 0, 0, "%.3f", flags);
+				linearVel.x = guiLinearVel[0];
+				linearVel.y = guiLinearVel[1];
+				linearVel.z = guiLinearVel[2];
 				ImGui::TreePop();
 			}
 			if (ImGui::TreeNode("Angular Velocity")) {
-				ImGui::PushItemWidth(100);
-				ImGui::DragScalar("X##RigidPhysicsAngular", ImGuiDataType_Float, &casted->mAngularVelocity.x, 0.01f, 0, 0, 0, flags); ImGui::SameLine();
-				ImGui::DragScalar("Y##RigidPhysicsAngular", ImGuiDataType_Float, &casted->mAngularVelocity.y, 0.01f, 0, 0, 0, flags); ImGui::SameLine();
-				ImGui::DragScalar("Z##RigidPhysicsAngular", ImGuiDataType_Float, &casted->mAngularVelocity.z, 0.01f, 0, 0, 0, flags);
-				ImGui::PopItemWidth();
+				auto& angularVel = casted->mAngularVelocity;
+				float guiAngularVel[3] = { angularVel.x, angularVel.y, angularVel.z };
+				ImGui::DragFloat3(std::format("##RigidPhysicsAngular").c_str(), guiAngularVel, 0.01f, 0, 0, "%.3f", flags);
+				angularVel.x = guiAngularVel[0];
+				angularVel.y = guiAngularVel[1];
+				angularVel.z = guiAngularVel[2];
 				ImGui::TreePop();
 			}
+		} else if (auto casted = Common::AsA<Components::Billboard>(component)) {
+			ImGui::Checkbox("Render on top", &casted->mRenderOnTop);
+			ImGui::Spacing();
+			DrawTransformControls(casted->mTransform, "Billboard");
 		}
 		ImGui::Separator();
 	}
@@ -90,7 +96,7 @@ namespace Refraction::Editor::Panels {
 			ImGui::Text("UUID: " + obj->GetUUID().AsString());
 			ImGui::Separator();
 
-			DrawTransformControls(obj->mTransform);
+			DrawTransformControls(obj->mTransform, "Object");
 
 			ImGui::Separator();
 
@@ -99,7 +105,28 @@ namespace Refraction::Editor::Panels {
 					if (ImGui::TreeNode(comp->GetDisplayName())) {
 						DrawComponentProperties(comp);
 						ImGui::TreePop();
+						ImGui::SameLine();
 					}
+					if (!comp->mRequired && ImGui::Button(std::format("Delete##{}", comp->GetUUID().AsString()).c_str())) {
+						obj->RemoveChild(comp->GetUUID());
+						continue;
+					}
+				}
+			}
+			ImGui::SameLine(0, 1.0f);
+			if (ImGui::Button("+ Add")) {
+				if (ImGui::BeginPopup("ComponentAddPopup")) {
+					if (!obj->GetComponent<Components::Mesh>() && ImGui::Button("MeshComponent")) {
+						obj->AddComponent<Components::Mesh>();
+					}
+					if (!obj->GetComponent<Components::APhysics>() && ImGui::Button("PhysicsComponent")) {
+						obj->AddComponent<Components::APhysics>();
+					}
+					if (!obj->GetComponent<Components::Billboard>() && ImGui::Button("BillboardComponent")) {
+						obj->AddComponent<Components::Billboard>();
+					}
+
+					ImGui::EndPopup();
 				}
 			}
 		}

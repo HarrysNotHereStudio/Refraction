@@ -34,6 +34,8 @@ namespace Refraction::Editor {
 
 	std::filesystem::path EditorTheme::CurrentThemePath = "";
 	std::array<ImVec4, EditorTheme::ColourIndex_COUNT> EditorTheme::Palette = {};
+	ImFont* EditorTheme::DisplayFont = nullptr;
+	std::filesystem::path EditorTheme::DisplayFontSource = "";
 
 	void EditorTheme::LoadDefault(DefaultName name) {
 		switch (name) {
@@ -58,6 +60,9 @@ namespace Refraction::Editor {
 			Palette.at(ColourIndex_X) = FromRGBA(219, 72, 115);
 			Palette.at(ColourIndex_Y) = FromRGBA(174, 243, 87);
 			Palette.at(ColourIndex_Z) = FromRGBA(118, 162, 250);
+
+			DisplayFontSource = FileHandling::GetResourcesPath() / "fonts" / "OpenSans-Regular.ttf";
+			DisplayFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(DisplayFontSource.string().c_str());
 			break;
 		case DefaultName::Light:
 			// nah
@@ -132,7 +137,8 @@ namespace Refraction::Editor {
 
 	void EditorTheme::DrawThemeEditor(bool* pOpen) {
 		ImGui::Begin("Theme Editor", pOpen);
-		
+		auto& style = ImGui::GetStyle();
+
 		if (ImGui::BeginTabBar("Theme Editor Tabs")) {
 			if (ImGui::BeginTabItem("General")) {
 				ImGui::Text("Current theme file path: " + CurrentThemePath.string());
@@ -154,6 +160,13 @@ namespace Refraction::Editor {
 					int i4Col[4] = { (int)ceilf(col.x * 255), (int)ceilf(col.y * 255), (int)ceilf(col.z * 255), (int)ceilf(col.w * 255) };
 					ImGui::SliderInt4(ColourIndexStr[i], i4Col, 0, 255, "%d", ImGuiSliderFlags_ColorMarkers);
 					col = FromRGBA((uint8_t)i4Col[0], (uint8_t)i4Col[1], (uint8_t)i4Col[2], (uint8_t)i4Col[3]);
+				}
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Fonts")) {
+				ImGui::Text("Current font source path: " + DisplayFontSource.string());
+				if (ImGui::DragFloat("Font Size", &style.FontSizeBase, 0.20f, 5.0f, 100.0f, "%.0f")) {
+					style._NextFrameFontSizeBase = style.FontSizeBase;
 				}
 				ImGui::EndTabItem();
 			}
@@ -181,6 +194,20 @@ namespace Refraction::Editor {
 					Palette[i] = ImVec4(col.x, col.y, col.z, col.w);
 				}
 			}
+			if (json.contains("DisplayFontSource")) {
+				DisplayFontSource = json.at("DisplayFontSource").get<std::string>();
+				if (std::filesystem::exists(DisplayFontSource)) {
+					DisplayFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(DisplayFontSource.string().c_str());
+				}
+			}
+			if (!DisplayFont) {
+				Log::SWarn("No valid display font specified, using default");
+				DisplayFontSource = FileHandling::GetResourcesPath() / "fonts" / "OpenSans-Regular.ttf";
+				DisplayFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(DisplayFontSource.string().c_str());
+			}
+			if (json.contains("DisplayFontSize")) {
+				ImGui::GetStyle().FontSizeBase = json.at("DisplayFontSize").get<float>();
+			}
 		});
 
 		CurrentThemePath = path;
@@ -203,6 +230,8 @@ namespace Refraction::Editor {
 			auto& col = Palette[i];
 			serialised[std::to_string(i)] = Utilities::ClassSerialiser::Serialise(Math::Vector4(col.x, col.y, col.z, col.w));
 		}
+		serialised["DisplayFontSource"] = DisplayFontSource;
+		serialised["DisplayFontSize"] = ImGui::GetStyle().FontSizeBase;
 
 		std::ofstream dataFile(path);
 		if (!dataFile.is_open()) {

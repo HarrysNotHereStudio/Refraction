@@ -79,12 +79,17 @@ namespace Refraction::Utilities {
 
 	std::string ClassSerialiser::Serialise(Math::Vector2 vec) {
 		json result;
+		if (vec.x != vec.x) vec.x = 0;
+		if (vec.y != vec.y) vec.y = 0;
 		result["X"] = vec.x;
 		result["Y"] = vec.y;
 		return result.dump();
 	}
 	std::string ClassSerialiser::Serialise(Math::Vector3 vec) {
 		json result;
+		if (vec.x != vec.x) vec.x = 0;
+		if (vec.y != vec.y) vec.y = 0;
+		if (vec.z != vec.z) vec.z = 0;
 		result["X"] = vec.x;
 		result["Y"] = vec.y;
 		result["Z"] = vec.z;
@@ -92,6 +97,10 @@ namespace Refraction::Utilities {
 	}
 	std::string ClassSerialiser::Serialise(Math::Vector4 vec) {
 		json result;
+		if (vec.x != vec.x) vec.x = 0;
+		if (vec.y != vec.y) vec.y = 0;
+		if (vec.z != vec.z) vec.z = 0;
+		if (vec.w != vec.w) vec.w = 0;
 		result["X"] = vec.x;
 		result["Y"] = vec.y;
 		result["Z"] = vec.z;
@@ -100,6 +109,10 @@ namespace Refraction::Utilities {
 	}
 	std::string ClassSerialiser::Serialise(Math::Quaternion quat) {
 		json result;
+		if (quat.x != quat.x) quat.x = 0;
+		if (quat.y != quat.y) quat.y = 0;
+		if (quat.z != quat.z) quat.z = 0;
+		if (quat.w != quat.w) quat.w = 0;
 		result["X"] = quat.x;
 		result["Y"] = quat.y;
 		result["Z"] = quat.z;

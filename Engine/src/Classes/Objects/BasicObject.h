@@ -9,8 +9,8 @@ namespace Refraction::Objects {
 	public:
 		BasicObject() {
 			mInstanceName = "BasicObject";
-			AddComponent<Components::Mesh>();
-			AddComponent<Components::APhysics>();
+			AddComponent<Components::Mesh>()->mRequired = true;
+			AddComponent<Components::APhysics>()->mRequired = true;
 		}
 		~BasicObject();
 

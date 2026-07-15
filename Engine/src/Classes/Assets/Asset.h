@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 
 #include <Core/Common.h>
 #include <Core/UUID.h>
@@ -29,6 +30,13 @@ namespace Refraction::Assets {
 		Asset() = default;
 		~Asset() = default;
 
+		template <typename AssetType>
+		static Common::Ref<AssetType> GetAsset(uint64_t uuid) {
+			auto& asset = AssetMap.at(uuid);
+			if (!asset) return nullptr;
+			return dynamic_pointer_cast<AssetType>(asset);
+		}
+
 		virtual AssetMetadata& GetMetadata() { return mMetadata; }
 
 		// Loads asset from the provided source file
@@ -39,7 +47,13 @@ namespace Refraction::Assets {
 		virtual void Save();
 	protected:
 		std::string mDisplayName;
+
+		static inline void AddToMap(Asset* asset) {
+			AssetMap.insert(std::make_pair(asset->GetMetadata().AssetUUID.AsInt(), Common::Ref<Asset>(asset)));
+		}
 	private:
+		static std::unordered_map<uint64_t, Common::Ref<Asset>> AssetMap;
+
 		AssetMetadata mMetadata;
 	};
 }

@@ -53,7 +53,7 @@ namespace Refraction::Editor::Panels {
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Camera")) {
-			auto camera = EditorState::Temp.ProjectInstance->GetActiveCamera();
+			auto& camera = Objects::Camera::ActiveCamera;
 			ImGui::Text(std::format("Camera frustum: {}", camera->mFrustum.ToString({ .AsInt = false, .Pretty = false })));
 			ImGui::Text(std::format("Camera speed: {}", Settings::CurrentSettings->Controls.CameraSpeed));
 			ImGui::Text(std::format("Camera grid index: {}", camera->mTransform.mSpatialPosition.GridIndex.ToString({ .AsInt = true, .Pretty = false })));

@@ -15,9 +15,15 @@ namespace Refraction::Editor::Panels {
 		if (currentlySelected && (obj->GetUUID().AsInt() == currentlySelected->GetUUID().AsInt())) flags |= ImGuiTreeNodeFlags_Selected;
 		if (obj->GetChildren()->size() < 1) flags |= ImGuiTreeNodeFlags_Leaf;
 
-		auto isOpen = ImGui::TreeNodeEx(obj->mInstanceName.c_str(), flags);
+		auto isOpen = ImGui::TreeNodeEx(std::format("{}##{}ExplorerTreeNode", obj->mInstanceName, obj->GetUUID().AsString()).c_str(), flags);
 		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
 			currentlySelected = obj;
+			if (ImGui::BeginPopup("ExplorerItemPopup")) {
+				if (ImGui::Button("Delete")) {
+					obj->mParent->RemoveChild(obj->GetUUID());
+				}
+				ImGui::EndPopup();
+			}
 		}
 		if (isOpen) {
 			for (auto& child : *obj->GetChildren()) {
@@ -35,7 +41,7 @@ namespace Refraction::Editor::Panels {
 		if (EditorState::Temp.SimulatingGame) ImGui::BeginDisabled();
 
 		auto& project = EditorState::Temp.ProjectInstance;
-		if (!project) {
+		if (!project->IsLoaded()) {
 			ImGui::Text("No project loaded");
 		} else {
 			for (auto& scene : project->GetScenes()) {
@@ -45,6 +51,26 @@ namespace Refraction::Editor::Panels {
 				MakeTree(globalObj);
 			}
 		}
+		if (ImGui::BeginPopupContextWindow("ExplorerPopup")) {
+			if (!project->IsLoaded()) ImGui::BeginDisabled();
+			if (ImGui::BeginMenu("Add Object...")) {
+				if (ImGui::MenuItem("Empty Object")) {
+					auto newObj = Common::NewRef<Objects::AObject>();
+					EditorState::Temp.ProjectInstance->GetActiveScene()->AddChild(newObj);
+				}
+				if (ImGui::MenuItem("Basic Object")) {
+					auto newObj = Common::NewRef<Objects::BasicObject>();
+					EditorState::Temp.ProjectInstance->GetActiveScene()->AddChild(newObj);
+				}
+				if (ImGui::MenuItem("Scene")) {
+					EditorState::Temp.ProjectInstance->NewScene();
+				}
+				ImGui::EndMenu();
+			}
+			ImGui::EndPopup();
+			if (!project->IsLoaded()) ImGui::EndDisabled();
+		}
+
 		if (EditorState::Temp.SimulatingGame) ImGui::EndDisabled();
 		ImGui::End();
 	}

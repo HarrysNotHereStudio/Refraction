@@ -6,7 +6,7 @@
 
 namespace Refraction::Components {
 	APhysics::APhysics() {
-		mDisplayName = "APhysicsComponent";
+		mClassName = "APhysicsComponent";
 	}
 
 	void APhysics::Tick(float delta) {

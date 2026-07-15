@@ -71,6 +71,8 @@ namespace Refraction::Editor {
 	private:
 		static std::filesystem::path CurrentThemePath;
 		static std::array<ImVec4, ColourIndex_COUNT> Palette;
+		static ImFont* DisplayFont;
+		static std::filesystem::path DisplayFontSource;
 	};
 }
 
