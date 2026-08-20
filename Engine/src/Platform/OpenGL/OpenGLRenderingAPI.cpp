@@ -4,9 +4,7 @@
 #include "OpenGLRenderingAPI.h"
 
 namespace Refraction::Engine::Platform {
-	void OpenGLRenderingAPI::Init() {
-
-	}
+	void OpenGLRenderingAPI::Init() {}
 
 	void OpenGLRenderingAPI::Clear(const Math::Vector4 colour) {
 		glClearColor(colour.x, colour.y, colour.z, colour.w);

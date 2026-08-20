@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
+#include <map>
 
 #include <Core/Common.h>
 #include <Core/UUID.h>
@@ -21,21 +21,22 @@ namespace Refraction::Assets {
 
 		// Serialises metadata into a string
 		virtual std::string Serialise();
-		// Deserialises AND LOADS metadata from the given string
+		// Loads metadata from the given string
 		virtual void Deserialise(std::string data);
 	};
 
 	class Asset {
 	public:
-		Asset() = default;
-		~Asset() = default;
-
 		template <typename AssetType>
 		static Common::Ref<AssetType> GetAsset(uint64_t uuid) {
-			auto& asset = AssetMap.at(uuid);
-			if (!asset) return nullptr;
-			return dynamic_pointer_cast<AssetType>(asset);
+			return Common::Ref<AssetType>(dynamic_cast<AssetType*>(AssetMap.at(uuid)));
 		}
+
+		// Cleans up AssetMap to prevent heap corruption at application shutdown
+		static void ClearMap();
+
+		Asset() = default;
+		virtual ~Asset();
 
 		virtual AssetMetadata& GetMetadata() { return mMetadata; }
 
@@ -49,10 +50,10 @@ namespace Refraction::Assets {
 		std::string mDisplayName;
 
 		static inline void AddToMap(Asset* asset) {
-			AssetMap.insert(std::make_pair(asset->GetMetadata().AssetUUID.AsInt(), Common::Ref<Asset>(asset)));
+			AssetMap.insert(std::make_pair(asset->GetMetadata().AssetUUID.AsInt(), asset));
 		}
 	private:
-		static std::unordered_map<uint64_t, Common::Ref<Asset>> AssetMap;
+		static std::map<uint64_t, Asset*> AssetMap;
 
 		AssetMetadata mMetadata;
 	};

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Core/Common.h>
 #include <Math/Transform.h>
 #include <Classes/Assets/Shader.h>
 
@@ -9,7 +10,7 @@ public:
 	float mLightIntensity = 1.0f;
 	Refraction::Math::Vector3 mLightColor = Refraction::Math::Vector3(1.0f);
 
-	Refraction::Assets::Shader* mLightShader = nullptr;
+	Refraction::Common::Ref<Refraction::Assets::Shader> mLightShader = nullptr;
 	Refraction::Math::Transform* mTransform = nullptr;
 
 	BaseLight();

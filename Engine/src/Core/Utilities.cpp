@@ -39,8 +39,8 @@ namespace Refraction::Utilities {
 
 	Refraction::Math::Matrix3 GLMToNativeMat3(glm::mat3 m) {
 		Refraction::Math::Matrix3 newMat;
-		for (size_t row = 0; row < 3; row++) {
-			for (size_t col = 0; col < 3; col++) {
+		for (unsigned int row = 0; row < 3; row++) {
+			for (unsigned int col = 0; col < 3; col++) {
 				newMat[row][col] = m[(int)row][(int)col];
 			}
 		}
@@ -53,8 +53,8 @@ namespace Refraction::Utilities {
 
 	Refraction::Math::Matrix4 GLMToNativeMat4(glm::mat4 m) {
 		Refraction::Math::Matrix4 newMat;
-		for (size_t row = 0; row < 4; row++) {
-			for (size_t col = 0; col < 4; col++) {
+		for (unsigned int row = 0; row < 4; row++) {
+			for (unsigned int col = 0; col < 4; col++) {
 				newMat[row][col] = m[(int)row][(int)col];
 			}
 		}

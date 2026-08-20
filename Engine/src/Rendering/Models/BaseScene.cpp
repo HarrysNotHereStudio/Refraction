@@ -1,6 +1,6 @@
 #include <Core/Common.h>
 #include <Core/Utilities.h>
-#include <Math/Vector3.h>
+#include <Math/Vector.h>
 #include <Classes/Components/Mesh.h>
 #include <Classes/Components/APhysics.h>
 #include <Classes/Objects/BasicObject.h>

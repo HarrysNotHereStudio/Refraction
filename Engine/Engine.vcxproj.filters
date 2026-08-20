@@ -18,16 +18,10 @@
     <ClInclude Include="src\Rendering\Buffers\BaseBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rendering\Buffers\GBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Rendering\Buffers\UniformBufferObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Windows\GLFWWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\Models\BaseCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\Models\BaseLight.h">
@@ -72,7 +66,7 @@
     <ClInclude Include="src\Classes\Assets\Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Classes\Assets\Texture.h">
+    <ClInclude Include="src\Classes\Assets\Image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Classes\Assets\Shader.h">
@@ -108,10 +102,7 @@
     <ClInclude Include="src\Platform\AWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\Vector2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Math\Vector3.h">
+    <ClInclude Include="src\Math\Vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Math\Common.h">
@@ -120,10 +111,7 @@
     <ClInclude Include="src\Math\Quaternion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\Matrices.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Math\Vector4.h">
+    <ClInclude Include="src\Math\Matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\PlatformAPI.h">
@@ -198,21 +186,33 @@
     <ClInclude Include="src\Classes\Components\Billboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Math\Orientation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\AMeshFragment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLMeshFragment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\ATexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\AGBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLGBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Rendering\Buffers\BaseBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rendering\Buffers\GBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Rendering\Buffers\UniformBufferObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\GLFWWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rendering\Models\BaseCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Rendering\Models\BaseLight.cpp">
@@ -257,7 +257,7 @@
     <ClCompile Include="src\Classes\Assets\Material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Classes\Assets\Texture.cpp">
+    <ClCompile Include="src\Classes\Assets\Image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Classes\Assets\Shader.cpp">
@@ -287,22 +287,13 @@
     <ClCompile Include="src\Math\Quaternion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Math\Matrices.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Math\Vector4.cpp">
+    <ClCompile Include="src\Math\Matrix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Classes\Objects\BasicObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Classes\Components\APhysics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Math\Rect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Math\Frustum.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Classes\Objects\SceneRoot.cpp">
@@ -354,6 +345,27 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Classes\Components\Billboard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\Orientation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\AMeshFragment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLMeshFragment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\ATexture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLTexture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\AGBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLGBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

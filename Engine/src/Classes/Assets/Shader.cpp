@@ -4,7 +4,7 @@
 #include "Shader.h"
 
 namespace Refraction::Assets {
-	std::vector<Refraction::Assets::Shader*> LoadedShaders = {};
+	static std::unordered_map<std::string, uint64_t> LoadedShaders = {};
 
 
 	std::string ShaderMetadata::Serialise() {
@@ -17,10 +17,10 @@ namespace Refraction::Assets {
 	}
 
 
-	Shader* Shader::GetShaderByName(const std::string& name) {
-		for (const auto& shader : LoadedShaders) {
-			if (shader->GetName() == name) {
-				return shader;
+	Common::Ref<Shader> Shader::GetShaderByName(const std::string& name) {
+		for (const auto& pair : LoadedShaders) {
+			if (pair.first == name) {
+				return Asset::GetAsset<Shader>(pair.second);
 			}
 		}
 		throw std::runtime_error("Could not get shader of name " + name);
@@ -33,10 +33,16 @@ namespace Refraction::Assets {
 		for (const auto& shaderSource : shaderSources) {
 			auto& sourcePath = shaderSource.path();
 			Log::Render.Info("Loading shader source: " + sourcePath.string());
-			Shader* newShader = new Shader();
+			auto newShader = new Shader();
 			newShader->LoadAsset(sourcePath);
-			LoadedShaders.push_back(newShader);
 		}
+	}
+
+	Shader::~Shader() {
+		if (glIsProgram(mID)) {
+			glDeleteProgram(mID);
+		}
+		if (LoadedShaders.contains(GetName())) LoadedShaders.erase(GetName());
 	}
 
 	void Shader::Activate() const {
@@ -55,20 +61,12 @@ namespace Refraction::Assets {
 		glUniform1f(glGetUniformLocation(mID, name.c_str()), value);
 	}
 
-	void Shader::SetUniformVec2(const std::string& name, const glm::vec2& value) const {
-		glUniform2fv(glGetUniformLocation(mID, name.c_str()), 1, &value[0]);
-	}
-
 	void Shader::SetUniformVec2(const std::string& name, float x, float y) const {
 		glUniform2f(glGetUniformLocation(mID, name.c_str()), x, y);
 	}
 
 	void Shader::SetUniformVec2(const std::string& name, const Math::Vector2& value) const {
 		SetUniformVec2(name, value.x, value.y);
-	}
-
-	void Shader::SetUniformVec3(const std::string& name, const glm::vec3& value) const {
-		glUniform3fv(glGetUniformLocation(mID, name.c_str()), 1, &value[0]);
 	}
 
 	void Shader::SetUniformVec3(const std::string& name, float x, float y, float z) const {
@@ -79,32 +77,16 @@ namespace Refraction::Assets {
 		SetUniformVec3(name, value.x, value.y, value.z);
 	}
 
-	void Shader::SetUniformVec4(const std::string& name, const glm::vec4& value) const {
-		glUniform4fv(glGetUniformLocation(mID, name.c_str()), 1, &value[0]);
-	}
-
 	void Shader::SetUniformVec4(const std::string& name, float x, float y, float z, float w) const {
 		glUniform4f(glGetUniformLocation(mID, name.c_str()), x, y, z, w);
 	}
 
-	void Shader::SetUniformMat2(const std::string& name, const glm::mat2& matrix) const {
-		glUniformMatrix2fv(glGetUniformLocation(mID, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
-	}
-
-	void Shader::SetUniformMat3(const std::string& name, const glm::mat3& matrix) const {
+	void Shader::SetUniformMat3(const std::string& name, Refraction::Math::Matrix3 matrix) const {
 		glUniformMatrix3fv(glGetUniformLocation(mID, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
 	}
 
-	void Shader::SetUniformMat3(const std::string& name, const Refraction::Math::Matrix3& matrix) const {
-		SetUniformMat3(name, Utilities::NativeToGLMMat3(matrix));
-	}
-
-	void Shader::SetUniformMat4(const std::string& name, const glm::mat4& matrix) const {
+	void Shader::SetUniformMat4(const std::string& name, Refraction::Math::Matrix4 matrix) const {
 		glUniformMatrix4fv(glGetUniformLocation(mID, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
-	}
-
-	void Shader::SetUniformMat4(const std::string& name, const Refraction::Math::Matrix4& matrix) const {
-		SetUniformMat4(name, Utilities::NativeToGLMMat4(matrix));
 	}
 
 	void Shader::LoadAsset(const std::filesystem::path& source) {
@@ -139,27 +121,28 @@ namespace Refraction::Assets {
 		vert = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vert, 1, &pVertSource, NULL);
 		glCompileShader(vert);
-		CheckLogErrors(vert, "VERTEX");
+		if (CheckLogErrors(vert, "VERTEX")) return;
 		Log::Render.Info("Compiled vertex shader");
 
 		frag = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(frag, 1, &pFragSource, NULL);
 		glCompileShader(frag);
-		CheckLogErrors(frag, "FRAGMENT");
+		if (CheckLogErrors(frag, "FRAGMENT")) return;
 		Log::Render.Info("Compiled fragment shader");
-
+		
 		mID = glCreateProgram();
 		glAttachShader(mID, vert);
 		glAttachShader(mID, frag);
 		glLinkProgram(mID);
-		CheckLogErrors(mID, "PROGRAM");
-		Log::Render.Info("Linked shader program");
-
 		glDeleteShader(vert);
 		glDeleteShader(frag);
+		if (CheckLogErrors(mID, "PROGRAM")) return;
+		Log::Render.Info("Linked shader program");
+
+		LoadedShaders[mName] = mMetadata.AssetUUID.AsInt();
 	}
 
-	void Shader::CheckLogErrors(GLuint shader, const std::string type) {
+	bool Shader::CheckLogErrors(GLuint shader, const std::string type) {
 		GLint success;
 		GLchar log[1024];
 		if (type != "PROGRAM") {
@@ -168,12 +151,14 @@ namespace Refraction::Assets {
 				glGetShaderInfoLog(shader, 1024, NULL, log);
 				Log::Render.Error("SHADER COMPILATION FAILED | " + type + "\n" + log + "\n--- COMPILE ERROR LOG END ---");
 			}
+			return (!success);
 		} else {
 			glGetProgramiv(shader, GL_LINK_STATUS, &success);
 			if (!success) {
 				glGetProgramInfoLog(shader, 1024, NULL, log);
 				Log::Render.Error("PROGRAM LINK FAILED | " + type + "\n" + log + "\n--- LINK ERROR LOG END ---");
 			}
+			return (!success);
 		}
 	}
 

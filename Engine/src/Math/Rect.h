@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Math/Common.h>
-#include <Math/Vector2.h>
+#include <Math/Vector.h>
 
 namespace Refraction::Math {
 	class Rect {
@@ -31,14 +31,14 @@ namespace Refraction::Math {
 			return (x == other.x) && (y == other.y) && (w == other.w) && (h == other.h);
 		}
 
+		inline float AspectRatio() const { return w / (float)h; }
+
 		inline void ToVector2(Vector2& pos, Vector2& size) const {
 			pos.x = (float)x;
 			pos.y = (float)y;
 			size.x = (float)w;
 			size.y = (float)h;
 		}
-
-		inline float AspectRatio() const { return w / (float)h; }
 
 		inline std::string ToString(PrintFormatArgs fmtArgs = PrintFormatArgs()) const {
 			if (fmtArgs.Pretty) {

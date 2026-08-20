@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Math/Common.h>
-#include <Math/Vector2.h>
+#include <Math/Vector.h>
 
 namespace Refraction::Math {
 	class Frustum {

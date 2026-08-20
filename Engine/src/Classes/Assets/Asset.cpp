@@ -31,7 +31,30 @@ namespace Refraction::Assets {
 		return;
 	}
 
-	std::unordered_map<uint64_t, Common::Ref<Asset>> Asset::AssetMap = {};
+	std::map<uint64_t, Asset*> Asset::AssetMap = {};
+
+	void Asset::ClearMap() {
+		// Delete all assets from memory
+		for (auto& pair : AssetMap) {
+			auto& ptr = AssetMap.at(pair.first);
+			if (ptr) {
+				delete ptr;
+				ptr = nullptr;
+			}
+		}
+		// Then wipe the map
+		for (auto& pair : AssetMap) {
+			AssetMap.erase(pair.first);
+		}
+	}
+
+	Asset::~Asset() {
+		auto uuid = mMetadata.AssetUUID.AsInt();
+		
+		if (AssetMap.contains(uuid)) {
+			AssetMap.erase(uuid);
+		};
+	}
 
 	void Asset::LoadAsset(const std::filesystem::path& source) {
 		if (!std::filesystem::exists(source)) throw std::runtime_error("Invalid asset path " + source.string());

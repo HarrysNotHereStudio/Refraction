@@ -1,12 +1,12 @@
 #include "Material.h"
 
 void Refraction::Assets::Material::Activate() {
-	mDiffuse->Activate(0);
-	mSpecular->Activate(1);
+	if (mDiffuse && mDiffuse->mTexture) mDiffuse->mTexture->Activate(0);
+	if (mSpecular && mSpecular->mTexture) mSpecular->mTexture->Activate(1);
 	//mNormal->Activate(2);
 
-	mShader->SetUniformInt(REFRACT_TEXTURE_TYPE_DIFFUSE + std::string("1"), 0);
-	mShader->SetUniformInt(REFRACT_TEXTURE_TYPE_SPECULAR + std::string("1"), 1);
+	mShader->SetUniformInt(RFCT_TEXTURE_TYPE_DIFFUSE, 0);
+	mShader->SetUniformInt(RFCT_TEXTURE_TYPE_SPECULAR, 1);
 
 	mShader->Activate();
 }

@@ -41,15 +41,14 @@ namespace Refraction::Engine {
 		mLightingPassShader = Assets::Shader::GetShaderByName("lightingShader");
 
 		mLightingPassShader->Activate();
-		mLightingPassShader->SetUniformInt("gPosition", 0);
-		mLightingPassShader->SetUniformInt("gNormal", 1);
-		mLightingPassShader->SetUniformInt("gAlbedoSpec", 2);
 		mLightingPassShader->SetUniformVec3("ambient", Math::Vector3(0.2f));
 
 		Log::Render.Info("Creating G-Buffer...");
-		mGBuffer = new GBuffer();
+		mGBuffer = Platform::AGBuffer::CreateGBuffer();
 		if (!mGBuffer->Init(mViewportRect.w, mViewportRect.h)) throw;
-		mFinalOutput = Common::NewRef<Assets::Texture>(mGBuffer->GetFinalTextureID());
+		mFinalOutput = mGBuffer->GetLastRenderedFrame();
+
+		mGBuffer->SetShaderTextureIDs();
 
 		Log::Render.Info("Creating uniform buffer object...");
 		projectionMatrix = Math::Matrix4::Perspective(defaultProjection);
@@ -101,7 +100,7 @@ namespace Refraction::Engine {
 		glBindVertexArray(0);
 	}
 
-	void Renderer::RenderFrame(Common::Ref<Project> projectInstance) {
+	void Renderer::RenderFrame(Common::SRef<Project> projectInstance) {
 		auto timeNow = std::chrono::steady_clock::now();
 		mDeltaRenderTime = std::chrono::duration<double>(timeNow - timeRenderLast).count();
 		Time::RenderDelta = mDeltaRenderTime;
@@ -126,8 +125,9 @@ namespace Refraction::Engine {
 		DSPassFinal();
 	}
 
-	void Renderer::UpdateUniformBuffers(Common::Ref<Project> projectInstance) {
+	void Renderer::UpdateUniformBuffers(Common::SRef<Project> projectInstance) {
 		auto& camera = Objects::Camera::ActiveCamera;
+		if (!camera) return;
 		sUBO newData{};
 		newData.viewMatrix = Utilities::NativeToGLMMat4(camera->GetViewMatrix());
 
@@ -138,6 +138,12 @@ namespace Refraction::Engine {
 			camera->mFrustum.h = mViewportRect.h;
 			projectionMatrix = Math::Matrix4::Perspective(camera->mFrustum);
 			mViewportRectLast = mViewportRect;
+		}
+		auto& cfaaEnabled = Settings::CurrentSettings->Graphics.CFAAEnabled;
+		if (mCFAALastState != cfaaEnabled) {
+			mCFAALastState = cfaaEnabled;
+			// Regenerate GBuffer to rescale GBuffer frames
+			if (!mGBuffer->Regenerate(mViewportRect.w, mViewportRect.h)) throw;
 		}
 		newData.perspectiveMatrix = Utilities::NativeToGLMMat4(projectionMatrix);
 		mUBO->UploadNewData(newData);
@@ -154,24 +160,35 @@ namespace Refraction::Engine {
 
 	// Deferred Shading
 
-	void Renderer::DSPassGeometry(Common::Ref<Project> projectInstance) const {
+	void Renderer::DSPassGeometry(Common::SRef<Project> projectInstance) {
+		auto& graphicsSettings = Settings::CurrentSettings->Graphics;
 		mGBuffer->BindGeometryPass();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		mGeomPassShader->Activate();
 
-		if (Settings::CurrentSettings->Graphics.WireframeEnabled) {
+		if (graphicsSettings.WireframeEnabled) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		}
 
+		if (graphicsSettings.CFAAEnabled) {
+			// CFAA prepass
+			auto cfaaPrepass = Assets::Shader::GetShaderByName("CFAAPrepass");
+			cfaaPrepass->Activate();
+			projectInstance->GetActiveScene()->RenderScene(projectInstance->GetGlobalObjects());
+		}
+
 		// Draw models
+		mGeomPassShader->Activate();
+		mGeomPassShader->SetUniformBool("usingCFAA", graphicsSettings.CFAAEnabled);
+		mGeomPassShader->SetUniformInt("CFAAScale", graphicsSettings.CFAAScale);
 		projectInstance->GetActiveScene()->RenderScene(projectInstance->GetGlobalObjects());
 
-		if (Settings::CurrentSettings->Graphics.WireframeEnabled) {
+		if (graphicsSettings.WireframeEnabled) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 	}
 
-	void Renderer::DSPassLighting(Common::Ref<Project> projectInstance) const {
+	void Renderer::DSPassLighting(Common::SRef<Project> projectInstance) {
+		auto& graphicsSettings = Settings::CurrentSettings->Graphics;
 		mGBuffer->BindLightingPass();
 
 		mLightingPassShader->Activate();
@@ -180,6 +197,9 @@ namespace Refraction::Engine {
 			light->UpdateShaderUniforms(i);
 		}
 		mLightingPassShader->SetUniformVec3("viewPos", Objects::Camera::ActiveCamera->mTransform.GetWorldPosition());
+		mLightingPassShader->SetUniformInt("dataView", graphicsSettings.ViewportDataView);
+		mLightingPassShader->SetUniformBool("usingCFAA", graphicsSettings.CFAAEnabled);
+		mLightingPassShader->SetUniformInt("CFAAScale", graphicsSettings.CFAAScale);
 
 		glDepthMask(GL_FALSE);
 		// Render sky

@@ -1,13 +1,5 @@
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/euler_angles.hpp> 
-
 #include <Core/Utilities.h>
+#include <Math/Quaternion.h>
 
 #include "Transform.h"
 
@@ -46,7 +38,7 @@ namespace Refraction::Math {
 	Transform::Transform() {
 		mSpatialPosition.GridIndex = Vector3(0);
 		mSpatialPosition.CellPosition = Vector3(0.0f);
-		mOrientation = Quaternion();
+		mOrientation = Orientation();
 		mScale = Vector3(1.0f);
 	}
 
@@ -60,21 +52,23 @@ namespace Refraction::Math {
 		return result;
 	}
 
+	Transform Transform::FromMatrix(Matrix4& mat) {
+		Transform result(mat.GetTranslation());
+		result.mOrientation = mat.ToEulerAngles();
+		result.mScale = mat.GetScale();
+		return result;
+	}
+
 	void Transform::Rotate(float angle, Vector3 axis) {
-		auto rotQ = Quaternion::FromAxisAngle(angle, axis);
-		auto conjQ = rotQ.Conjugate();
-		mOrientation = rotQ * mOrientation * conjQ;
-		mOrientation.ResetNANs();
+		mOrientation = mOrientation.Rotate(angle, axis);
 	}
 
 	void Transform::Rotate(Vector3 delta) {
-		mOrientation *= Quaternion::FromEulerAngles(delta);
-		mOrientation.ResetNANs();
+		mOrientation *= delta;
 	}
 
-	void Transform::Rotate(Quaternion delta) {
+	void Transform::Rotate(Orientation delta) {
 		mOrientation *= delta;
-		mOrientation.ResetNANs();
 	}
 
 	void Transform::Scale(Vector3 delta) {
@@ -82,21 +76,21 @@ namespace Refraction::Math {
 	}
 
 	void Transform::LookAt(Vector3 target, Vector3 targetUp) {
-		Rotate(Quaternion::LookAt(GetWorldPosition(), target, targetUp));
+		Rotate(Quaternion::LookAt(GetWorldPosition(), target, targetUp).ToEulerAngles());
 	}
 
 	Matrix4 Transform::ToMatrix() const {
-		glm::mat4 transform = glm::mat4(1.0f);
-		glm::vec3 rotation = RUtil::NativeToGLMVec3(mOrientation.ToEulerAngles());
-		transform = glm::translate(transform, RUtil::NativeToGLMVec3(GetWorldPosition()));
-		transform = glm::rotate(transform, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		transform = glm::rotate(transform, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		transform = glm::rotate(transform, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-		transform = glm::scale(transform, RUtil::NativeToGLMVec3(mScale));
-		//Matrix4 transform = Matrix4();
-		//transform = transform.Translate(mPosition);
-		//transform = transform.Rotate(mOrientation);
-		//transform = transform.Scale(mScale);
-		return RUtil::GLMToNativeMat4(transform);
+		//glm::mat4 transform = glm::mat4(1.0f);
+		//glm::vec3 rotation = Utilities::NativeToGLMVec3(mOrientation.ToEulerAngles());
+		//transform = glm::translate(transform, Utilities::NativeToGLMVec3(GetWorldPosition()));
+		//transform = glm::rotate(transform, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//transform = glm::rotate(transform, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//transform = glm::rotate(transform, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//transform = glm::scale(transform, Utilities::NativeToGLMVec3(mScale));
+		Matrix4 transform = Matrix4();
+		transform = transform.Translate(GetWorldPosition());
+		transform = transform.Rotate(mOrientation);
+		transform = transform.Scale(mScale);
+		return transform; //Utilities::GLMToNativeMat4(transform);
 	}
 }

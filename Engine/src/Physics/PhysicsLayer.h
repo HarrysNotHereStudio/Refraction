@@ -11,14 +11,14 @@ namespace Refraction::Events {
 namespace Refraction::Engine {
 	class PhysicsLayer : public ALayer {
 	public:
-		PhysicsLayer(Common::Ref<Events::AEventDispatcher> eventDispatcher, Common::Ref<Project> projectInstance);
+		PhysicsLayer(Common::SRef<Events::AEventDispatcher> eventDispatcher, Common::SRef<Project> projectInstance);
 
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnPass() override;
-		void OnEvent(Common::Ref<Events::Event> event) override;
+		void OnEvent(Common::SRef<Events::Event> event) override;
 	private:
-		Common::Ref<Events::AEventDispatcher> mEventDispatcher;
-		Common::Ref<Project> mProjectInstance;
+		Common::SRef<Events::AEventDispatcher> mEventDispatcher;
+		Common::SRef<Project> mProjectInstance;
 	};
 }

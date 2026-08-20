@@ -3,8 +3,7 @@
 
 #include <Core/Utilities.h>
 #include "Settings.h"
-#include <Math/Vector2.h>
-#include <Math/Vector3.h>
+#include <Math/Vector.h>
 
 #include "GLFWWindow.h"
 
@@ -49,7 +48,7 @@ namespace Refraction::Engine::Platform {
 		mInput.inputEnabled = true;
 	}
 
-	void GLFWWindow::OnUpdate(Common::Ref<Objects::Camera> camera) {
+	void GLFWWindow::OnUpdate(Common::SRef<Objects::Camera> camera) {
 		if (mInput.inputEnabled) {
 
 			// Get inputs

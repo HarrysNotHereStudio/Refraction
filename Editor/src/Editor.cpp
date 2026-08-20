@@ -15,18 +15,18 @@ namespace Refraction::Editor {
 	class EditorInstance : public Engine::Instance {
 	public:
 		EditorInstance() : Engine::Instance() {
-			mImGuiImpl = Common::NewRef<Editor::Platform::OpenGL::ImGuiImpl>(mWindow);
-			mLayerStack->PushLayer(Common::NewRef<EditorLayer>(mLayerStack, mProjectInstance, mWindow, mImGuiImpl));
+			mImGuiImpl = Common::NewSRef<Editor::Platform::OpenGL::ImGuiImpl>(mWindow);
+			mLayerStack->PushLayer(Common::NewSRef<EditorLayer>(mLayerStack, mProjectInstance, mWindow, mImGuiImpl));
 		}
 
 	private:
-		Common::Ref<Editor::Platform::OpenGL::ImGuiImpl> mImGuiImpl;
+		Common::SRef<Editor::Platform::OpenGL::ImGuiImpl> mImGuiImpl;
 	};
 }
 
 
 int main() {
-	Refraction::FileHandling::SetResourcesPath("../../Resources");
+	Refraction::FileHandling::SetResourcesPath("./Resources");
 	try {
 		auto instance = Refraction::Editor::EditorInstance();
 		instance.Start();
@@ -34,4 +34,5 @@ int main() {
 	} catch (const std::runtime_error& err) {
 		Refraction::Log::SError("Error while running EditorInstance: " + std::string(err.what()));
 	}
+	auto p = 1;
 }

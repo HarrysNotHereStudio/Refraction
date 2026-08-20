@@ -1,4 +1,5 @@
 // C++/CLR wrapper to allow C# to communicate with the engine
+#include <iostream>
 
 #include "Common.h"
 

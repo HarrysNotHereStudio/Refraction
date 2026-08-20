@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Math/Vector3.h>
+#include <Math/Vector.h>
 #include "AComponent.h"
 
 namespace Refraction::Components {

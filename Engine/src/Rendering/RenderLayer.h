@@ -4,15 +4,15 @@
 #include <Core/EventSystem.h>
 #include <Core/LayerSystem.h>
 #include <Math/Rect.h>
-#include <Classes/Assets/Texture.h>
+#include <Classes/Assets/Image.h>
 #include <Rendering/Renderer.h>
 #include <Interface/Project.h>
 
 namespace Refraction::Events {
 	class FrameRenderedEvent : public Events::Event {
 	public:
-		Common::Ref<Assets::Texture> mFrame;
-		FrameRenderedEvent(Common::Ref<Assets::Texture> newFrame) : mFrame(newFrame) {
+		Common::SRef<Assets::Image> mFrame;
+		FrameRenderedEvent(Common::SRef<Assets::Image> newFrame) : mFrame(newFrame) {
 			mName = "FrameRendered";
 		}
 	};
@@ -28,15 +28,15 @@ namespace Refraction::Events {
 namespace Refraction::Engine {
 	class RenderLayer : public ALayer {
 	public:
-		RenderLayer(Common::Ref<Events::AEventDispatcher> eventDispatcher, Common::Ref<Project> projectInstance);
+		RenderLayer(Common::SRef<Events::AEventDispatcher> eventDispatcher, Common::SRef<Project> projectInstance);
 
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnPass() override;
-		void OnEvent(Common::Ref<Events::Event> event) override;
+		void OnEvent(Common::SRef<Events::Event> event) override;
 	private:
-		Common::Ref<Events::AEventDispatcher> mEventDispatcher;
-		Common::Ref<Project> mProjectInstance;
+		Common::SRef<Events::AEventDispatcher> mEventDispatcher;
+		Common::SRef<Project> mProjectInstance;
 
 		Renderer mRenderer;
 	};

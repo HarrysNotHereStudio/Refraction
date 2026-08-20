@@ -13,7 +13,7 @@ namespace Refraction::Components {
 		bool mRequired = false; // Determines whether this component is required by its parent object
 
 		AComponent();
-		~AComponent();
+		virtual ~AComponent();
 
 		virtual void PreTick() {};
 		virtual void Tick(float delta) {};

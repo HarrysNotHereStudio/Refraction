@@ -6,12 +6,12 @@ namespace Refraction::Engine {
 		OnDetach();
 	}
 
-	void LayerStack::PushLayer(Common::Ref<ALayer> layer) {
+	void LayerStack::PushLayer(Common::SRef<ALayer> layer) {
 		mLayers.push_back(layer);
 		layer->OnAttach();
 	}
 
-	void LayerStack::PopLayer(Common::Ref<ALayer> layer) {}
+	void LayerStack::PopLayer(Common::SRef<ALayer> layer) {}
 
 	void LayerStack::OnPass() {
 		for (auto& layer : mLayers) {
@@ -25,7 +25,7 @@ namespace Refraction::Engine {
 		}
 	}
 
-	void LayerStack::Dispatch(Common::Ref<Events::Event> event) {
+	void LayerStack::Dispatch(Common::SRef<Events::Event> event) {
 		for (auto& layer : mLayers) {
 			layer->OnEvent(event);
 			if (event->Consumed()) break;

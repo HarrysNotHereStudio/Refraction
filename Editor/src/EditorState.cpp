@@ -30,7 +30,7 @@ namespace Refraction::Editor {
 		dataFile << serialised;
 		return true;
 	}
-
+	
 	bool EditorState::Deserialise() {
 		Persistent.ExecutableDir = FileHandling::GetWorkingDirectory();
 		auto stateFilePath = Persistent.ExecutableDir / "EditorState.rfc";
@@ -44,9 +44,24 @@ namespace Refraction::Editor {
 			if (json.contains("ResourcesDir")) Persistent.ResourcesDir = std::filesystem::path(json.at("ResourcesDir").get<std::string>());
 			if (json.contains("WindowRect")) Persistent.WindowRect = Utilities::ClassSerialiser::DeserialiseRect(json.at("WindowRect"));
 			if (json.contains("RecentProjects")) std::for_each(json.at("RecentProjects").begin(), json.at("RecentProjects").end(), [&](std::string path) {
-				Persistent.RecentProjects.insert(std::filesystem::path(path));
+				AddToRecentProjects(path);
 			});
 		});
 		return true;
+	}
+
+	void EditorState::AddToRecentProjects(std::filesystem::path projectFilePath) {
+		auto& recent = Persistent.RecentProjects;
+		for (auto& path : recent) {
+			if (projectFilePath == path) {
+				recent.erase(std::find(recent.begin(), recent.end(), path));
+				break;
+			}
+		}
+		recent.push_back(projectFilePath);
+		if (recent.size() > 5) {
+			recent.pop_front();
+			recent.shrink_to_fit();
+		}
 	}
 }

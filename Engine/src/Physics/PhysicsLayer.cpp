@@ -1,7 +1,7 @@
 #include "PhysicsLayer.h"
 
 namespace Refraction::Engine {
-	PhysicsLayer::PhysicsLayer(Common::Ref<Events::AEventDispatcher> eventDispatcher, Common::Ref<Project> projectInstance)
+	PhysicsLayer::PhysicsLayer(Common::SRef<Events::AEventDispatcher> eventDispatcher, Common::SRef<Project> projectInstance)
 		: mEventDispatcher(eventDispatcher), mProjectInstance(projectInstance) {}
 
 	void PhysicsLayer::OnAttach() {
@@ -18,6 +18,6 @@ namespace Refraction::Engine {
 		}
 	}
 
-	void PhysicsLayer::OnEvent(Common::Ref<Events::Event> event) {
+	void PhysicsLayer::OnEvent(Common::SRef<Events::Event> event) {
 	}
 }

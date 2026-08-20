@@ -8,6 +8,9 @@ public:
 		int ViewportWidth = 1280;
 		int ViewportHeight = 720;
 		int MaxFrameRate = 0;
+		int ViewportDataView = 0;
+		int CFAAScale = 2;
+		bool CFAAEnabled = true;
 		bool WireframeEnabled = false;
 	} Graphics;
 

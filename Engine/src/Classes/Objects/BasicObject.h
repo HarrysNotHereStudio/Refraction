@@ -12,7 +12,7 @@ namespace Refraction::Objects {
 			AddComponent<Components::Mesh>()->mRequired = true;
 			AddComponent<Components::APhysics>()->mRequired = true;
 		}
-		~BasicObject();
+		virtual ~BasicObject();
 
 		std::string Serialise() override;
 		void Deserialise(std::string serialised) override;

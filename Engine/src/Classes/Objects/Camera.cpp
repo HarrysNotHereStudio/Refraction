@@ -6,7 +6,7 @@
 #include "Camera.h"
 
 namespace Refraction::Objects {
-	Common::Ref<Camera> Camera::ActiveCamera = nullptr;
+	Common::SRef<Camera> Camera::ActiveCamera = nullptr;
 	Math::Frustum defaultFrustum = Math::Frustum(Math::Vector2(128), 70.0f, 0.001f, 10000.0f);
 
 	Camera::Camera() : mFrustum(defaultFrustum) {
@@ -28,16 +28,16 @@ namespace Refraction::Objects {
 		if (abs(dirInput.x) > 0.0f) translateDelta += mTransform.GetRightVector() * (dirInput.x * cameraSpeed);
 
 		// Rotate camera
-		mYaw += angInput.y * cameraSensitivity;
-		mPitch = std::clamp(mPitch + angInput.x * cameraSensitivity, -89.0f, 89.0f);
+		mTransform.mOrientation.mYaw += angInput.y * cameraSensitivity;
+		mTransform.mOrientation.mPitch = std::clamp(mTransform.mOrientation.mPitch + angInput.x * cameraSensitivity, -89.0f, 89.0f);
 
-		Math::Vector3 targetRotation = Math::Vector3();
-		targetRotation.x = cos(Math::ToRadians(mYaw)) * cos(Math::ToRadians(mPitch));
-		targetRotation.y = sin(Math::ToRadians(mPitch));
-		targetRotation.z = sin(Math::ToRadians(mYaw)) * cos(Math::ToRadians(mPitch));
+		//Math::Vector3 targetRotation = Math::Vector3();
+		//targetRotation.x = cos(Math::ToRadians(mYaw)) * cos(Math::ToRadians(mPitch));
+		//targetRotation.y = sin(Math::ToRadians(mPitch));
+		//targetRotation.z = sin(Math::ToRadians(mYaw)) * cos(Math::ToRadians(mPitch));
 
 		mTransform.Translate(translateDelta);
-		mTransform.mOrientation = Math::Quaternion::LookIn(targetRotation, Math::Vector3::Up());
+		//mTransform.mOrientation = Math::Quaternion::LookIn(targetRotation, Math::Vector3::Up()).ToEulerAngles();
 
 		mCameraTarget = mTransform.GetWorldPosition() + mTransform.GetForwardVector();
 	}

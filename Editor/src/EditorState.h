@@ -1,6 +1,6 @@
 #pragma once
 
-#include <set>
+#include <deque>
 #include <filesystem>
 
 #include <Core/Common.h>
@@ -10,8 +10,8 @@
 
 namespace Refraction::Editor {
 	struct TempEditorState {
-		Common::Ref<Objects::AObject> SelectedObject = nullptr;
-		Common::Ref<Engine::Project> ProjectInstance = nullptr;
+		Common::SRef<Objects::AObject> SelectedObject = nullptr;
+		Common::SRef<Engine::Project> ProjectInstance = nullptr;
 		bool SimulatingGame = false;
 		bool ViewportHovered = false;
 
@@ -26,7 +26,7 @@ namespace Refraction::Editor {
 		std::filesystem::path ExecutableDir = "";
 		std::filesystem::path ResourcesDir = "";
 		Math::Rect WindowRect = Math::Rect(256, 256, 1280, 720);
-		std::set<std::filesystem::path> RecentProjects = {};
+		std::deque<std::filesystem::path> RecentProjects = {};
 	};
 
 	class EditorState {
@@ -36,5 +36,6 @@ namespace Refraction::Editor {
 
 		static bool Serialise();
 		static bool Deserialise();
+		static void AddToRecentProjects(std::filesystem::path projectPath);
 	};
 }

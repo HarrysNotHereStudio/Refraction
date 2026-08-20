@@ -10,76 +10,34 @@
 #include "Mesh.h"
 
 namespace Refraction::Components {
+	using Engine::Platform::AMeshFragment;
+
 	int Mesh::FrameMeshCount = 0;
 	int Mesh::FrameVertexCount = 0;
 
+	void ProcessNode(std::string sourcePath, std::vector<Common::Ref<Assets::Material>>& materials, std::vector<Common::Ref<AMeshFragment>>& fragments, aiNode* node, const aiScene* scene);
+	Common::Ref<AMeshFragment> ProcessMesh(std::string& sourcePath, std::vector<Common::Ref<Assets::Material>>& materials, aiMesh* mesh, const aiScene* scene);
+	std::vector<Common::Ref<Assets::Image>> LoadMaterialTextures(std::string& sourcePath, aiMaterial* mat, aiTextureType type, std::string typeName);
 
-	MeshFragment::MeshFragment(std::vector<sVertex> vertices, std::vector<unsigned int> indices, Assets::Material* material) {
-		mVertices = vertices;
-		mIndices = indices;
-		mMaterial = material;
-
-		SetupMesh();
-	}
-
-	void MeshFragment::Draw() {
-		mMaterial->Activate();
-		glActiveTexture(GL_TEXTURE0);
-
-		glBindVertexArray(mVAO);
-		glDrawElements(GL_TRIANGLES, (GLsizei)mIndices.size(), GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
-	}
-
-	void MeshFragment::SetupMesh() {
-		// Create buffers
-		glGenVertexArrays(1, &mVAO);
-		glGenBuffers(1, &mVBO);
-		glGenBuffers(1, &mEBO);
-
-		glBindVertexArray(mVAO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, mVBO);
-		glBufferData(GL_ARRAY_BUFFER, mVertices.size() * sizeof(sVertex), &mVertices[0], GL_STATIC_DRAW);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mIndices.size() * sizeof(unsigned int), &mIndices[0], GL_STATIC_DRAW);
-
-		// Load vertex data
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(sVertex), (void*)0);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(sVertex), (void*)offsetof(sVertex, normal));
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(sVertex), (void*)offsetof(sVertex, texCoord));
-		glEnableVertexAttribArray(2);
-
-		glBindVertexArray(0);
-	}
-
-
-	void ProcessNode(std::string sourcePath, std::vector<Assets::Texture*>& textureArray, std::vector<MeshFragment*>& fragments, aiNode* node, const aiScene* scene);
-	MeshFragment* ProcessMesh(std::string& sourcePath, std::vector<Assets::Texture*>& textureArray, aiMesh* mesh, const aiScene* scene);
-	std::vector<Assets::Texture*> LoadMaterialTextures(std::string& sourcePath, std::vector<Assets::Texture*>& textureArray, aiMaterial* mat, aiTextureType type, std::string typeName);
-
-	static void ProcessNode(std::string sourcePath, std::vector<Assets::Texture*>& textureArray, std::vector<MeshFragment*>& fragments, aiNode* node, const aiScene* scene) {
+	static void ProcessNode(std::string sourcePath, std::vector<Common::Ref<Assets::Material>>& materials, std::vector<Common::Ref<AMeshFragment>>& fragments, aiNode* node, const aiScene* scene) {
 		for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			fragments.push_back(ProcessMesh(sourcePath, textureArray, mesh, scene));
+			fragments.push_back(ProcessMesh(sourcePath, materials, mesh, scene));
 		}
 
 		for (unsigned int i = 0; i < node->mNumChildren; i++) {
-			ProcessNode(sourcePath, textureArray, fragments, node->mChildren[i], scene);
+			ProcessNode(sourcePath, materials, fragments, node->mChildren[i], scene);
 		}
 	}
 
-	static MeshFragment* ProcessMesh(std::string& sourcePath, std::vector<Assets::Texture*>& textureArray, aiMesh* mesh, const aiScene* scene) {
-		std::vector<sVertex> vertices;
+	static Common::Ref<AMeshFragment> ProcessMesh(std::string& sourcePath, std::vector<Common::Ref<Assets::Material>>& materials, aiMesh* mesh, const aiScene* scene) {
+		std::vector<Engine::sVertex> vertices;
 		std::vector<unsigned int> indices;
-		std::vector<Assets::Texture*> diffuseMaps;
-		std::vector<Assets::Texture*> specularMaps;
+		std::vector<Common::Ref<Assets::Image>> diffuseMaps;
+		std::vector<Common::Ref<Assets::Image>> specularMaps;
 
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-			sVertex vertex;
+			Engine::sVertex vertex;
 
 			aiVector3D importPos = mesh->mVertices[i];
 			vertex.pos = Math::Vector3(importPos.x, importPos.y, importPos.z);
@@ -103,44 +61,19 @@ namespace Refraction::Components {
 				indices.push_back(face.mIndices[j]);
 		}
 
-		if (mesh->mMaterialIndex >= 0) {
-			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-			diffuseMaps = LoadMaterialTextures(sourcePath, textureArray, material, aiTextureType_DIFFUSE, REFRACT_TEXTURE_TYPE_DIFFUSE);
-			specularMaps = LoadMaterialTextures(sourcePath, textureArray, material, aiTextureType_SPECULAR, REFRACT_TEXTURE_TYPE_SPECULAR);
-		}
-
-		Assets::Material* newMat = new Assets::Material();
-		if (diffuseMaps.size() > 0) newMat->mDiffuse = diffuseMaps[0];
-		else Log::SWarn("Imported mesh does not contain any diffuse textures. There may be undefined behaviour.");
-		if (specularMaps.size() > 0) newMat->mSpecular = specularMaps[0];
-		else Log::SWarn("Imported mesh does not contain any specular textures. There may be undefined behaviour.");
-		newMat->mShader = Assets::Shader::GetShaderByName("gbufferShader");
-
-		return new MeshFragment(vertices, indices, newMat);
+		return AMeshFragment::MakeMeshFragment(vertices, indices, materials[mesh->mMaterialIndex]);
 	}
 
-	static std::vector<Assets::Texture*> LoadMaterialTextures(std::string& sourcePath, std::vector<Assets::Texture*>& textureArray, aiMaterial* mat, aiTextureType type, std::string typeName) {
-		std::vector<Assets::Texture*> textures;
+	static std::vector<Common::Ref<Assets::Image>> LoadMaterialTextures(std::string& sourcePath, aiMaterial* mat, aiTextureType type, std::string typeName) {
+		std::vector<Common::Ref<Assets::Image>> textures;
 		for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
 			aiString str;
 			mat->GetTexture(type, i, &str);
 
 			std::string fullPath = sourcePath + "/" + str.C_Str();
 
-			bool skip = false;
-			for (unsigned int j = 0; j < textureArray.size(); j++) {
-				if (std::strcmp(textureArray[j]->GetMetadata().SourcePath.string().data(), fullPath.data()) == 0) {
-					textures.push_back(textureArray[j]);
-					skip = true;
-					break;
-				}
-			}
-
-			if (!skip) {
-				auto texture = Assets::Texture::GetTexture(fullPath, typeName);
-				textures.push_back(texture);
-				textureArray.push_back(texture);
-			}
+			auto texture = Assets::Image::FromPath(fullPath);
+			textures.push_back(texture);
 		}
 		return textures;
 	}
@@ -154,8 +87,9 @@ namespace Refraction::Components {
 
 	void Mesh::Render() {
 		auto shader = Assets::Shader::GetShaderByName("gbufferShader");
-		shader->Activate();
-		shader->SetUniformMat4("modelTransform", mParent->mTransform.ToMatrix());
+		if (!shader.Valid()) return;
+		shader.Get()->Activate();
+		shader.Get()->SetUniformMat4("modelTransform", mTransform.ToMatrix() * mParent->GetWorldTransform().ToMatrix());
 		for (auto& mesh : mFragments) {
 			mesh->Draw();
 			FrameVertexCount += (int)mesh->mVertices.size();
@@ -180,7 +114,10 @@ namespace Refraction::Components {
 
 	void Mesh::LoadModel(std::filesystem::path path) {
 		auto pathStr = path.string();
-		if (!std::filesystem::exists(path)) throw std::runtime_error("Could not find source file " + pathStr);
+		if (!std::filesystem::exists(path)) {
+			Log::SWarn("Could not find source file " + pathStr + ", aborting loading for this mesh");
+			return;
+		}
 		Log::SInfo("Loading mesh " + pathStr);
 		mSourcePath = path;
 
@@ -191,7 +128,43 @@ namespace Refraction::Components {
 			Log::SError("MODEL LOAD FAILED | " + std::string(import.GetErrorString()));
 			return;
 		}
-		Log::SInfo("Parsing mesh scene data...");
-		ProcessNode(mSourcePath.string().substr(0, pathStr.find_last_of("/")), mTextures, mFragments, scene->mRootNode, scene);
+
+		auto importSourcePath = mSourcePath.string().substr(0, pathStr.find_last_of("/"));
+
+		// Create materials
+		Log::SInfo("Parsing materials...");
+		if (scene->mNumMaterials > 0) {
+			for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
+				auto importMat = scene->mMaterials[i];
+				auto mat = new Assets::Material();
+
+				auto diffuseMaps = LoadMaterialTextures(importSourcePath, importMat, aiTextureType_DIFFUSE, RFCT_TEXTURE_TYPE_DIFFUSE);
+				if (diffuseMaps.size() > 0) mat->mDiffuse = diffuseMaps[0];
+				else {
+					Log::SWarn("Imported material does not associate with any diffuse textures, using default texture.");
+					mat->mDiffuse = Assets::Image::FromPath(FileHandling::GetResourcesPath() / "textures" / "Basic.png");
+				}
+				auto specularMaps = LoadMaterialTextures(importSourcePath, importMat, aiTextureType_SPECULAR, RFCT_TEXTURE_TYPE_SPECULAR);
+				if (specularMaps.size() > 0) mat->mSpecular = specularMaps[0];
+				else {
+					Log::SWarn("Imported material does not associate with any specular textures, using default texture.");
+					mat->mSpecular = Assets::Image::FromPath(FileHandling::GetResourcesPath() / "textures" / "Basic.png");
+				}
+
+				mat->mShader = Assets::Shader::GetShaderByName("gbufferShader");
+				mMaterials.push_back(mat);
+			}
+		} else {
+			auto mat = new Assets::Material();
+			mat->mDiffuse = Assets::Image::FromPath(FileHandling::GetResourcesPath() / "textures" / "Basic.png");
+			mat->mSpecular = mat->mDiffuse;
+
+			mat->mShader = Assets::Shader::GetShaderByName("gbufferShader");
+			mMaterials.push_back(mat);
+		}
+
+		// Load meshes
+		Log::SInfo("Parsing mesh data...");
+		ProcessNode(importSourcePath, mMaterials, mFragments, scene->mRootNode, scene);
 	}
 }

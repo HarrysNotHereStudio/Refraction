@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Core/Common.h>
-#include <Math/Vector4.h>
+#include <Math/Vector.h>
 #include <Math/Rect.h>
 #include <Platform/ARenderingAPI.h>
 

@@ -5,7 +5,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui/imgui.h>
 
-#include <Math/Vector2.h>
+#include <Math/Vector.h>
 
 // Custom ImGui functions
 namespace ImGui {

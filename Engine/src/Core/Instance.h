@@ -17,11 +17,11 @@ namespace Refraction::Engine {
 		void End();
 
 	protected:
-		Common::Ref<Platform::AWindow> mWindow;
-		Common::Ref<LayerStack> mLayerStack;
-		Common::Ref<Platform::ARenderingAPI> mRenderingAPI;
-		Common::Ref<RenderLayer> mRenderLayer;
-		Common::Ref<PhysicsLayer> mPhysicsLayer;
-		Common::Ref<Project> mProjectInstance;
+		Common::SRef<Platform::AWindow> mWindow;
+		Common::SRef<LayerStack> mLayerStack;
+		Common::SRef<Platform::ARenderingAPI> mRenderingAPI;
+		Common::SRef<RenderLayer> mRenderLayer;
+		Common::SRef<PhysicsLayer> mPhysicsLayer;
+		Common::SRef<Project> mProjectInstance;
 	};
 }

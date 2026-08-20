@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Core/Common.h>
-#include <Math/Vector4.h>
+#include <Math/Vector.h>
 #include <Math/Rect.h>
 
 namespace Refraction::Engine::Platform {
@@ -13,7 +13,7 @@ namespace Refraction::Engine::Platform {
 
 	class ARenderingAPI {
 	public:
-		static Common::Ref<ARenderingAPI> Get();
+		static Common::SRef<ARenderingAPI> Get();
 		static RenderingAPI GetAPI() { return CurrentAPI; }
 
 		virtual void Init() = 0;

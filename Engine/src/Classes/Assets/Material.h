@@ -1,16 +1,16 @@
 #pragma once
 
 #include "Asset.h"
-#include "Texture.h"
+#include "Image.h"
 #include "Shader.h"
 
 namespace Refraction::Assets {
 	class Material : public Asset {
 	public:
-		Shader* mShader = nullptr;
-		Texture* mDiffuse = nullptr;
-		Texture* mSpecular = nullptr;
-		Texture* mNormal = nullptr;
+		Common::Ref<Shader> mShader;
+		Common::Ref<Image> mDiffuse;
+		Common::Ref<Image> mSpecular;
+		Common::Ref<Image> mNormal;
 
 		void Activate();
 	};

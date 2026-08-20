@@ -1,8 +1,9 @@
 #pragma once
 
 #include <Math/Common.h>
-#include <Math/Vector3.h>
-#include <Math/Quaternion.h>
+#include <Math/Vector.h>
+#include <Math/Orientation.h>
+#include <Math/Matrix.h>
 
 namespace Refraction::Math {
 	constexpr int SpatialCellSize = 128;
@@ -17,7 +18,7 @@ namespace Refraction::Math {
 	class Transform {
 	public:
 		SpatialPosition mSpatialPosition;
-		Quaternion mOrientation;
+		Orientation mOrientation;
 		Vector3 mScale;
 
 		Transform();
@@ -25,6 +26,8 @@ namespace Refraction::Math {
 
 		// Creates a Transform looking at a target
 		static Transform FromLookAt(const Vector3& eye, Vector3 target, Vector3 targetUp = Vector3::Up());
+		// Creates a Transform from a Matrix4
+		static Transform FromMatrix(Matrix4& mat);
 
 		inline void Translate(Vector3 delta) { mSpatialPosition.Translate(delta); }
 		// Rotate using an angle (degrees) axis
@@ -32,7 +35,7 @@ namespace Refraction::Math {
 		// Rotate using Euler angles (degrees)
 		void Rotate(Vector3 delta);
 		// Rotate using a Quaternion
-		void Rotate(Quaternion delta);
+		void Rotate(Orientation delta);
 		void Scale(Vector3 delta);
 		// Rotates the Transform to look at a target
 		void LookAt(Vector3 target, Vector3 targetUp = Vector3::Up());
@@ -40,9 +43,9 @@ namespace Refraction::Math {
 		// Generates the Transform's matrix
 		Matrix4 ToMatrix() const;
 		inline Vector3 GetWorldPosition() const { return mSpatialPosition.ToWorld(); }
-		inline Vector3 GetForwardVector() const { return mOrientation * Vector3::Front(); }
-		inline Vector3 GetRightVector() const { return mOrientation * Vector3::Right(); }
-		inline Vector3 GetUpVector() const { return mOrientation * Vector3::Up(); }
+		inline Vector3 GetForwardVector() const { return mOrientation.ForwardVector(); }
+		inline Vector3 GetRightVector() const { return mOrientation.RightVector(); }
+		inline Vector3 GetUpVector() const { return mOrientation.UpVector(); }
 
 		inline std::string ToString(PrintFormatArgs fmtArgs = PrintFormatArgs()) const {
 			auto gridIndexStr = mSpatialPosition.GridIndex.ToString({ .AsInt = true, .Pretty = fmtArgs.Pretty });

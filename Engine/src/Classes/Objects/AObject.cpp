@@ -26,13 +26,13 @@ namespace Refraction::Objects {
 
 		// Deep copy components and children
 		for (auto& comp : object.mComponents) {
-			Common::Ref<Components::AComponent> newComp(new Components::AComponent(*comp));
+			Common::SRef<Components::AComponent> newComp(new Components::AComponent(*comp));
 			newComp->mParent = this;
 			mComponents.push_back(newComp);
 		}
 
 		for (auto& child : object.mChildren) {
-			Common::Ref<AObject> newChild(new AObject(*child));
+			Common::SRef<AObject> newChild(new AObject(*child));
 			newChild->mParent = this;
 			mChildren.push_back(newChild);
 		}
@@ -42,14 +42,14 @@ namespace Refraction::Objects {
 		mUUID.Reset();
 	}
 
-	Common::Ref<AObject> AObject::GetFirstChild(std::string name) {
+	Common::SRef<AObject> AObject::GetFirstChild(std::string name) {
 		for (auto& obj : mChildren) {
 			if (obj->mInstanceName == name) return obj;
 		}
 		return nullptr;
 	}
 
-	void AObject::AddChild(Common::Ref<AObject> child) {
+	void AObject::AddChild(Common::SRef<AObject> child) {
 		if (child->mParent == this) return; // Child is already parented to this object
 		child->mParent = this;
 		mChildren.push_back(child);
@@ -81,8 +81,8 @@ namespace Refraction::Objects {
 		// Well it isn't a child component either. Get mad at the caller.
 	}
 
-	Common::Ref<AObject> AObject::Clone() {
-		return Common::Ref<AObject>(new AObject(*this));
+	Common::SRef<AObject> AObject::Clone() {
+		return Common::SRef<AObject>(new AObject(*this));
 	}
 
 	std::string AObject::Serialise() {
@@ -127,5 +127,14 @@ namespace Refraction::Objects {
 
 			Log::SInfo("Deserialised object " + mInstanceName + " with UUID " + mUUID.AsString());
 		});
+	}
+
+	Math::Transform AObject::GetWorldTransform() {
+		auto transform = mTransform;
+		if (mParent) {
+			auto result = mTransform.ToMatrix() * mParent->GetWorldTransform().ToMatrix();
+			transform = Math::Transform::FromMatrix(result);
+		}
+		return transform;
 	}
 }

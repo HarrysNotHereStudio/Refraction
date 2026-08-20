@@ -4,8 +4,8 @@
 
 #include <glm/glm.hpp>
 
-#include <Math/Vector3.h>
-#include <Math/Matrices.h>
+#include <Math/Vector.h>
+#include <Math/Matrix.h>
 
 namespace Refraction::Utilities {
 	extern std::string EngineWorkingDirectory;

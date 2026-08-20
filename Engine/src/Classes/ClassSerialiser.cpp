@@ -25,28 +25,28 @@ namespace Refraction::Utilities {
 		return result;
 	}
 
-	std::string ClassSerialiser::Serialise(Common::Ref<Objects::AObject> object) {
+	std::string ClassSerialiser::Serialise(Common::SRef<Objects::AObject> object) {
 		return object->Serialise();
 	}
 
-	std::string ClassSerialiser::Serialise(Common::Ref<Components::AComponent> component) {
+	std::string ClassSerialiser::Serialise(Common::SRef<Components::AComponent> component) {
 		return component->Serialise();
 	}
 
-	Common::Ref<Objects::AObject> ClassSerialiser::DeserialiseObject(std::string serialisedData) {
+	Common::SRef<Objects::AObject> ClassSerialiser::DeserialiseObject(std::string serialisedData) {
 		try {
-			Common::Ref<Objects::AObject> deserialised;
+			Common::SRef<Objects::AObject> deserialised;
 			json data = json::parse(serialisedData);
 
 			auto className = data.at("TypeName").get<std::string>();
 			if (className == typeid(Objects::AObject).name()) {
-				deserialised = Common::NewRef<Objects::AObject>();
+				deserialised = Common::NewSRef<Objects::AObject>();
 			} else if (className == typeid(Objects::BasicObject).name()) {
-				deserialised = Common::NewRef<Objects::BasicObject>();
+				deserialised = Common::NewSRef<Objects::BasicObject>();
 			} else if (className == typeid(Objects::SceneRoot).name()) {
-				deserialised = Common::NewRef<Objects::SceneRoot>();
+				deserialised = Common::NewSRef<Objects::SceneRoot>();
 			} else if (className == typeid(Objects::Camera).name()) {
-				deserialised = Common::NewRef<Objects::Camera>();
+				deserialised = Common::NewSRef<Objects::Camera>();
 			}
 			Log::SInfo("Deserialising object of type " + className);
 			deserialised->Deserialise(serialisedData);
@@ -56,18 +56,18 @@ namespace Refraction::Utilities {
 		}
 	}
 
-	Common::Ref<Components::AComponent> ClassSerialiser::DeserialiseComponent(std::string serialisedData) {
+	Common::SRef<Components::AComponent> ClassSerialiser::DeserialiseComponent(std::string serialisedData) {
 		try {
-			Common::Ref<Components::AComponent> deserialised;
+			Common::SRef<Components::AComponent> deserialised;
 			json data = json::parse(serialisedData);
 
 			auto className = data.at("TypeName").get<std::string>();
 			if (className == typeid(Components::AComponent).name()) {
-				deserialised = Common::NewRef<Components::AComponent>();
+				deserialised = Common::NewSRef<Components::AComponent>();
 			} else if (className == typeid(Components::APhysics).name()) {
-				deserialised = Common::NewRef<Components::APhysics>();
+				deserialised = Common::NewSRef<Components::APhysics>();
 			} else if (className == typeid(Components::Mesh).name()) {
-				deserialised = Common::NewRef<Components::Mesh>();
+				deserialised = Common::NewSRef<Components::Mesh>();
 			}
 			Log::SInfo("Deserialising component of type " + className);
 			deserialised->Deserialise(serialisedData);
@@ -117,6 +117,16 @@ namespace Refraction::Utilities {
 		result["Y"] = quat.y;
 		result["Z"] = quat.z;
 		result["W"] = quat.w;
+		return result.dump();
+	}
+	std::string ClassSerialiser::Serialise(Math::Orientation orient) {
+		json result;
+		if (orient.mPitch != orient.mPitch) orient.mPitch = 0;
+		if (orient.mYaw != orient.mYaw) orient.mYaw = 0;
+		if (orient.mRoll != orient.mRoll) orient.mRoll = 0;
+		result["Pitch"] = orient.mPitch;
+		result["Yaw"] = orient.mYaw;
+		result["Roll"] = orient.mRoll;
 		return result.dump();
 	}
 	std::string ClassSerialiser::Serialise(Math::Rect rect) {
@@ -176,6 +186,14 @@ namespace Refraction::Utilities {
 			throw std::runtime_error("JSON Parse Error: " + std::string(err.what()));
 		}
 	}
+	Math::Orientation ClassSerialiser::DeserialiseOrientation(std::string serialisedData) {
+		try {
+			json data = json::parse(serialisedData);
+			return Math::Vector3(data.at("Pitch").get<float>(), data.at("Yaw").get<float>(), data.at("Roll").get<float>());
+		} catch (const json::parse_error& err) {
+			throw std::runtime_error("JSON Parse Error: " + std::string(err.what()));
+		}
+	}
 	Math::Rect ClassSerialiser::DeserialiseRect(std::string serialisedData) {
 		try {
 			json data = json::parse(serialisedData);
@@ -198,7 +216,7 @@ namespace Refraction::Utilities {
 			json data = json::parse(serialisedData);
 			result.mSpatialPosition.GridIndex = DeserialiseVector3(data.at("SpatialPosition").at("GridIndex"));
 			result.mSpatialPosition.CellPosition = DeserialiseVector3(data.at("SpatialPosition").at("CellPosition"));
-			result.mOrientation = DeserialiseQuaternion(data.at("Orientation"));
+			result.mOrientation = DeserialiseOrientation(data.at("Orientation"));
 			result.mScale = DeserialiseVector3(data.at("Scale"));
 			return result;
 		} catch (const json::parse_error& err) {

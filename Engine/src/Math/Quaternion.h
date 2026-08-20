@@ -3,8 +3,7 @@
 #include <string>
 
 #include <Math/Common.h>
-#include <Math/Vector3.h>
-#include <Math/Vector4.h>
+#include <Math/Vector.h>
 
 namespace Refraction::Math {
 	class Matrix3;
@@ -18,11 +17,9 @@ namespace Refraction::Math {
 		float w;
 
 		// Creates a Quaternion by directly setting the components
-		Quaternion(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {};
-		// Creates a Quaternion using the components of a Vector4
-		Quaternion(Vector4 vec) : x(vec.x), y(vec.y), z(vec.z), w(vec.w) {};
+		Quaternion(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 		// Creates an identity Quaternion
-		Quaternion() : x(0), y(0), z(0), w(1) {};
+		Quaternion() : x(0), y(0), z(0), w(1) {}
 
 		// Creates a Quaternion from an angle (degrees) and an axis
 		static Quaternion FromAxisAngle(float a, const Vector3& vec);

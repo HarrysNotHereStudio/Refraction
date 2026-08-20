@@ -1,13 +1,13 @@
 #pragma once
 
-#include <Classes/Assets/Texture.h>
+#include <Classes/Assets/Image.h>
 #include "AComponent.h"
 
 namespace Refraction::Components {
 	class Billboard : public AComponent {
 	public:
 		Math::Transform mTransform;
-		Common::Ref<Assets::Texture> mTexture;
+		Common::Ref<Assets::Image> mImage;
 		bool mRenderOnTop = false;
 
 		Billboard();

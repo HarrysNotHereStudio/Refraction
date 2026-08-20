@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Math/Vector3.h>
-#include <Math/Matrices.h>
+#include <Math/Vector.h>
+#include <Math/Matrix.h>
 #include <Math/Rect.h>
 #include <Math/Frustum.h>
 
@@ -10,7 +10,7 @@
 namespace Refraction::Objects {
 	class Camera : public AObject {
 	public:
-		static Common::Ref<Camera> ActiveCamera;
+		static Common::SRef<Camera> ActiveCamera;
 		Math::Frustum mFrustum;
 
 		Camera();

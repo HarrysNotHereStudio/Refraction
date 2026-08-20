@@ -14,8 +14,8 @@ namespace Refraction::Components {
 namespace Refraction::Objects {
 	class AObject {
 	public:
-		typedef std::vector<Common::Ref<Components::AComponent>> ComponentList;
-		typedef std::vector<Common::Ref<AObject>> ObjectList;
+		typedef std::vector<Common::SRef<Components::AComponent>> ComponentList;
+		typedef std::vector<Common::SRef<AObject>> ObjectList;
 
 		Math::Transform mTransform;
 		std::string mInstanceName = "Object";
@@ -26,11 +26,11 @@ namespace Refraction::Objects {
 
 		AObject() {}
 		AObject(const AObject& object);
-		~AObject();
+		virtual ~AObject();
 
 		// Returns a child component of a given type (if it exists)
 		template<typename T>
-		inline Common::Ref<T> GetComponent() {
+		inline Common::SRef<T> GetComponent() {
 			for (auto& comp : mComponents) {
 				auto casted = dynamic_pointer_cast<T>(comp);
 				if (casted) return casted;
@@ -43,8 +43,8 @@ namespace Refraction::Objects {
 
 		// Adds a new child component
 		template<typename T>
-		inline Common::Ref<T> AddComponent() {
-			Common::Ref<T> newComp = Common::NewRef<T>();
+		inline Common::SRef<T> AddComponent() {
+			Common::SRef<T> newComp = Common::NewSRef<T>();
 			newComp->mParent = this;
 			mComponents.push_back(newComp);
 			return newComp;
@@ -53,7 +53,7 @@ namespace Refraction::Objects {
 
 		// Returns a child object of a given type (if it exists)
 		template<typename T>
-		inline Common::Ref<T> GetFirstChild() {
+		inline Common::SRef<T> GetFirstChild() {
 			for (auto& obj : mChildren) {
 				auto casted = dynamic_pointer_cast<T>(obj);
 				if (casted) return casted;
@@ -62,13 +62,13 @@ namespace Refraction::Objects {
 		}
 
 		// Returns a child object with a given name (if it exists)
-		Common::Ref<AObject> GetFirstChild(std::string name);
+		Common::SRef<AObject> GetFirstChild(std::string name);
 
 		// Returns all children objects
 		inline ObjectList* GetChildren() { return &mChildren; }
 
 		// Adds a given child object
-		void AddChild(Common::Ref<AObject> child);
+		void AddChild(Common::SRef<AObject> child);
 
 		// Removes itself from its parent
 		void Remove();
@@ -76,10 +76,13 @@ namespace Refraction::Objects {
 		void RemoveChild(UUID target);
 
 		// Creates a copy of this object and its descendants
-		Common::Ref<AObject> Clone();
+		Common::SRef<AObject> Clone();
 		
 		// Returns the UUID of the object
 		inline UUID GetUUID() const { return mUUID; }
+
+		// Returns the world transform of this object (multiplied with ancestors)
+		Math::Transform GetWorldTransform();
 
 		// Returns a serialised copy of the object and its Components and children
 		virtual std::string Serialise();
@@ -89,6 +92,7 @@ namespace Refraction::Objects {
 		std::string mClassName;
 		ComponentList mComponents;
 		ObjectList mChildren;
+
 	private:
 		UUID mUUID;
 	};

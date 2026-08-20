@@ -143,7 +143,11 @@ namespace Refraction::Editor {
 			if (ImGui::BeginTabItem("General")) {
 				ImGui::Text("Current theme file path: " + CurrentThemePath.string());
 				if (ImGui::Button("Save Changes")) {
-					SaveToFile();
+					if (!std::filesystem::exists(CurrentThemePath)) {
+						SaveToFile("./EditorTheme.rft");
+					} else {
+						SaveToFile();
+					}
 				}
 				if (ImGui::Button("Load Default")) {
 					LoadDefault();

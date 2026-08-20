@@ -27,25 +27,25 @@
     <ClCompile Include="src\EditorLayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EditorPanels\PropertiesPanel.cpp">
+    <ClCompile Include="src\EditorGUI\Panels\PropertiesPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\EditorState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EditorPanels\ExplorerPanel.cpp">
+    <ClCompile Include="src\EditorGUI\Panels\ExplorerPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\EditorPlatform\Windows\Dialogs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EditorPanels\ViewportPanel.cpp">
+    <ClCompile Include="src\EditorGUI\Panels\ViewportPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EditorPanels\LogPanel.cpp">
+    <ClCompile Include="src\EditorGUI\Panels\LogPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EditorPanels\StatsPanel.cpp">
+    <ClCompile Include="src\EditorGUI\Panels\StatsPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\EditorTheme.cpp">
@@ -54,7 +54,10 @@
     <ClCompile Include="src\EditorNet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EditorPanels\LiveCollabPanel.cpp">
+    <ClCompile Include="src\EditorGUI\Panels\LiveCollabPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EditorGUI\Modals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -68,16 +71,16 @@
     <ClInclude Include="src\EditorLayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EditorPanels\AEditorPanel.h">
+    <ClInclude Include="src\EditorGUI\Panels\AEditorPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EditorPanels\PropertiesPanel.h">
+    <ClInclude Include="src\EditorGUI\Panels\PropertiesPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\EditorState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EditorPanels\ExplorerPanel.h">
+    <ClInclude Include="src\EditorGUI\Panels\ExplorerPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ImGuiExtension.h">
@@ -92,16 +95,16 @@
     <ClInclude Include="src\EditorPlatform\Linux\Dialogs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EditorPanels\ViewportPanel.h">
+    <ClInclude Include="src\EditorGUI\Panels\ViewportPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EditorPanels\LogPanel.h">
+    <ClInclude Include="src\EditorGUI\Panels\LogPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EditorPanels\StatsPanel.h">
+    <ClInclude Include="src\EditorGUI\Panels\StatsPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\EditorTheme.h">
@@ -110,7 +113,10 @@
     <ClInclude Include="src\EditorNet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EditorPanels\LiveCollabPanel.h">
+    <ClInclude Include="src\EditorGUI\Panels\LiveCollabPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EditorGUI\Modals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

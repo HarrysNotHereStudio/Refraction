@@ -44,6 +44,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -71,6 +72,9 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>Refraction$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>Refraction$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -111,7 +115,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_LIB;GLFW_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_LIB;GLFW_DLL;_DISABLE_VECTOR_ANNOTATION;_DISABLE_STRING_ANNOTATION;_DISABLE_OPTIONAL_ANNOTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -128,8 +132,18 @@
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)Libs\x64_Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp.lib;glfw3dll.lib;cpptrace.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc145-mt.lib;glfw3dll.lib;cpptrace.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
+    <PreBuildEvent>
+      <Command>xcopy /y /q "$(SolutionDir)Libs\x64_Debug\*.dll" "$(OutDir)"</Command>
+      <Message>Copy dependencies</Message>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>xcopy /y /q /s /e "$(SolutionDir)Resources" "$(OutDir)Resources\"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy resources</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -140,16 +154,42 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>assimp-vc145-mt.lib;glfw3dll.lib;cpptrace.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Libs\x64_Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+    <PreBuildEvent>
+      <Command>xcopy /y /q "$(SolutionDir)Libs\x64_Release\*.dll" "$(OutDir)"</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Copy dependencies</Message>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>xcopy /y /q /s /e "$(SolutionDir)Resources" "$(OutDir)Resources\"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy resources</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLGBuffer.h" />
+    <ClInclude Include="src\Platform\AGBuffer.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLTexture.h" />
+    <ClInclude Include="src\Platform\ATexture.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLMeshFragment.h" />
+    <ClInclude Include="src\Platform\AMeshFragment.h" />
+    <ClInclude Include="src\Math\Orientation.h" />
     <ClInclude Include="src\Classes\Components\Billboard.h" />
     <ClInclude Include="src\Classes\Objects\Camera.h" />
     <ClInclude Include="src\Classes\ClassHeaders.h" />
@@ -171,7 +211,7 @@
     <ClInclude Include="src\Math\Rect.h" />
     <ClInclude Include="src\Classes\Components\APhysics.h" />
     <ClInclude Include="src\Classes\Objects\BasicObject.h" />
-    <ClInclude Include="src\Math\Matrices.h" />
+    <ClInclude Include="src\Math\Matrix.h" />
     <ClInclude Include="src\Math\Quaternion.h" />
     <ClInclude Include="src\Math\Common.h" />
     <ClInclude Include="lib\include\imgui\imconfig.h" />
@@ -192,10 +232,8 @@
     <ClInclude Include="src\Platform\PlatformAPI.h" />
     <ClInclude Include="src\Core\Common.h" />
     <ClInclude Include="src\Rendering\Buffers\BaseBuffer.h" />
-    <ClInclude Include="src\Rendering\Buffers\GBuffer.h" />
     <ClInclude Include="src\Rendering\Buffers\UniformBufferObject.h" />
     <ClInclude Include="src\Platform\Windows\GLFWWindow.h" />
-    <ClInclude Include="src\Rendering\Models\BaseCamera.h" />
     <ClInclude Include="src\Rendering\Models\BaseLight.h" />
     <ClInclude Include="src\Rendering\Models\BaseScene.h" />
     <ClInclude Include="src\Rendering\Models\DirectionalLight.h" />
@@ -205,14 +243,19 @@
     <ClInclude Include="src\Rendering\Renderer.h" />
     <ClInclude Include="src\Settings.h" />
     <ClInclude Include="src\Core\Utilities.h" />
-    <ClInclude Include="src\Classes\Assets\Texture.h" />
-    <ClInclude Include="src\Math\Vector2.h" />
-    <ClInclude Include="src\Math\Vector3.h" />
-    <ClInclude Include="src\Math\Vector4.h" />
+    <ClInclude Include="src\Classes\Assets\Image.h" />
+    <ClInclude Include="src\Math\Vector.h" />
     <ClInclude Include="src\Core\UUID.h" />
     <ClInclude Include="src\Core\Time.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLGBuffer.cpp" />
+    <ClCompile Include="src\Platform\AGBuffer.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLTexture.cpp" />
+    <ClCompile Include="src\Platform\ATexture.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLMeshFragment.cpp" />
+    <ClCompile Include="src\Platform\AMeshFragment.cpp" />
+    <ClCompile Include="src\Math\Orientation.cpp" />
     <ClCompile Include="src\Classes\Components\Billboard.cpp" />
     <ClCompile Include="src\Classes\Objects\Camera.cpp" />
     <ClCompile Include="src\Classes\ClassSerialiser.cpp" />
@@ -228,11 +271,9 @@
     <ClCompile Include="src\Core\Instance.cpp" />
     <ClCompile Include="src\Classes\Objects\SceneRoot.cpp" />
     <ClCompile Include="src\Core\LayerSystem.cpp" />
-    <ClCompile Include="src\Math\Frustum.cpp" />
-    <ClCompile Include="src\Math\Rect.cpp" />
     <ClCompile Include="src\Classes\Components\APhysics.cpp" />
     <ClCompile Include="src\Classes\Objects\BasicObject.cpp" />
-    <ClCompile Include="src\Math\Matrices.cpp" />
+    <ClCompile Include="src\Math\Matrix.cpp" />
     <ClCompile Include="src\Math\Quaternion.cpp" />
     <ClCompile Include="lib\include\imgui\imgui.cpp" />
     <ClCompile Include="lib\include\imgui\imgui_demo.cpp" />
@@ -248,11 +289,8 @@
     <ClCompile Include="src\Classes\Components\AComponent.cpp" />
     <ClCompile Include="src\Core\Log.cpp" />
     <ClCompile Include="src\Rendering\glad.c" />
-    <ClCompile Include="src\Rendering\Buffers\BaseBuffer.cpp" />
-    <ClCompile Include="src\Rendering\Buffers\GBuffer.cpp" />
     <ClCompile Include="src\Rendering\Buffers\UniformBufferObject.cpp" />
     <ClCompile Include="src\Platform\Windows\GLFWWindow.cpp" />
-    <ClCompile Include="src\Rendering\Models\BaseCamera.cpp" />
     <ClCompile Include="src\Rendering\Models\BaseLight.cpp" />
     <ClCompile Include="src\Rendering\Models\BaseScene.cpp" />
     <ClCompile Include="src\Rendering\Models\DirectionalLight.cpp" />
@@ -261,8 +299,7 @@
     <ClCompile Include="src\Math\Transform.cpp" />
     <ClCompile Include="src\Rendering\Renderer.cpp" />
     <ClCompile Include="src\Core\Utilities.cpp" />
-    <ClCompile Include="src\Classes\Assets\Texture.cpp" />
-    <ClCompile Include="src\Math\Vector4.cpp" />
+    <ClCompile Include="src\Classes\Assets\Image.cpp" />
     <ClCompile Include="src\Core\UUID.cpp" />
     <ClCompile Include="src\Core\Time.cpp" />
   </ItemGroup>

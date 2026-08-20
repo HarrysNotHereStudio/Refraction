@@ -10,6 +10,11 @@
 
 #include "Common.h"
 
+#ifdef _DEBUG
+#define DEFAULT_LOG_FRAME 2
+#else
+#define DEFAULT_LOG_FRAME 2
+#endif
 
 namespace {
 	using Refraction::Log;
@@ -21,7 +26,7 @@ namespace {
 	Log::Colour separatorColour = white;
 	Log::Colour threadColour = white;
 	Log::Colour timestampColour = { 64, 210, 255 };
-	Log::Colour classColour = { 64, 255, 64 };
+	Log::Colour classColour = { 110, 255, 124 };
 	Log::Colour functionColour = { 96, 200, 96 };
 	std::string separatorStr = ANSI24RGB(separatorColour) + " - ";
 	std::string threadColourStr = ANSI24RGB(threadColour);
@@ -61,13 +66,13 @@ namespace Refraction {
 	};
 
 	void Log::SInfo(std::string message) {
-		GenerateLog("Refraction", message, "INFO", white, Colour{ 200, 255, 255 });
+		GenerateLog("Refraction", message, "INFO", white, false, Colour{ 200, 255, 255 });
 	}
 	void Log::SWarn(std::string message) {
 		GenerateLog("Refraction", message, "WARN", Colour{ 255, 160, 70 });
 	}
 	void Log::SError(std::string message) {
-		GenerateLog("Refraction", message, "ERR", Colour{ 255, 60, 60 });
+		GenerateLog("Refraction", message, "ERR", Colour{ 255, 60, 60 }, true);
 	}
 
 	void Log::InitConsoleLog() {
@@ -75,30 +80,62 @@ namespace Refraction {
 	}
 
 	void Log::Info(std::string message) {
-		GenerateLog(mName, message, "INFO", white, Colour{ 200, 255, 255 });
+		GenerateLog(mName, message, "INFO", white, false, Colour{ 200, 255, 255 });
 	}
 	void Log::Warn(std::string message) {
 		GenerateLog(mName, message, "WARN", Colour{ 255, 160, 70 });
 	}
 	void Log::Error(std::string message) {
-			GenerateLog(mName, message, "ERR", Colour{ 255, 60, 60 });
+		GenerateLog(mName, message, "ERR", Colour{ 255, 60, 60 }, true);
 	}
 
-	void Log::GenerateLog(std::string logName, std::string message, std::string logType, Colour printColour, Colour typeColour) {
+	void Log::GenerateLog(std::string logName, std::string message, std::string logType, Colour printColour, bool printStack, Colour typeColour) {
 
 		// Get print information
 		std::string timestamp = Refraction::Log::GenerateTimestamp();
 		auto trace = cpptrace::stacktrace::current();
-		// Use the 3rd frame
-		auto frameSymbols = cpptrace::prune_symbol(trace.frames[2].symbol);
-		std::string fullSymbolStr = frameSymbols;
-		std::string functionName = fullSymbolStr;
-		std::string className = "???";
+
+		// Use 3rd frame if not lambda (otherwise 4th)
+		int frameIndex = DEFAULT_LOG_FRAME;
+		std::string callerSymbol;
+
+
+		// Step frames if sitting inside of a lambda
+		std::string className = "[unknown]";
+		bool testLambda = true;
+		while (testLambda) {
+			callerSymbol = cpptrace::prune_symbol(trace.frames[frameIndex].symbol);
+
+			// cpptrace doesn't seem to prune properly in release builds so we gotta do some manual pruning
+			if (auto symbolPos = callerSymbol.find_last_of('('); symbolPos != std::string::npos) {
+				callerSymbol = callerSymbol.substr(0, symbolPos);
+			}
+
+			if (auto symbolPos = callerSymbol.find_last_of(':'); symbolPos != std::string::npos) {
+				auto classSymbolStr = callerSymbol.substr(0, symbolPos - 1);
+
+				// Get class name from the remaining symbol string
+				if (symbolPos = classSymbolStr.find_last_of(':'); symbolPos != std::string::npos) {
+					className = classSymbolStr.substr(symbolPos + 1, -1);
+				} else className = classSymbolStr.substr(0, -1);
+
+				if (!className.starts_with("<lambda")) {
+					testLambda = false;
+					break;
+				}
+				// Go to previous frame
+				frameIndex++;
+			}
+		}
+		
+		// Get function and class name from frame
+		std::string functionName = callerSymbol;
 
 		// Get class and function name from the symbols in the frame
-		if (auto symbolPos = fullSymbolStr.find_last_of(':'); symbolPos != std::string::npos) {
-			functionName = fullSymbolStr.substr(symbolPos + 1, -1);
-			auto classSymbolStr = fullSymbolStr.substr(0, symbolPos - 1);
+		if (auto symbolPos = callerSymbol.find_last_of(':'); symbolPos != std::string::npos) {
+
+			functionName = callerSymbol.substr(symbolPos + 1, -1);
+			auto classSymbolStr = callerSymbol.substr(0, symbolPos - 1);
 
 			// Get class name from the remaining symbol string
 			if (symbolPos = classSymbolStr.find_last_of(':'); symbolPos != std::string::npos) {
@@ -119,14 +156,37 @@ namespace Refraction {
 
 		if (typeColour == black) typeColour = printColour;
 
-		// Send to callbacks
-		for (auto& callback : Callbacks) {
-			callback(timestampColour, "[" + timestamp + "]", true);
-			callback(separatorColour, " - ", false);
-			callback(typeColour, logType + " ", false);
-			callback(functionColour, functionName, false);
-			callback(separatorColour, " - ", false);
-			callback(printColour, message, false);
+		if (printStack) {
+			// Send to callbacks
+			for (auto& callback : Callbacks) {
+				callback(timestampColour, "[" + timestamp + "]", true);
+				callback(separatorColour, " - ", false);
+				callback(typeColour, logType + " ", false);
+				callback(functionColour, functionName, false);
+				callback(separatorColour, " - ", false);
+				callback(printColour, message, false);
+				callback(printColour, "Stack trace, recent first:", true);
+				for (size_t i = 2; i < trace.frames.size(); i++) {
+					auto& frame = trace.frames[i];
+					if (frame.symbol == "main()") break; // stop after reaching entrypoint
+					callback(printColour, std::format("#{} ", i-2), true);
+					callback({ 255, 160, 70 }, frame.symbol, false);
+					callback(white, std::format("\tAt line {} in file ", frame.line.value_or(0)), true);
+					callback(classColour, frame.filename, false);
+					callback(white, cpptrace::get_snippet(frame.filename, frame.line.value_or(0), 1), true);
+				}
+				callback(printColour, "--- STACKTRACE END ---", true);
+			}
+		} else {
+			// Send to callbacks
+			for (auto& callback : Callbacks) {
+				callback(timestampColour, "[" + timestamp + "]", true);
+				callback(separatorColour, " - ", false);
+				callback(typeColour, logType + " ", false);
+				callback(functionColour, functionName, false);
+				callback(separatorColour, " - ", false);
+				callback(printColour, message, false);
+			}
 		}
 	}
 

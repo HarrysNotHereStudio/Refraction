@@ -4,39 +4,19 @@
 #include <filesystem>
 
 #include <Core/FileHandling.h>
-#include <Math/Vector2.h>
-#include <Math/Vector3.h>
+#include <Math/Vector.h>
 #include <Math/Transform.h>
 #include <Classes/Assets/Material.h>
-#include <Classes/Assets/Texture.h>
+#include <Classes/Assets/Image.h>
+#include <Platform/AMeshFragment.h>
 
 #include "AComponent.h"
 
-struct sVertex {
-	Refraction::Math::Vector3 pos;
-	Refraction::Math::Vector3 normal;
-	Refraction::Math::Vector2 texCoord;
-};
-
 namespace Refraction::Components {
-	class MeshFragment {
-	public:
-		std::vector<sVertex> mVertices;
-		std::vector<unsigned int> mIndices;
-		Refraction::Assets::Material* mMaterial;
-
-		MeshFragment(std::vector<sVertex> vertices, std::vector<unsigned int> indices, Refraction::Assets::Material* material);
-
-		void Draw();
-	private:
-		unsigned int mVAO, mVBO, mEBO;
-
-		void SetupMesh();
-	};
-
 	class Mesh : public AComponent {
 	public:
 		Math::Transform mTransform;
+		std::vector<Common::Ref<Assets::Material>> mMaterials;
 
 		static int FrameMeshCount;
 		static int FrameVertexCount;
@@ -53,7 +33,7 @@ namespace Refraction::Components {
 		void Deserialise(std::string serialised) override;
 	private:
 		std::filesystem::path mSourcePath;
-		std::vector<MeshFragment*> mFragments;
-		std::vector<Assets::Texture*> mTextures;
+		std::vector<Common::Ref<Engine::Platform::AMeshFragment>> mFragments;
+		std::vector<Common::Ref<Assets::Image>> mTextures;
 	};
 }

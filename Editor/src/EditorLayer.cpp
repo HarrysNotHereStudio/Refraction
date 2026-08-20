@@ -1,12 +1,13 @@
 #include <Rendering/RenderLayer.h>
 #include <EditorState.h>
 #include <EditorTheme.h>
-#include <EditorPanels/ExplorerPanel.h>
-#include <EditorPanels/PropertiesPanel.h>
-#include <EditorPanels/ViewportPanel.h>
-#include <EditorPanels/LogPanel.h>
-#include <EditorPanels/StatsPanel.h>
-#include <EditorPanels/LiveCollabPanel.h>
+#include <EditorNet.h>
+#include <EditorGUI/Panels/ExplorerPanel.h>
+#include <EditorGUI/Panels/PropertiesPanel.h>
+#include <EditorGUI/Panels/ViewportPanel.h>
+#include <EditorGUI/Panels/LogPanel.h>
+#include <EditorGUI/Panels/StatsPanel.h>
+#include <EditorGUI/Panels/LiveCollabPanel.h>
 
 #include "EditorLayer.h"
 
@@ -14,14 +15,14 @@ constexpr int ImGuiMenuHeight = 16;
 constexpr int ImGuiRibbonHeight = 48;
 
 namespace Refraction::Editor {
-	EditorLayer::EditorLayer(Common::Ref<Events::AEventDispatcher> eventDispatcher, Common::Ref<Engine::Project> projectInstance, Common::Ref<Engine::Platform::AWindow> window, Common::Ref<Editor::Platform::AImGuiImpl> imGuiImpl)
+	EditorLayer::EditorLayer(Common::SRef<Events::AEventDispatcher> eventDispatcher, Common::SRef<Engine::Project> projectInstance, Common::SRef<Engine::Platform::AWindow> window, Common::SRef<Editor::Platform::AImGuiImpl> imGuiImpl)
 		: mEventDispatcher(eventDispatcher), mProjectInstance(projectInstance), mWindow(window), mImGuiImpl(imGuiImpl) {
-		mEditorPanels.push_back(Common::NewURef<Panels::ExplorerPanel>(eventDispatcher, mWindow));
-		mEditorPanels.push_back(Common::NewURef<Panels::PropertiesPanel>(eventDispatcher, mWindow));
-		mEditorPanels.push_back(Common::NewURef<Panels::ViewportPanel>(eventDispatcher, mWindow));
-		mEditorPanels.push_back(Common::NewURef<Panels::LogPanel>(eventDispatcher, mWindow));
-		mEditorPanels.push_back(Common::NewURef<Panels::StatsPanel>(eventDispatcher, mWindow));
-		mEditorPanels.push_back(Common::NewURef<Panels::LiveCollabPanel>(eventDispatcher, mWindow));
+		mEditorPanels.push_back(Common::NewURef<GUI::ExplorerPanel>(eventDispatcher, mWindow));
+		mEditorPanels.push_back(Common::NewURef<GUI::PropertiesPanel>(eventDispatcher, mWindow));
+		mEditorPanels.push_back(Common::NewURef<GUI::ViewportPanel>(eventDispatcher, mWindow));
+		mEditorPanels.push_back(Common::NewURef<GUI::LogPanel>(eventDispatcher, mWindow));
+		mEditorPanels.push_back(Common::NewURef<GUI::StatsPanel>(eventDispatcher, mWindow));
+		mEditorPanels.push_back(Common::NewURef<GUI::LiveCollabPanel>(eventDispatcher, mWindow));
 	}
 
 	void EditorLayer::OnAttach() {
@@ -105,7 +106,7 @@ namespace Refraction::Editor {
 		mImGuiImpl->UpdateInputState();
 		
 		if (mImGuiImpl->ShouldQuit()) {
-			mEventDispatcher->Dispatch(Common::NewRef<Events::ProgramCloseEvent>());
+			mEventDispatcher->Dispatch(Common::NewSRef<Events::ProgramCloseEvent>());
 		}
 
 		if (EditorState::Temp.ViewportHovered) {
@@ -115,7 +116,7 @@ namespace Refraction::Editor {
 		}
 	}
 
-	void EditorLayer::OnEvent(Common::Ref<Events::Event> event) {
+	void EditorLayer::OnEvent(Common::SRef<Events::Event> event) {
 		if (auto e = Common::AsA<Events::ViewportResizedEvent>(event)) {
 		} else if (auto e = Common::AsA<Events::ProgramCloseEvent>(event)) {
 			// TODO: close confirmation modal

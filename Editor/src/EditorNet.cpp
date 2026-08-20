@@ -60,6 +60,11 @@ namespace Refraction::Editor {
 	}
 
 	void EditorNet::BroadcastMessage(std::string message) {
+		if (!IsServer) {
+			Log::Editor.Warn("Attempt to broadcast message as client");
+			return;
+		}
+
 
 	}
 

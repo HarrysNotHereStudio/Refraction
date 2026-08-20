@@ -14,7 +14,7 @@ using nlohmann::json;
 namespace Refraction::Engine {
 	bool SaveProjectData(const std::filesystem::path& projectFilePath, const ProjectData& projectData) {
 		auto pathStr = projectFilePath.string();
-		if (!(projectFilePath.has_extension() && projectFilePath.extension() == REFRACTION_PROJECT_EXTENSION)) {
+		if (!(projectFilePath.has_extension() && projectFilePath.extension() == RFCT_PROJECT_EXTENSION)) {
 			Log::SError("Invalid project file extension in path " + pathStr);
 			return false;
 		}
@@ -48,7 +48,7 @@ namespace Refraction::Engine {
 
 	std::optional<ProjectData> LoadProjectData(const std::filesystem::path& projectFilePath) {
 		auto pathStr = projectFilePath.string();
-		if (!(std::filesystem::exists(projectFilePath) && std::filesystem::is_regular_file(projectFilePath) && projectFilePath.has_extension() && projectFilePath.extension() == REFRACTION_PROJECT_EXTENSION)) {
+		if (!(std::filesystem::exists(projectFilePath) && std::filesystem::is_regular_file(projectFilePath) && projectFilePath.has_extension() && projectFilePath.extension() == RFCT_PROJECT_EXTENSION)) {
 			Log::SWarn("Invalid or missing project file at path " + pathStr);
 			return std::nullopt;
 		}
@@ -82,7 +82,7 @@ namespace Refraction::Engine {
 
 			if (!cameraDefined || !deserialised.ActiveCamera) {
 				Log::SWarn("No active camera set, creating new camera");
-				auto camera = Common::NewRef<Objects::Camera>();
+				auto camera = Common::NewSRef<Objects::Camera>();
 				Objects::Camera::ActiveCamera = camera;
 				deserialised.ActiveCamera = camera;
 				deserialised.GlobalObjects.push_back(camera);
@@ -109,7 +109,7 @@ namespace Refraction::Engine {
 			Log::SError("Could not get project name from path " + projectPath.string());
 			return std::filesystem::path();
 		}
-		return projectPath / (projectName + REFRACTION_PROJECT_EXTENSION);
+		return projectPath / (projectName + RFCT_PROJECT_EXTENSION);
 	}
 
 
@@ -136,16 +136,20 @@ namespace Refraction::Engine {
 
 		Log::SInfo("Creating project at " + pathStr);
 
-		mRootObject = Common::NewRef<Objects::AObject>();
+		mRootObject = Common::NewSRef<Objects::AObject>();
 		mProjectPath = projectPath;
 		mProjectData = ProjectData{};
 
 		// Default global objects
-		auto camera = Common::NewRef<Objects::Camera>();
+		auto camera = Common::NewSRef<Objects::Camera>();
 		Objects::Camera::ActiveCamera = camera;
-		camera->mParent = mRootObject.get();
+		mRootObject->AddChild(camera);
 		mProjectData.ActiveCamera = camera;
 		mProjectData.GlobalObjects.push_back(camera);
+
+		auto testMesh = Common::NewSRef<Objects::BasicObject>();
+		camera->AddChild(testMesh);
+		testMesh->GetComponent<Components::Mesh>()->LoadModel(FileHandling::GetResourcesPath() / "models/nyen/nyen plush.obj");
 
 		if (!Save()) {
 			Log::SError("Failed to create initial save of project data at " + pathStr);
@@ -162,7 +166,7 @@ namespace Refraction::Engine {
 
 	bool Project::Open(const std::filesystem::path& projectFilePath) {
 		auto pathStr = projectFilePath.string();
-		if (!std::filesystem::exists(projectFilePath) || !std::filesystem::is_regular_file(projectFilePath) || projectFilePath.extension() != REFRACTION_PROJECT_EXTENSION) {
+		if (!std::filesystem::exists(projectFilePath) || !std::filesystem::is_regular_file(projectFilePath) || projectFilePath.extension() != RFCT_PROJECT_EXTENSION) {
 			Log::SError("Attempt to open invalid project path at " + pathStr);
 			return false;
 		}
@@ -171,7 +175,7 @@ namespace Refraction::Engine {
 		if (IsLoaded()) Close();
 
 		// Create new root
-		mRootObject = Common::NewRef<Objects::AObject>();
+		mRootObject = Common::NewSRef<Objects::AObject>();
 
 		auto projectFolderPath = projectFilePath.parent_path();
 		mProjectPath = projectFolderPath;
@@ -183,10 +187,10 @@ namespace Refraction::Engine {
 		if (!projectData) Log::SWarn("Failed to load project data at " + pathStr);
 
 		for (auto& scene : mProjectData.Scenes) {
-			scene->mParent = mRootObject.get();
+			mRootObject->AddChild(scene);
 		}
 		for (auto& globalObj : mProjectData.GlobalObjects) {
-			globalObj->mParent = mRootObject.get();
+			mRootObject->AddChild(globalObj);
 		}
 
 		// Open init scene
@@ -460,22 +464,22 @@ namespace Refraction::Engine {
 		});
 	}
 
-	Common::Ref<Objects::SceneRoot> Project::NewScene() {
+	Common::SRef<Objects::SceneRoot> Project::NewScene() {
 		Log::SInfo("Creating a new scene");
-		auto newScene = Common::NewRef<Objects::SceneRoot>();
-		newScene->mParent = mRootObject.get();
+		auto newScene = Common::NewSRef<Objects::SceneRoot>();
+		mRootObject->AddChild(newScene);
 		mProjectData.Scenes.push_back(newScene);
 
 		// Instantiate default objects/components
 		///
 
-		auto nyenObj = Common::NewRef<Objects::BasicObject>();
+		auto nyenObj = Common::NewSRef<Objects::BasicObject>();
 		nyenObj->mInstanceName = "Nyen";
 		nyenObj->GetComponent<Components::Mesh>()->LoadModel(FileHandling::GetResourcesPath() / "models/nyen/nyen plush.obj");
 		nyenObj->GetComponent<Components::APhysics>()->mAngularVelocity = Math::Vector3(0, 64, 0);
 		newScene->AddChild(nyenObj);
 
-		auto backpackObj = Common::NewRef<Objects::BasicObject>();
+		auto backpackObj = Common::NewSRef<Objects::BasicObject>();
 		backpackObj->mInstanceName = "Backpack";
 		backpackObj->GetComponent<Components::Mesh>()->LoadModel(FileHandling::GetResourcesPath() / "models/survivalBackpack/backpack.obj");
 		backpackObj->mTransform = Math::Transform::FromLookAt(Math::Vector3(0, 14, 10), Math::Vector3::Zero());
@@ -483,12 +487,23 @@ namespace Refraction::Engine {
 
 		Log::SInfo("Successfully created a new scene with UUID " + newScene->GetUUID().AsString());
 		mActiveScene = newScene;
-		if (mProjectData.InitSceneUUID == UUID::Null()) mProjectData.InitSceneUUID = newScene->GetUUID();
+		// Autoset as initScene if none is defined
+		if (mProjectData.InitSceneUUID == UUID::Null()) {
+			mProjectData.InitSceneUUID = newScene->GetUUID();
+			// Add baseplate for convenience
+			auto baseplate = Common::NewSRef<Objects::AObject>();
+			baseplate->mInstanceName = "Baseplate";
+			auto comp = baseplate->AddComponent<Components::Mesh>();
+			comp->LoadModel(FileHandling::GetResourcesPath() / "models/Basic/Cube.obj");
+			comp->mTransform.Translate(Math::Vector3(0, -8, 0));
+			comp->mTransform.mScale = Math::Vector3(128, 8, 128);
+			newScene->AddChild(baseplate);
+		}
 		return mActiveScene;
 	}
 
 	bool Project::OpenScene(UUID sceneUUID) {
-		Common::Ref<Objects::SceneRoot> targetScene;
+		Common::SRef<Objects::SceneRoot> targetScene;
 		for (auto& scene : mProjectData.Scenes) {
 			if (scene->GetUUID().AsInt() == sceneUUID.AsInt()) {
 				targetScene = scene;
