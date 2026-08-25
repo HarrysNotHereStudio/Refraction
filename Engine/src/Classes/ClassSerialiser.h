@@ -23,18 +23,18 @@ namespace Refraction::Utilities {
 		// Tries to append to a parsed json dump and outputs any error
 		static std::string TryAppendJSON(std::string dump, std::function<void(nlohmann::json&)> fn);
 
-		static std::string Serialise(Common::SRef<Objects::AObject> object);
-		static std::string Serialise(Common::SRef<Components::AComponent> comp);
-		static Common::SRef<Objects::AObject> DeserialiseObject(std::string serialisedData);
-		static Common::SRef<Components::AComponent> DeserialiseComponent(std::string serialisedData);
+		static std::string Serialise(Common::Ref<Objects::AObject> object);
+		static std::string Serialise(Common::Ref<Components::AComponent> comp);
+		static Common::Ref<Objects::AObject> DeserialiseObject(std::string serialisedData);
+		static Common::Ref<Components::AComponent> DeserialiseComponent(std::string serialisedData);
 
 		template<typename ObjectType>
-		static Common::SRef<ObjectType> DeserialiseObject(std::string serialisedData) {
+		static Common::Ref<ObjectType> DeserialiseObject(std::string serialisedData) {
 			auto obj = DeserialiseObject(serialisedData);
 			return dynamic_pointer_cast<ObjectType>(obj);
 		}
 		template<typename ComponentType>
-		static Common::SRef<ComponentType> DeserialiseComponent(std::string serialisedData) {
+		static Common::Ref<ComponentType> DeserialiseComponent(std::string serialisedData) {
 			auto comp = DeserialiseComponent(serialisedData);
 			return dynamic_pointer_cast<ComponentType>(comp);
 		}

@@ -87,9 +87,9 @@ namespace Refraction::Components {
 
 	void Mesh::Render() {
 		auto shader = Assets::Shader::GetShaderByName("gbufferShader");
-		if (!shader.Valid()) return;
-		shader.Get()->Activate();
-		shader.Get()->SetUniformMat4("modelTransform", mTransform.ToMatrix() * mParent->GetWorldTransform().ToMatrix());
+		if (!shader) return;
+		shader->Activate();
+		shader->SetUniformMat4("modelTransform", mTransform.ToMatrix() * mParent->GetWorldTransform().ToMatrix());
 		for (auto& mesh : mFragments) {
 			mesh->Draw();
 			FrameVertexCount += (int)mesh->mVertices.size();
@@ -136,7 +136,7 @@ namespace Refraction::Components {
 		if (scene->mNumMaterials > 0) {
 			for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
 				auto importMat = scene->mMaterials[i];
-				auto mat = new Assets::Material();
+				auto mat = Common::NewRef<Assets::Material>();
 
 				auto diffuseMaps = LoadMaterialTextures(importSourcePath, importMat, aiTextureType_DIFFUSE, RFCT_TEXTURE_TYPE_DIFFUSE);
 				if (diffuseMaps.size() > 0) mat->mDiffuse = diffuseMaps[0];
@@ -155,7 +155,7 @@ namespace Refraction::Components {
 				mMaterials.push_back(mat);
 			}
 		} else {
-			auto mat = new Assets::Material();
+			auto mat = Common::NewRef<Assets::Material>();
 			mat->mDiffuse = Assets::Image::FromPath(FileHandling::GetResourcesPath() / "textures" / "Basic.png");
 			mat->mSpecular = mat->mDiffuse;
 

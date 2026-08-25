@@ -31,29 +31,8 @@ namespace Refraction::Assets {
 		return;
 	}
 
-	std::map<uint64_t, Asset*> Asset::AssetMap = {};
-
-	void Asset::ClearMap() {
-		// Delete all assets from memory
-		for (auto& pair : AssetMap) {
-			auto& ptr = AssetMap.at(pair.first);
-			if (ptr) {
-				delete ptr;
-				ptr = nullptr;
-			}
-		}
-		// Then wipe the map
-		for (auto& pair : AssetMap) {
-			AssetMap.erase(pair.first);
-		}
-	}
-
 	Asset::~Asset() {
 		auto uuid = mMetadata.AssetUUID.AsInt();
-		
-		if (AssetMap.contains(uuid)) {
-			AssetMap.erase(uuid);
-		};
 	}
 
 	void Asset::LoadAsset(const std::filesystem::path& source) {
@@ -69,8 +48,7 @@ namespace Refraction::Assets {
 			metadata.AssetPath = source;
 			metadata.FileSize = std::filesystem::file_size(source);
 		}
-
-		AddToMap(this);
+		auto newUUID = GetMetadata().AssetUUID.AsInt();
 	}
 
 	void Asset::Save() {

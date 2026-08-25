@@ -100,7 +100,7 @@ namespace Refraction::Engine {
 		glBindVertexArray(0);
 	}
 
-	void Renderer::RenderFrame(Common::SRef<Project> projectInstance) {
+	void Renderer::RenderFrame(Common::Ref<Project> projectInstance) {
 		auto timeNow = std::chrono::steady_clock::now();
 		mDeltaRenderTime = std::chrono::duration<double>(timeNow - timeRenderLast).count();
 		Time::RenderDelta = mDeltaRenderTime;
@@ -125,7 +125,7 @@ namespace Refraction::Engine {
 		DSPassFinal();
 	}
 
-	void Renderer::UpdateUniformBuffers(Common::SRef<Project> projectInstance) {
+	void Renderer::UpdateUniformBuffers(Common::Ref<Project> projectInstance) {
 		auto& camera = Objects::Camera::ActiveCamera;
 		if (!camera) return;
 		sUBO newData{};
@@ -160,7 +160,7 @@ namespace Refraction::Engine {
 
 	// Deferred Shading
 
-	void Renderer::DSPassGeometry(Common::SRef<Project> projectInstance) {
+	void Renderer::DSPassGeometry(Common::Ref<Project> projectInstance) {
 		auto& graphicsSettings = Settings::CurrentSettings->Graphics;
 		mGBuffer->BindGeometryPass();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -187,7 +187,7 @@ namespace Refraction::Engine {
 		}
 	}
 
-	void Renderer::DSPassLighting(Common::SRef<Project> projectInstance) {
+	void Renderer::DSPassLighting(Common::Ref<Project> projectInstance) {
 		auto& graphicsSettings = Settings::CurrentSettings->Graphics;
 		mGBuffer->BindLightingPass();
 

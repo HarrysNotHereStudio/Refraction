@@ -9,15 +9,15 @@
 using nlohmann::json;
 
 namespace Refraction::Assets {
-	Common::SRef<Objects::AObject> Assembly::Get() {
+	Common::Ref<Objects::AObject> Assembly::Get() {
 		return Deserialise(FileHandling::ReadFile(GetMetadata().AssetPath));
 	}
 
-	std::string Assembly::Serialise(Common::SRef<Objects::AObject> root) {
+	std::string Assembly::Serialise(Common::Ref<Objects::AObject> root) {
 		return root->Serialise();
 	}
 
-	Common::SRef<Objects::AObject> Assembly::Deserialise(std::string tree) {
+	Common::Ref<Objects::AObject> Assembly::Deserialise(std::string tree) {
 		return Utilities::ClassSerialiser::DeserialiseObject(tree);
 	}
 }

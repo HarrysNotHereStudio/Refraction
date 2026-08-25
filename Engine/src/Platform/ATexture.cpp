@@ -4,7 +4,7 @@
 #include "ATexture.h"
 
 namespace Refraction::Engine::Platform {
-	std::map<uint64_t, ATexture*> ATexture::TexturePool = {};
+	std::map<uint64_t, Common::Ref<ATexture>> ATexture::TexturePool = {};
 
 	Common::Ref<ATexture> ATexture::MakeTexture(const TextureStructure& texStruct) {
 		switch (ARenderingAPI::GetAPI()) {
@@ -12,7 +12,7 @@ namespace Refraction::Engine::Platform {
 			Log::Render.Warn("Attempt to create texture without an active API");
 			return nullptr;
 		case RenderingAPI::OPENGL: {
-			auto newTex = new OpenGLTexture(texStruct);
+			auto newTex = Common::NewRef<OpenGLTexture>(texStruct);
 			TexturePool[newTex->mUUID.AsInt()] = newTex;
 			return newTex;
 		}

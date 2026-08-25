@@ -8,9 +8,9 @@ namespace Refraction::Engine::Platform {
 	class AGBuffer {
 	public:
 		// Creates a new GBuffer using the active rendering API
-		static Common::SRef<AGBuffer> CreateGBuffer();
+		static Common::Ref<AGBuffer> CreateGBuffer();
 
-		Common::SRef<Assets::Image> GetLastRenderedFrame() const;
+		Common::Ref<Assets::Image> GetLastRenderedFrame() const;
 
 		// Initialises the GBuffer textures
 		virtual bool Init(unsigned int viewWidth, unsigned int viewHeight) = 0;

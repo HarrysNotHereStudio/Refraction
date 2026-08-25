@@ -33,19 +33,19 @@ namespace Refraction::Engine {
 		Renderer();
 
 		void Init();
-		void RenderFrame(Common::SRef<Project> projectInstance);
+		void RenderFrame(Common::Ref<Project> projectInstance);
 
 		void SetViewport(Math::Rect rect) { mViewportRect = rect; };
 
 		RendererState GetState() { return mState; }
-		Common::SRef<Assets::Image> GetFinalOutput() const { return mFinalOutput; }
+		Common::Ref<Assets::Image> GetFinalOutput() const { return mFinalOutput; }
 	private:
-		void UpdateUniformBuffers(Common::SRef<Project> projectInstance);
+		void UpdateUniformBuffers(Common::Ref<Project> projectInstance);
 		void Cleanup();
 
 		// Deferred shading functions
-		void DSPassGeometry(Common::SRef<Project> projectInstance);
-		void DSPassLighting(Common::SRef<Project> projectInstance);
+		void DSPassGeometry(Common::Ref<Project> projectInstance);
+		void DSPassLighting(Common::Ref<Project> projectInstance);
 		void DSPassFinal() const;
 
 		RendererState mState = RendererState::NONE;
@@ -53,10 +53,10 @@ namespace Refraction::Engine {
 		UniformBufferObject* mUBO = nullptr;
 		Common::Ref<Assets::Shader> mGeomPassShader = nullptr;
 		Common::Ref<Assets::Shader> mLightingPassShader = nullptr;
-		Common::SRef<Platform::AGBuffer> mGBuffer = nullptr;
+		Common::Ref<Platform::AGBuffer> mGBuffer = nullptr;
 		Math::Rect mViewportRect;
 		Math::Rect mViewportRectLast = mViewportRect;
-		Common::SRef<Assets::Image> mFinalOutput;
+		Common::Ref<Assets::Image> mFinalOutput;
 
 		BaseScene* mLoadedScene = nullptr;
 

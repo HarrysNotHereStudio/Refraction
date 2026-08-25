@@ -9,15 +9,13 @@ namespace Refraction::Engine::Platform {
 		static Common::Ref<ATexture> GetFromID(unsigned int id);
 
 		OpenGLTexture(const TextureStructure& texStruct);
+		OpenGLTexture(unsigned int id);
 
 		void Generate() override;
 		void Activate(unsigned int unitOffset) override;
 		void Regenerate(const TextureStructure& texStruct) override;
 		void Unload() override;
 		Math::Vector2 GetSize() override;
-
-	private:
-		OpenGLTexture(unsigned int id);
 	};
 }
 

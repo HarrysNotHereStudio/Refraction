@@ -17,7 +17,7 @@ namespace Refraction::Engine::Platform {
 				.Format = TextureFormat::RGB8,
 				.MipsEnabled = true
 			};
-			auto newTex = new OpenGLTexture(texStruct);
+			auto newTex = Common::NewRef<OpenGLTexture>(texStruct);
 			newTex->Activate(0);
 
 			// Enable wrapping (repeat)
@@ -26,8 +26,7 @@ namespace Refraction::Engine::Platform {
 			Log::Render.Info("Created texture from path " + path.string());
 			stbi_image_free(data);
 
-			// Return the new pointer stored in the pool
-			return Common::Ref<ATexture>(TexturePool.at(newTex->mUUID.AsInt()));
+			return newTex;
 		} else {
 			Log::Render.Error("Failed to create texture from path " + path.string());
 			stbi_image_free(data);
@@ -38,7 +37,7 @@ namespace Refraction::Engine::Platform {
 	Common::Ref<ATexture> OpenGLTexture::GetFromID(unsigned int id) {
 		if (!glIsTexture(id)) return nullptr;
 
-		auto newTexture = new OpenGLTexture(id);
+		auto newTexture = Common::NewRef<OpenGLTexture>(id);
 
 		return newTexture;
 	}
@@ -46,7 +45,6 @@ namespace Refraction::Engine::Platform {
 	OpenGLTexture::OpenGLTexture(const TextureStructure& texStruct) {
 		Generate();
 		Regenerate(texStruct);
-		TexturePool[mUUID.AsInt()] = this;
 	}
 
 	OpenGLTexture::OpenGLTexture(unsigned int id) {

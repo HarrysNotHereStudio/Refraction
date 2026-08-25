@@ -27,7 +27,7 @@ namespace Refraction::Engine::Platform {
 		bool MipsEnabled = true;
 	};
 
-	class ATexture {
+	class ATexture : public std::enable_shared_from_this<ATexture> {
 	public:
 		// Returns a reference to a new empty texture
 		static Common::Ref<ATexture> MakeTexture(const TextureStructure& texStruct);
@@ -50,7 +50,7 @@ namespace Refraction::Engine::Platform {
 
 		unsigned int GetBufferID() const { return mBufferID; }
 	protected:
-		static std::map<uint64_t, ATexture*> TexturePool;
+		static std::map<uint64_t, Common::Ref<ATexture>> TexturePool;
 
 		TextureStructure mStructure;
 		UUID mUUID;

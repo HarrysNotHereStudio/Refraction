@@ -11,9 +11,9 @@ namespace Refraction::Editor::GUI {
 
 		void Init() override;
 		void OnDraw() override;
-		void OnEvent(Common::SRef<Events::Event> event) override;
+		void OnEvent(Common::Ref<Events::Event> event) override;
 	private:
-		Common::SRef<Assets::Image> mFrame;
+		Common::Ref<Assets::Image> mFrame;
 		Math::Rect mLastViewportRect;
 		Math::Rect mViewportRect;
 		bool mFirstDraw = true;

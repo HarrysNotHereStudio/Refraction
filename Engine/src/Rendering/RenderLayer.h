@@ -11,8 +11,8 @@
 namespace Refraction::Events {
 	class FrameRenderedEvent : public Events::Event {
 	public:
-		Common::SRef<Assets::Image> mFrame;
-		FrameRenderedEvent(Common::SRef<Assets::Image> newFrame) : mFrame(newFrame) {
+		Common::Ref<Assets::Image> mFrame;
+		FrameRenderedEvent(Common::Ref<Assets::Image> newFrame) : mFrame(newFrame) {
 			mName = "FrameRendered";
 		}
 	};
@@ -28,15 +28,15 @@ namespace Refraction::Events {
 namespace Refraction::Engine {
 	class RenderLayer : public ALayer {
 	public:
-		RenderLayer(Common::SRef<Events::AEventDispatcher> eventDispatcher, Common::SRef<Project> projectInstance);
+		RenderLayer(Common::Ref<Events::AEventDispatcher> eventDispatcher, Common::Ref<Project> projectInstance);
 
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnPass() override;
-		void OnEvent(Common::SRef<Events::Event> event) override;
+		void OnEvent(Common::Ref<Events::Event> event) override;
 	private:
-		Common::SRef<Events::AEventDispatcher> mEventDispatcher;
-		Common::SRef<Project> mProjectInstance;
+		Common::Ref<Events::AEventDispatcher> mEventDispatcher;
+		Common::Ref<Project> mProjectInstance;
 
 		Renderer mRenderer;
 	};

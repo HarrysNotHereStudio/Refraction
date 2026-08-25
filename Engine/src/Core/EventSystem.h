@@ -21,6 +21,6 @@ namespace Refraction::Events {
 	class AEventDispatcher {
 	public:
 		virtual ~AEventDispatcher() = default;
-		virtual void Dispatch(Common::SRef<Event> event) = 0;
+		virtual void Dispatch(Common::Ref<Event> event) = 0;
 	};
 }

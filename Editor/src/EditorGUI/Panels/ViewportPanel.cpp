@@ -20,7 +20,7 @@ namespace Refraction::Editor::GUI {
 			mFirstDraw = false;
 		}
 		// Skip if no frame or no project is open
-		if (mFrame == nullptr || !mFrame->mTexture.Valid() || !EditorState::Temp.ProjectInstance->IsLoaded()) {
+		if (mFrame == nullptr || mFrame->mTexture == nullptr || !EditorState::Temp.ProjectInstance->IsLoaded()) {
 			ImGui::End();
 			return;
 		}
@@ -31,7 +31,7 @@ namespace Refraction::Editor::GUI {
 
 		// On viewport resize
 		if (mViewportRect.w != mLastViewportRect.w || mViewportRect.h != mLastViewportRect.h) {
-			mEventDispatcher->Dispatch(Common::NewSRef<Events::ViewportResizedEvent>(mViewportRect));
+			mEventDispatcher->Dispatch(Common::NewRef<Events::ViewportResizedEvent>(mViewportRect));
 		}
 
 		const float windowWidth = ImGui::GetContentRegionAvail().x;
@@ -55,7 +55,7 @@ namespace Refraction::Editor::GUI {
 		mLastViewportRect = mViewportRect;
 	}
 
-	void ViewportPanel::OnEvent(Common::SRef<Events::Event> event) {
+	void ViewportPanel::OnEvent(Common::Ref<Events::Event> event) {
 		if (auto e = Common::AsA<Events::FrameRenderedEvent>(event)) {
 			mFrame = e->mFrame;
 		}

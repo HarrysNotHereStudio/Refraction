@@ -27,14 +27,6 @@ namespace Refraction::Assets {
 
 	class Asset {
 	public:
-		template <typename AssetType>
-		static Common::Ref<AssetType> GetAsset(uint64_t uuid) {
-			return Common::Ref<AssetType>(dynamic_cast<AssetType*>(AssetMap.at(uuid)));
-		}
-
-		// Cleans up AssetMap to prevent heap corruption at application shutdown
-		static void ClearMap();
-
 		Asset() = default;
 		virtual ~Asset();
 
@@ -46,15 +38,12 @@ namespace Refraction::Assets {
 		void LoadAsset(std::string source) { return LoadAsset(std::filesystem::path(source)); }
 		// Saves the asset to disk
 		virtual void Save();
+
+		inline bool IsVolatile() const { return mVolatile; }
 	protected:
 		std::string mDisplayName;
-
-		static inline void AddToMap(Asset* asset) {
-			AssetMap.insert(std::make_pair(asset->GetMetadata().AssetUUID.AsInt(), asset));
-		}
+		bool mVolatile = false; // Asset does not have a location on disk if true
 	private:
-		static std::map<uint64_t, Asset*> AssetMap;
-
 		AssetMetadata mMetadata;
 	};
 }

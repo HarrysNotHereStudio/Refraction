@@ -16,7 +16,7 @@ namespace Refraction::Components {
 		if (!mImage) return;
 
 		auto shader = Assets::Shader::GetShaderByName("baseShader");
-		if (!shader.Valid()) return;
+		if (!shader) return;
 
 		using Math::Vector2, Math::Vector3;
 		auto& camera = Objects::Camera::ActiveCamera;
@@ -48,7 +48,7 @@ namespace Refraction::Components {
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Engine::sVertex), (void*)offsetof(Engine::sVertex, texCoord));
 		glEnableVertexAttribArray(2);
 
-		shader.Get()->Activate();
+		shader->Activate();
 		mImage->mTexture->Activate(0);
 		glActiveTexture(GL_TEXTURE0);
 

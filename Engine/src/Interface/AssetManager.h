@@ -1,15 +1,12 @@
 #pragma once
 
+#include <map>
+
 #include <Core/Common.h>
 #include <Classes/Assets/Asset.h>
 
-// TODO: Set up Asset Importer so that new assets are copied to the project dir and are assigned an AssetPath through this, then call AssetManager to read the new assets' metadata files to load them
 namespace Refraction::Engine {
-	// Loads assets into the project
-	class AssetImporter {
-	public:
-
-	};
+	// Instanced project singleton handling the AssetMap
 	class AssetManager {
 	public:
 		AssetManager() = default;
@@ -20,11 +17,8 @@ namespace Refraction::Engine {
 			return dynamic_pointer_cast<AssetType>(mAssetMap.at(uuid));
 		}
 
-		// TODO: Read asset metadata files under project folder to load them into memory
-		void RegisterAssets();
-		void RegisterAsset();
+		void RegisterAsset(Common::Ref<Assets::Asset> asset);
 	private:
 		std::map<uint64_t, Common::Ref<Assets::Asset>> mAssetMap = {};
 	};
 }
-

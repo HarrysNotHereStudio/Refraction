@@ -8,7 +8,7 @@
 #include "ExplorerPanel.h"
 
 namespace Refraction::Editor::GUI {
-	static void MakeTree(Common::SRef<Objects::AObject> obj) {
+	static void MakeTree(Common::Ref<Objects::AObject> obj) {
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
 		auto& currentlySelected = EditorState::Temp.SelectedObject;
@@ -55,11 +55,11 @@ namespace Refraction::Editor::GUI {
 			if (!project->IsLoaded()) ImGui::BeginDisabled();
 			if (ImGui::BeginMenu("Add Object...")) {
 				if (ImGui::MenuItem("Empty Object")) {
-					auto newObj = Common::NewSRef<Objects::AObject>();
+					auto newObj = Common::NewRef<Objects::AObject>();
 					EditorState::Temp.ProjectInstance->GetActiveScene()->AddChild(newObj);
 				}
 				if (ImGui::MenuItem("Basic Object")) {
-					auto newObj = Common::NewSRef<Objects::BasicObject>();
+					auto newObj = Common::NewRef<Objects::BasicObject>();
 					EditorState::Temp.ProjectInstance->GetActiveScene()->AddChild(newObj);
 				}
 				if (ImGui::MenuItem("Scene")) {

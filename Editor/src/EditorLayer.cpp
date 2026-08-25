@@ -15,7 +15,7 @@ constexpr int ImGuiMenuHeight = 16;
 constexpr int ImGuiRibbonHeight = 48;
 
 namespace Refraction::Editor {
-	EditorLayer::EditorLayer(Common::SRef<Events::AEventDispatcher> eventDispatcher, Common::SRef<Engine::Project> projectInstance, Common::SRef<Engine::Platform::AWindow> window, Common::SRef<Editor::Platform::AImGuiImpl> imGuiImpl)
+	EditorLayer::EditorLayer(Common::Ref<Events::AEventDispatcher> eventDispatcher, Common::Ref<Engine::Project> projectInstance, Common::Ref<Engine::Platform::AWindow> window, Common::Ref<Editor::Platform::AImGuiImpl> imGuiImpl)
 		: mEventDispatcher(eventDispatcher), mProjectInstance(projectInstance), mWindow(window), mImGuiImpl(imGuiImpl) {
 		mEditorPanels.push_back(Common::NewURef<GUI::ExplorerPanel>(eventDispatcher, mWindow));
 		mEditorPanels.push_back(Common::NewURef<GUI::PropertiesPanel>(eventDispatcher, mWindow));
@@ -106,7 +106,7 @@ namespace Refraction::Editor {
 		mImGuiImpl->UpdateInputState();
 		
 		if (mImGuiImpl->ShouldQuit()) {
-			mEventDispatcher->Dispatch(Common::NewSRef<Events::ProgramCloseEvent>());
+			mEventDispatcher->Dispatch(Common::NewRef<Events::ProgramCloseEvent>());
 		}
 
 		if (EditorState::Temp.ViewportHovered) {
@@ -116,7 +116,7 @@ namespace Refraction::Editor {
 		}
 	}
 
-	void EditorLayer::OnEvent(Common::SRef<Events::Event> event) {
+	void EditorLayer::OnEvent(Common::Ref<Events::Event> event) {
 		if (auto e = Common::AsA<Events::ViewportResizedEvent>(event)) {
 		} else if (auto e = Common::AsA<Events::ProgramCloseEvent>(event)) {
 			// TODO: close confirmation modal

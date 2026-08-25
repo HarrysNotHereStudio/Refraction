@@ -7,7 +7,7 @@
 #include "LogPanel.h"
 
 namespace Refraction::Editor::GUI {
-	LogPanel::LogPanel(Common::SRef<Events::AEventDispatcher> eventDispatcher, Common::SRef<Engine::Platform::AWindow> window) : AEditorPanel(eventDispatcher, window) {
+	LogPanel::LogPanel(Common::Ref<Events::AEventDispatcher> eventDispatcher, Common::Ref<Engine::Platform::AWindow> window) : AEditorPanel(eventDispatcher, window) {
 		Log::AddLogCallback([&](Log::Colour clr, std::string text, bool newLine) {
 			mHistory.push_back(std::make_tuple(clr, text, newLine));
 		});

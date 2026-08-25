@@ -10,7 +10,7 @@
 namespace Refraction::Objects {
 	class Camera : public AObject {
 	public:
-		static Common::SRef<Camera> ActiveCamera;
+		static Common::Ref<Camera> ActiveCamera;
 		Math::Frustum mFrustum;
 
 		Camera();

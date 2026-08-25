@@ -10,18 +10,18 @@
 namespace Refraction::Editor {
 	class EditorLayer : public Engine::ALayer {
 	public:
-		EditorLayer(Common::SRef<Events::AEventDispatcher> eventDispatcher, Common::SRef<Engine::Project> projectInstance, Common::SRef<Engine::Platform::AWindow> window, Common::SRef<Editor::Platform::AImGuiImpl> imGuiImpl);
+		EditorLayer(Common::Ref<Events::AEventDispatcher> eventDispatcher, Common::Ref<Engine::Project> projectInstance, Common::Ref<Engine::Platform::AWindow> window, Common::Ref<Editor::Platform::AImGuiImpl> imGuiImpl);
 
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnPass() override;
-		void OnEvent(Common::SRef<Events::Event> event) override;
+		void OnEvent(Common::Ref<Events::Event> event) override;
 
 	private:
-		Common::SRef<Events::AEventDispatcher> mEventDispatcher;
-		Common::SRef<Engine::Project> mProjectInstance;
-		Common::SRef<Engine::Platform::AWindow> mWindow;
-		Common::SRef<Editor::Platform::AImGuiImpl> mImGuiImpl;
+		Common::Ref<Events::AEventDispatcher> mEventDispatcher;
+		Common::Ref<Engine::Project> mProjectInstance;
+		Common::Ref<Engine::Platform::AWindow> mWindow;
+		Common::Ref<Editor::Platform::AImGuiImpl> mImGuiImpl;
 
 		std::vector<Common::URef<GUI::AEditorPanel>> mEditorPanels;
 	};

@@ -82,7 +82,7 @@ namespace Refraction::Engine {
 
 			if (!cameraDefined || !deserialised.ActiveCamera) {
 				Log::SWarn("No active camera set, creating new camera");
-				auto camera = Common::NewSRef<Objects::Camera>();
+				auto camera = Common::NewRef<Objects::Camera>();
 				Objects::Camera::ActiveCamera = camera;
 				deserialised.ActiveCamera = camera;
 				deserialised.GlobalObjects.push_back(camera);
@@ -136,18 +136,18 @@ namespace Refraction::Engine {
 
 		Log::SInfo("Creating project at " + pathStr);
 
-		mRootObject = Common::NewSRef<Objects::AObject>();
+		mRootObject = Common::NewRef<Objects::AObject>();
 		mProjectPath = projectPath;
 		mProjectData = ProjectData{};
 
 		// Default global objects
-		auto camera = Common::NewSRef<Objects::Camera>();
+		auto camera = Common::NewRef<Objects::Camera>();
 		Objects::Camera::ActiveCamera = camera;
 		mRootObject->AddChild(camera);
 		mProjectData.ActiveCamera = camera;
 		mProjectData.GlobalObjects.push_back(camera);
 
-		auto testMesh = Common::NewSRef<Objects::BasicObject>();
+		auto testMesh = Common::NewRef<Objects::BasicObject>();
 		camera->AddChild(testMesh);
 		testMesh->GetComponent<Components::Mesh>()->LoadModel(FileHandling::GetResourcesPath() / "models/nyen/nyen plush.obj");
 
@@ -174,8 +174,10 @@ namespace Refraction::Engine {
 		// Close any active project
 		if (IsLoaded()) Close();
 
+		mAssetManager = Common::NewRef<AssetManager>();
+
 		// Create new root
-		mRootObject = Common::NewSRef<Objects::AObject>();
+		mRootObject = Common::NewRef<Objects::AObject>();
 
 		auto projectFolderPath = projectFilePath.parent_path();
 		mProjectPath = projectFolderPath;
@@ -205,6 +207,7 @@ namespace Refraction::Engine {
 		}
 
 		Log::SInfo("Opened project at " + pathStr);
+		mCurrentProject = this;
 		return true;
 	}
 
@@ -242,6 +245,9 @@ namespace Refraction::Engine {
 		mProjectPath.clear();
 		mProjectData = ProjectData{};
 
+		mAssetManager.reset();
+
+		mCurrentProject = nullptr;
 		Log::SInfo("Closed project successfully");
 	}
 
@@ -464,22 +470,22 @@ namespace Refraction::Engine {
 		});
 	}
 
-	Common::SRef<Objects::SceneRoot> Project::NewScene() {
+	Common::Ref<Objects::SceneRoot> Project::NewScene() {
 		Log::SInfo("Creating a new scene");
-		auto newScene = Common::NewSRef<Objects::SceneRoot>();
+		auto newScene = Common::NewRef<Objects::SceneRoot>();
 		mRootObject->AddChild(newScene);
 		mProjectData.Scenes.push_back(newScene);
 
 		// Instantiate default objects/components
 		///
 
-		auto nyenObj = Common::NewSRef<Objects::BasicObject>();
+		auto nyenObj = Common::NewRef<Objects::BasicObject>();
 		nyenObj->mInstanceName = "Nyen";
 		nyenObj->GetComponent<Components::Mesh>()->LoadModel(FileHandling::GetResourcesPath() / "models/nyen/nyen plush.obj");
 		nyenObj->GetComponent<Components::APhysics>()->mAngularVelocity = Math::Vector3(0, 64, 0);
 		newScene->AddChild(nyenObj);
 
-		auto backpackObj = Common::NewSRef<Objects::BasicObject>();
+		auto backpackObj = Common::NewRef<Objects::BasicObject>();
 		backpackObj->mInstanceName = "Backpack";
 		backpackObj->GetComponent<Components::Mesh>()->LoadModel(FileHandling::GetResourcesPath() / "models/survivalBackpack/backpack.obj");
 		backpackObj->mTransform = Math::Transform::FromLookAt(Math::Vector3(0, 14, 10), Math::Vector3::Zero());
@@ -491,7 +497,7 @@ namespace Refraction::Engine {
 		if (mProjectData.InitSceneUUID == UUID::Null()) {
 			mProjectData.InitSceneUUID = newScene->GetUUID();
 			// Add baseplate for convenience
-			auto baseplate = Common::NewSRef<Objects::AObject>();
+			auto baseplate = Common::NewRef<Objects::AObject>();
 			baseplate->mInstanceName = "Baseplate";
 			auto comp = baseplate->AddComponent<Components::Mesh>();
 			comp->LoadModel(FileHandling::GetResourcesPath() / "models/Basic/Cube.obj");
@@ -503,7 +509,7 @@ namespace Refraction::Engine {
 	}
 
 	bool Project::OpenScene(UUID sceneUUID) {
-		Common::SRef<Objects::SceneRoot> targetScene;
+		Common::Ref<Objects::SceneRoot> targetScene;
 		for (auto& scene : mProjectData.Scenes) {
 			if (scene->GetUUID().AsInt() == sceneUUID.AsInt()) {
 				targetScene = scene;

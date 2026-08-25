@@ -10,8 +10,8 @@
 
 namespace Refraction::Editor {
 	struct TempEditorState {
-		Common::SRef<Objects::AObject> SelectedObject = nullptr;
-		Common::SRef<Engine::Project> ProjectInstance = nullptr;
+		Common::Ref<Objects::AObject> SelectedObject = nullptr;
+		Common::Ref<Engine::Project> ProjectInstance = nullptr;
 		bool SimulatingGame = false;
 		bool ViewportHovered = false;
 

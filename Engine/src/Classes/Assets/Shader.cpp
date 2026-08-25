@@ -4,7 +4,7 @@
 #include "Shader.h"
 
 namespace Refraction::Assets {
-	static std::unordered_map<std::string, uint64_t> LoadedShaders = {};
+	std::unordered_map<std::string, uint64_t> Shader::LoadedShaders = {};
 
 
 	std::string ShaderMetadata::Serialise() {
@@ -33,7 +33,7 @@ namespace Refraction::Assets {
 		for (const auto& shaderSource : shaderSources) {
 			auto& sourcePath = shaderSource.path();
 			Log::Render.Info("Loading shader source: " + sourcePath.string());
-			auto newShader = new Shader();
+			auto newShader = Common::NewRef<Shader>(); // Must be shared ptr on construct so the shader can be safely added to the asset map
 			newShader->LoadAsset(sourcePath);
 		}
 	}
@@ -42,7 +42,6 @@ namespace Refraction::Assets {
 		if (glIsProgram(mID)) {
 			glDeleteProgram(mID);
 		}
-		if (LoadedShaders.contains(GetName())) LoadedShaders.erase(GetName());
 	}
 
 	void Shader::Activate() const {

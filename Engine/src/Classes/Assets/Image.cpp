@@ -3,7 +3,7 @@
 #include "Image.h"
 
 namespace Refraction::Assets {
-	std::unordered_map<std::string, Image*> LoadedImages;
+	std::unordered_map<std::string, Common::Ref<Image>> LoadedImages;
 
 	std::string ImageMetadata::Serialise() {
 		auto result = AssetMetadata::Serialise();
@@ -17,7 +17,7 @@ namespace Refraction::Assets {
 	Common::Ref<Image> Image::FromPath(std::filesystem::path texturePath) {
 		if (LoadedImages.contains(texturePath.string())) return LoadedImages.at(texturePath.string());
 
-		auto tex = new Image();
+		auto tex = Common::NewRef<Image>();
 		tex->LoadAsset(texturePath);
 		LoadedImages[texturePath.string()] = tex;
 
@@ -35,7 +35,7 @@ namespace Refraction::Assets {
 		Asset::LoadAsset(source);
 
 		mTexture = Engine::Platform::ATexture::FromPath(source);
-		auto dim = mTexture.Get()->GetSize();
+		auto dim = mTexture->GetSize();
 		mMetadata.Width = (int)dim.x;
 		mMetadata.Height = (int)dim.y;
 	}

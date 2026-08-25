@@ -8,18 +8,19 @@ namespace Refraction::Engine {
 			Log::InitConsoleLog();
 			mWindow = Platform::AWindow::Get();
 			mWindow->Init();
-			mLayerStack = Common::NewSRef<LayerStack>();
-			mProjectInstance = Common::NewSRef<Project>();
+			mLayerStack = Common::NewRef<LayerStack>();
+			mProjectInstance = Common::NewRef<Project>();
 			mRenderingAPI = Platform::ARenderingAPI::Get();
 			mRenderingAPI->Init();
-			mRenderLayer = Common::NewSRef<RenderLayer>(mLayerStack, mProjectInstance);
+			mRenderLayer = Common::NewRef<RenderLayer>(mLayerStack, mProjectInstance);
 			mLayerStack->PushLayer(mRenderLayer);
-			mPhysicsLayer = Common::NewSRef<PhysicsLayer>(mLayerStack, mProjectInstance);
+			mPhysicsLayer = Common::NewRef<PhysicsLayer>(mLayerStack, mProjectInstance);
 			mLayerStack->PushLayer(mPhysicsLayer);
 		} catch (const std::runtime_error& err) {
 			Log::SError("Critical error encountered during startup: " + std::string(err.what()));
 		} catch(...) {
 			Log::SError("Unknown critical error encountered during startup");
+			throw;
 		}
 	}
 
@@ -29,7 +30,7 @@ namespace Refraction::Engine {
 			while (!mWindow->ShouldClose()) {
 				mWindow->OnUpdate(Objects::Camera::ActiveCamera);
 				if (mWindow->mShouldFramebufferRegen) {
-					mLayerStack->Dispatch(Common::NewSRef<Events::ViewportResizedEvent>(mWindow->GetRect()));
+					mLayerStack->Dispatch(Common::NewRef<Events::ViewportResizedEvent>(mWindow->GetRect()));
 					mWindow->mShouldFramebufferRegen = false;
 				}
 				mRenderingAPI->Clear(Math::Vector4(0, 0, 0, 1));
@@ -51,7 +52,6 @@ namespace Refraction::Engine {
 				mProjectInstance->Close();
 			}
 			mLayerStack->OnDetach();
-			Assets::Asset::ClearMap();
 		} catch (const std::runtime_error& err) {
 			Log::SError("Critical error encountered during shutdown: " + std::string(err.what()));
 		} catch (...) {

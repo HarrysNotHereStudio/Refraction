@@ -10,7 +10,7 @@ namespace Refraction::Engine::Platform {
 			Log::Render.Warn("Attempt to create mesh fragment without an active API");
 			return nullptr;
 		case RenderingAPI::OPENGL:
-			auto fragment = new OpenGLMeshFragment(vertices, indices, material);
+			auto fragment = Common::NewRef<OpenGLMeshFragment>(vertices, indices, material);
 			fragment->Upload();
 			return fragment;
 		}

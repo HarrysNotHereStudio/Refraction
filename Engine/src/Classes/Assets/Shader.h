@@ -47,6 +47,8 @@ namespace Refraction::Assets {
 		AssetMetadata& GetMetadata() override { return mMetadata; }
 		void LoadAsset(const std::filesystem::path& source) override;
 	private:
+		static std::unordered_map<std::string, uint64_t> LoadedShaders;
+
 		ShaderMetadata mMetadata;
 		unsigned int mID = 0;
 		std::string mName;

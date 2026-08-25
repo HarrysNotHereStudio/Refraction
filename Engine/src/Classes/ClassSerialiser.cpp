@@ -25,28 +25,28 @@ namespace Refraction::Utilities {
 		return result;
 	}
 
-	std::string ClassSerialiser::Serialise(Common::SRef<Objects::AObject> object) {
+	std::string ClassSerialiser::Serialise(Common::Ref<Objects::AObject> object) {
 		return object->Serialise();
 	}
 
-	std::string ClassSerialiser::Serialise(Common::SRef<Components::AComponent> component) {
+	std::string ClassSerialiser::Serialise(Common::Ref<Components::AComponent> component) {
 		return component->Serialise();
 	}
 
-	Common::SRef<Objects::AObject> ClassSerialiser::DeserialiseObject(std::string serialisedData) {
+	Common::Ref<Objects::AObject> ClassSerialiser::DeserialiseObject(std::string serialisedData) {
 		try {
-			Common::SRef<Objects::AObject> deserialised;
+			Common::Ref<Objects::AObject> deserialised;
 			json data = json::parse(serialisedData);
 
 			auto className = data.at("TypeName").get<std::string>();
 			if (className == typeid(Objects::AObject).name()) {
-				deserialised = Common::NewSRef<Objects::AObject>();
+				deserialised = Common::NewRef<Objects::AObject>();
 			} else if (className == typeid(Objects::BasicObject).name()) {
-				deserialised = Common::NewSRef<Objects::BasicObject>();
+				deserialised = Common::NewRef<Objects::BasicObject>();
 			} else if (className == typeid(Objects::SceneRoot).name()) {
-				deserialised = Common::NewSRef<Objects::SceneRoot>();
+				deserialised = Common::NewRef<Objects::SceneRoot>();
 			} else if (className == typeid(Objects::Camera).name()) {
-				deserialised = Common::NewSRef<Objects::Camera>();
+				deserialised = Common::NewRef<Objects::Camera>();
 			}
 			Log::SInfo("Deserialising object of type " + className);
 			deserialised->Deserialise(serialisedData);
@@ -56,18 +56,18 @@ namespace Refraction::Utilities {
 		}
 	}
 
-	Common::SRef<Components::AComponent> ClassSerialiser::DeserialiseComponent(std::string serialisedData) {
+	Common::Ref<Components::AComponent> ClassSerialiser::DeserialiseComponent(std::string serialisedData) {
 		try {
-			Common::SRef<Components::AComponent> deserialised;
+			Common::Ref<Components::AComponent> deserialised;
 			json data = json::parse(serialisedData);
 
 			auto className = data.at("TypeName").get<std::string>();
 			if (className == typeid(Components::AComponent).name()) {
-				deserialised = Common::NewSRef<Components::AComponent>();
+				deserialised = Common::NewRef<Components::AComponent>();
 			} else if (className == typeid(Components::APhysics).name()) {
-				deserialised = Common::NewSRef<Components::APhysics>();
+				deserialised = Common::NewRef<Components::APhysics>();
 			} else if (className == typeid(Components::Mesh).name()) {
-				deserialised = Common::NewSRef<Components::Mesh>();
+				deserialised = Common::NewRef<Components::Mesh>();
 			}
 			Log::SInfo("Deserialising component of type " + className);
 			deserialised->Deserialise(serialisedData);
