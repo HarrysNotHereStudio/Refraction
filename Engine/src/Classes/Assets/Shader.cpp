@@ -1,5 +1,6 @@
 #include <Core/FileHandling.h>
 #include <Core/Utilities.h>
+#include <Interface/AssetManager.h>
 
 #include "Shader.h"
 
@@ -14,28 +15,6 @@ namespace Refraction::Assets {
 
 	void ShaderMetadata::Deserialise(std::string data) {
 		AssetMetadata::Deserialise(data);
-	}
-
-
-	Common::Ref<Shader> Shader::GetShaderByName(const std::string& name) {
-		for (const auto& pair : LoadedShaders) {
-			if (pair.first == name) {
-				return Asset::GetAsset<Shader>(pair.second);
-			}
-		}
-		throw std::runtime_error("Could not get shader of name " + name);
-	}
-
-	void Shader::LoadAllShaders() {
-		Log::Render.Info("Loading all shaders");
-		auto shaderSources = FileHandling::GetFoldersInFolder(FileHandling::GetResourcesPath() / "shaders");
-
-		for (const auto& shaderSource : shaderSources) {
-			auto& sourcePath = shaderSource.path();
-			Log::Render.Info("Loading shader source: " + sourcePath.string());
-			auto newShader = Common::NewRef<Shader>(); // Must be shared ptr on construct so the shader can be safely added to the asset map
-			newShader->LoadAsset(sourcePath);
-		}
 	}
 
 	Shader::~Shader() {
@@ -88,19 +67,24 @@ namespace Refraction::Assets {
 		glUniformMatrix4fv(glGetUniformLocation(mID, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
 	}
 
-	void Shader::LoadAsset(const std::filesystem::path& source) {
-		Asset::LoadAsset(source);
-		mName = source.filename().string();
+	void Shader::InternalLoadAsset(Common::Shared<AssetMetadata> metadata) {
+		auto meta = Common::AsA<ShaderMetadata>(metadata);
+		if (!meta) {
+			Log::SError("Metadata cast failed");
+			return;
+		}
+
+		mName = meta->AssetPath.filename().string();
 		Log::Render.Info("Creating shader " + mName);
 
 		// Gather additional metadata
-		if (source.extension() != REFRACTION_ASSET_METADATA_EXTENSION) {
-			mMetadata.ProgramCount = FileHandling::GetFilesInFolder(mMetadata.AssetPath).size();
+		if (meta->AssetPath.extension() != RFCT_ASSET_METADATA_EXTENSION) {
+			meta->ProgramCount = FileHandling::GetFilesInFolder(meta->AssetPath).size();
 		}
 
 		// Get all shader files (.vert and .frag) in the folder
-		auto vertShader = FileHandling::GetFirstFileOfExtInFolder(mMetadata.AssetPath, ".vert");
-		auto fragShader = FileHandling::GetFirstFileOfExtInFolder(mMetadata.AssetPath, ".frag");
+		auto vertShader = FileHandling::GetFirstFileOfExtInFolder(meta->AssetPath, ".vert");
+		auto fragShader = FileHandling::GetFirstFileOfExtInFolder(meta->AssetPath, ".frag");
 
 		if (!(vertShader.exists() && fragShader.exists())) {
 			Log::Render.Warn("Skipping shader creation, missing source files");
@@ -128,7 +112,7 @@ namespace Refraction::Assets {
 		glCompileShader(frag);
 		if (CheckLogErrors(frag, "FRAGMENT")) return;
 		Log::Render.Info("Compiled fragment shader");
-		
+
 		mID = glCreateProgram();
 		glAttachShader(mID, vert);
 		glAttachShader(mID, frag);
@@ -138,7 +122,7 @@ namespace Refraction::Assets {
 		if (CheckLogErrors(mID, "PROGRAM")) return;
 		Log::Render.Info("Linked shader program");
 
-		LoadedShaders[mName] = mMetadata.AssetUUID.AsInt();
+		LoadedShaders[mName] = meta->AssetUUID.AsInt();
 	}
 
 	bool Shader::CheckLogErrors(GLuint shader, const std::string type) {

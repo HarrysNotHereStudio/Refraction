@@ -25,19 +25,13 @@ namespace Refraction::Assets {
 
 	class Image : public Asset {
 	public:
-		Common::Ref<Engine::Platform::ATexture> mTexture = nullptr;
-
-		// Loads a texture from disk (or returns a pointer to the existing texture)
-		static Common::Ref<Image> FromPath(std::filesystem::path texturePath);
+		Common::Shared<Engine::Platform::ATexture> mTexture = nullptr;
 
 		Image() = default;
 		virtual ~Image();
-
-		ImageMetadata& GetMetadata() override { return mMetadata; }
 	protected:
-		void LoadAsset(const std::filesystem::path& source) override;
+		void InternalLoadAsset(Common::Shared<AssetMetadata> metadata) override;
 	private:
-		ImageMetadata mMetadata;
 		unsigned int mID = 0;
 	};
 }

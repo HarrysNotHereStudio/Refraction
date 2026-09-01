@@ -26,7 +26,7 @@ namespace Refraction::Engine::Platform {
 
 	class AWindow {
 	public:
-		static Common::Ref<AWindow> Get();
+		static Common::Shared<AWindow> Get();
 		static WindowAPI GetAPI() { return CurrentAPI; }
 
 		WindowInputState mInputState = WindowInputState::NONE;
@@ -52,7 +52,7 @@ namespace Refraction::Engine::Platform {
 
 		virtual void Init() = 0;
 		virtual void InitInput() = 0;
-		virtual void OnUpdate(Common::Ref<Objects::Camera> camera) = 0;
+		virtual void OnUpdate(Common::Shared<Objects::Camera> camera) = 0;
 		virtual void Cleanup() = 0;
 		virtual Math::Rect GetRect() const { return mRect; }
 		virtual void* GetNativeWindow() const = 0;

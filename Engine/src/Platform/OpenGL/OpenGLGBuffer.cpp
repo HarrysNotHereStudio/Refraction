@@ -2,6 +2,7 @@
 
 #include <Settings.h>
 #include <Classes/Assets/Shader.h>
+#include <Interface/Project.h>
 
 #include "OpenGLGBuffer.h"
 
@@ -145,7 +146,8 @@ namespace Refraction::Engine::Platform {
 	}
 
 	void OpenGLGBuffer::SetShaderTextureIDs() const {
-		auto lightingShader = Assets::Shader::GetShaderByName("lightingShader");
+		auto assetManager = Project::GetCurrent()->GetAssetManager();
+		auto lightingShader = assetManager->GetAsset<Assets::Shader>("lightingShader");
 		lightingShader->Activate();
 		lightingShader->SetUniformInt("gDiffuse", 0);
 		lightingShader->SetUniformInt("gNormal", 1);

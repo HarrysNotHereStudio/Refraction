@@ -14,9 +14,9 @@
 namespace Refraction::Editor::Platform {
 	class AImGuiImpl {
 	public:
-		Common::Ref<Objects::AObject> mSelectedObject = nullptr;
+		Common::Shared<Objects::AObject> mSelectedObject = nullptr;
 
-		AImGuiImpl(Common::Ref<Engine::Platform::AWindow> window);
+		AImGuiImpl(Common::Shared<Engine::Platform::AWindow> window);
 
 		virtual void Init() = 0;
 		virtual void BeginDraw() = 0;
@@ -31,7 +31,7 @@ namespace Refraction::Editor::Platform {
 		inline bool ShouldQuit() const { return mShouldQuit; }
 
 	protected:
-		Common::Ref<Engine::Platform::AWindow> mWindow;
+		Common::Shared<Engine::Platform::AWindow> mWindow;
 
 		virtual void CloseWindow() = 0;
 

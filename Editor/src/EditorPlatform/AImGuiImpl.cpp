@@ -18,7 +18,7 @@
 namespace Refraction::Editor {
 	using Engine::Platform::WindowInputState;
 
-	Platform::AImGuiImpl::AImGuiImpl(Common::Ref<Engine::Platform::AWindow> window) : mWindow(window) {
+	Platform::AImGuiImpl::AImGuiImpl(Common::Shared<Engine::Platform::AWindow> window) : mWindow(window) {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 

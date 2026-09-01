@@ -8,6 +8,7 @@
 #include <Core/Common.h>
 #include <Classes/Components/AComponent.h>
 #include <Classes/Objects/AObject.h>
+#include <Classes/Assets/Asset.h>
 #include <Math/Vector.h>
 #include <Math/Quaternion.h>
 #include <Math/Orientation.h>
@@ -23,18 +24,20 @@ namespace Refraction::Utilities {
 		// Tries to append to a parsed json dump and outputs any error
 		static std::string TryAppendJSON(std::string dump, std::function<void(nlohmann::json&)> fn);
 
-		static std::string Serialise(Common::Ref<Objects::AObject> object);
-		static std::string Serialise(Common::Ref<Components::AComponent> comp);
-		static Common::Ref<Objects::AObject> DeserialiseObject(std::string serialisedData);
-		static Common::Ref<Components::AComponent> DeserialiseComponent(std::string serialisedData);
+		static std::string Serialise(Common::Shared<Assets::Asset> asset);
+		static std::string Serialise(Common::Shared<Objects::AObject> object);
+		static std::string Serialise(Common::Shared<Components::AComponent> comp);
+		static Common::Shared<Assets::Asset> DeserialiseAsset(Common::Shared<Assets::AssetMetadata> metadata);
+		static Common::Shared<Objects::AObject> DeserialiseObject(std::string serialisedData);
+		static Common::Shared<Components::AComponent> DeserialiseComponent(std::string serialisedData);
 
 		template<typename ObjectType>
-		static Common::Ref<ObjectType> DeserialiseObject(std::string serialisedData) {
+		static Common::Shared<ObjectType> DeserialiseObject(std::string serialisedData) {
 			auto obj = DeserialiseObject(serialisedData);
 			return dynamic_pointer_cast<ObjectType>(obj);
 		}
 		template<typename ComponentType>
-		static Common::Ref<ComponentType> DeserialiseComponent(std::string serialisedData) {
+		static Common::Shared<ComponentType> DeserialiseComponent(std::string serialisedData) {
 			auto comp = DeserialiseComponent(serialisedData);
 			return dynamic_pointer_cast<ComponentType>(comp);
 		}

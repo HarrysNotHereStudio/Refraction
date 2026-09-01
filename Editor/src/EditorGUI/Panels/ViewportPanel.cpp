@@ -20,7 +20,8 @@ namespace Refraction::Editor::GUI {
 			mFirstDraw = false;
 		}
 		// Skip if no frame or no project is open
-		if (mFrame == nullptr || mFrame->mTexture == nullptr || !EditorState::Temp.ProjectInstance->IsLoaded()) {
+		auto& project = EditorState::Temp.ProjectInstance;
+		if (!project || mFrame == nullptr || mFrame->mTexture == nullptr || !project->IsLoaded()) {
 			ImGui::End();
 			return;
 		}
@@ -31,16 +32,15 @@ namespace Refraction::Editor::GUI {
 
 		// On viewport resize
 		if (mViewportRect.w != mLastViewportRect.w || mViewportRect.h != mLastViewportRect.h) {
-			mEventDispatcher->Dispatch(Common::NewRef<Events::ViewportResizedEvent>(mViewportRect));
+			mEventDispatcher->Dispatch(Common::NewShared<Events::ViewportResizedEvent>(mViewportRect));
 		}
 
 		const float windowWidth = ImGui::GetContentRegionAvail().x;
 		const float windowHeight = ImGui::GetContentRegionAvail().y;
 
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
-		ImVec2 topLeft{ (float)mViewportRect.x, (float)mViewportRect.y };
-		ImVec2 bottomRight{ (float)mViewportRect.x + (float)mViewportRect.w, (float)mViewportRect.y + (float)mViewportRect.h };
-		ImVec2 imageSize = ImVec2((float)mFrame->GetMetadata().Width, (float)mFrame->GetMetadata().Height);
+		auto frameMeta = project->GetAssetManager()->FetchMetadata<Assets::ImageMetadata>(mFrame->GetUUID());
+		//ImVec2 imageSize = ImVec2((float)frameMeta->Width, (float)frameMeta->Height);
 		ImVec2 pos = ImGui::GetCursorScreenPos();
 		drawList->AddImage((ImTextureID)mFrame->mTexture->GetBufferID(), ImVec2(pos.x, pos.y), ImVec2(pos.x + windowWidth, pos.y + windowHeight), ImVec2(0, 1), ImVec2(1, 0));
 		
@@ -55,7 +55,7 @@ namespace Refraction::Editor::GUI {
 		mLastViewportRect = mViewportRect;
 	}
 
-	void ViewportPanel::OnEvent(Common::Ref<Events::Event> event) {
+	void ViewportPanel::OnEvent(Common::Shared<Events::Event> event) {
 		if (auto e = Common::AsA<Events::FrameRenderedEvent>(event)) {
 			mFrame = e->mFrame;
 		}

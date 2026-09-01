@@ -48,7 +48,7 @@ namespace Refraction::Engine::Platform {
 		mInput.inputEnabled = true;
 	}
 
-	void GLFWWindow::OnUpdate(Common::Ref<Objects::Camera> camera) {
+	void GLFWWindow::OnUpdate(Common::Shared<Objects::Camera> camera) {
 		if (mInput.inputEnabled) {
 
 			// Get inputs

@@ -1,3 +1,4 @@
+#include <Interface/AssetManager.h>
 
 #include "BaseLight.h"
 
@@ -5,7 +6,8 @@ namespace RMath = Refraction::Math;
 using RMath::Transform;
 
 BaseLight::BaseLight() {
-	mLightShader = Refraction::Assets::Shader::GetShaderByName("lightingShader");
+	auto assetManager = Refraction::Engine::AssetManager::GetInstance();
+	mLightShader = assetManager->GetAsset<Refraction::Assets::Shader>("lightingShader");
 	mTransform = new Transform();
 }
 

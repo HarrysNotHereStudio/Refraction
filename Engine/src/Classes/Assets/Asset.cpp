@@ -1,57 +1,71 @@
 #include <json.hpp>
 
 #include <Core/FileHandling.h>
+#include <Classes/ClassSerialiser.h>
+#include <Classes/ClassHeaders.h>
+#include <Interface/AssetManager.h>
 
 #include "Asset.h"
 
-using nlohmann::json;
-
 namespace Refraction::Assets {
+	Common::Shared<AssetMetadata> AssetMetadata::CastedDeserialise(std::string data) {
+		std::string metaType;
+		Utilities::ClassSerialiser::TryParseJSON(data, [&](nlohmann::json& json) {
+			metaType = json.at("MetadataType").get<std::string>();
+		});
+
+		Common::Shared<AssetMetadata> result;
+		if (metaType == typeid(AssetMetadata).name()) {
+			result = Common::NewShared<AssetMetadata>();
+		} else if (metaType == typeid(ImageMetadata).name()) {
+			result = Common::NewShared<ImageMetadata>();
+		} else if (metaType == typeid(ShaderMetadata).name()) {
+			result = Common::NewShared<ShaderMetadata>();
+		} else if (metaType == typeid(ModelMetadata).name()) {
+			result = Common::NewShared<ModelMetadata>();
+		}
+
+		result->Deserialise(data);
+		return result;
+	}
+
+	std::filesystem::path AssetMetadata::GetPath() const {
+		if (AssetPath.empty()) return "";
+		return AssetPath.stem().string() + RFCT_ASSET_METADATA_EXTENSION;
+	}
+
 	std::string AssetMetadata::Serialise() {
-		json serialised;
-
-		serialised["AssetUUID"] = AssetUUID.AsInt();
-		serialised["SourcePath"] = SourcePath.string();
-		serialised["AssetPath"] = AssetPath.string();
-		serialised["FileSize"] = FileSize;
-
-		return serialised.dump();
+		return Utilities::ClassSerialiser::TryAppendJSON("{}", [&](nlohmann::json& json) {
+			json["MetadataType"] = typeid(*this).name();
+			json["AssetType"] = AssetType;
+			json["AssetUUID"] = AssetUUID.Serialise();
+			json["SourcePath"] = SourcePath.string();
+			json["AssetPath"] = AssetPath.string();
+			json["FileSize"] = FileSize;
+		});
 	}
+
 	void AssetMetadata::Deserialise(std::string data) {
-		try {
-			json serialised = json::parse(data);
-			AssetUUID = UUID::Deserialise(serialised["AssetUUID"]);
-			SourcePath = std::filesystem::path(serialised["SourcePath"].get<std::string>());
-			AssetPath = std::filesystem::path(serialised["AssetPath"].get<std::string>());
-			FileSize = serialised["FileSize"].get<uintmax_t>();
-		} catch (const json::parse_error& err) {
-			Log::SError("Failed to parse asset metadata: " + std::string(err.what()));
-		}
-
-		return;
+		Utilities::ClassSerialiser::TryParseJSON(data, [&](nlohmann::json& json) {
+			AssetType = json["AssetType"].get<std::string>();
+			AssetUUID = UUID::Deserialise(json["AssetUUID"]);
+			SourcePath = std::filesystem::path(json["SourcePath"].get<std::string>());
+			AssetPath = std::filesystem::path(json["AssetPath"].get<std::string>());
+			FileSize = json["FileSize"].get<uintmax_t>();
+		});
 	}
 
-	Asset::~Asset() {
-		auto uuid = mMetadata.AssetUUID.AsInt();
+	Asset::~Asset() {}
+
+	void Asset::LoadAsset(UUIDValue uuid) {
+		auto meta = Engine::AssetManager::GetInstance()->FetchMetadata(uuid);
+		if (!meta) throw Common::RuntimeError("Failed to load asset with UUID " + UUID::AsString(uuid) + ", could not fetch metadata");
+		mUUID = uuid;
+		if (!std::filesystem::exists(meta->SourcePath) && !std::filesystem::exists(meta->AssetPath)) throw std::runtime_error("Failed to load asset with provided metadata, no asset path exists.");
+
+		// Derived object actually loads asset
+		InternalLoadAsset(meta);
 	}
 
-	void Asset::LoadAsset(const std::filesystem::path& source) {
-		if (!std::filesystem::exists(source)) throw std::runtime_error("Invalid asset path " + source.string());
-		// Reset loaded metadata
-		auto& metadata = GetMetadata();
-		metadata = AssetMetadata();
-
-		if (source.extension() == REFRACTION_ASSET_METADATA_EXTENSION) { // Load a metadata file
-			metadata.Deserialise(FileHandling::ReadFile(source));
-		} else { // Creating a new asset
-			metadata.SourcePath = source;
-			metadata.AssetPath = source;
-			metadata.FileSize = std::filesystem::file_size(source);
-		}
-		auto newUUID = GetMetadata().AssetUUID.AsInt();
-	}
-
-	void Asset::Save() {
-
-	}
+	void Asset::Save() {}
 }

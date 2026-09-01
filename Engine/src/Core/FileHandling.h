@@ -18,4 +18,6 @@ namespace Refraction::FileHandling {
 	extern std::vector<std::filesystem::directory_entry> GetFilesOfExtInFolder(std::filesystem::path folderPath, std::string ext);
 	extern std::filesystem::directory_entry GetFirstFileOfExtInFolder(std::filesystem::path folderPath, std::string ext);
 	extern std::vector<std::filesystem::directory_entry> GetFoldersInFolder(std::filesystem::path folderPath);
+	// Returns all files and folders inside the given folder
+	extern std::vector<std::filesystem::directory_entry> GetItemsInFolder(std::filesystem::path folderPath);
 };

@@ -6,6 +6,8 @@
 #include <unordered_set>
 
 namespace Refraction {
+	typedef uint64_t UUIDValue;
+
 	class UUID {
 	public:
 		// Returns a UUID equivalent to null
@@ -13,10 +15,15 @@ namespace Refraction {
 
 		// Initialises a UUID using its int64 value and adds it to the generator history
 		// Note: Returns a null UUID if the provided UUID is already in generator history, unless specified not to
-		static UUID FromExisting(uint64_t id, bool ignoreExisting = false);
+		static UUID FromExisting(UUIDValue id, bool ignoreExisting = false);
 		// Initialises a UUID from a UUID::Serialise() string and adds it to the generator history
 		// Note: Returns a null UUID if the provided UUID is already in generator history
 		static UUID Deserialise(std::string serialised);
+
+		// Converts a UUID int to a formatted string
+		static inline std::string AsString(UUIDValue value) {
+			return UUID::FromExisting(value, true).AsString();
+		}
 
 		// The UUID generator uses the system clock and RNG along with a repetition counter to hopefully guarantee a universally unique ID
 		// It is formatted as such:
@@ -33,7 +40,7 @@ namespace Refraction {
 		// Returns a string with each section seperated by dashes
 		std::string AsString() const;
 		// Returns a 64-bit integer of each 16-bit section concatenated
-		uint64_t AsInt() const;
+		UUIDValue AsInt() const;
 		// Zeroes all values (becomes a null UUID) and allows another to take the generated UUID
 		void Reset();
 		// Returns true if valid (not null)
@@ -45,10 +52,10 @@ namespace Refraction {
 		bool operator!=(const UUID& other) const { return AsInt() != other.AsInt(); }
 
 		operator std::string() const { return AsString(); }
-		operator uint64_t() const { return AsInt(); }
+		operator UUIDValue() const { return AsInt(); }
 
 	private:
-		static std::unordered_set<uint64_t> UUIDHistory;
+		static std::unordered_set<UUIDValue> UUIDHistory;
 
 		// Generates a UUID where all sections hold the same value. Not added to generator history.
 		UUID(uint16_t initValue);
@@ -60,8 +67,8 @@ namespace Refraction {
 	};
 
 	namespace Utilities {
-		std::vector<uint64_t> ToInts(std::vector<UUID> uuids);
-		std::vector<UUID> FromInts(std::vector<uint64_t> uuids);
+		std::vector<UUIDValue> ToInts(std::vector<UUID> uuids);
+		std::vector<UUID> FromInts(std::vector<UUIDValue> uuids);
 		std::vector<std::string> ToStrings(std::vector<UUID> uuids);
 	}
 }

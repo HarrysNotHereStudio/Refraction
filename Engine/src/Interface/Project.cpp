@@ -6,12 +6,15 @@
 #include <Core/FileHandling.h>
 #include <Classes/Objects/BasicObject.h>
 #include <Classes/ClassSerialiser.h>
+#include <Interface/AssetImporter.h>
 
 #include "Project.h"
 
 using nlohmann::json;
 
 namespace Refraction::Engine {
+	Common::Shared<Project> Project::CurrentProject = nullptr;
+
 	bool SaveProjectData(const std::filesystem::path& projectFilePath, const ProjectData& projectData) {
 		auto pathStr = projectFilePath.string();
 		if (!(projectFilePath.has_extension() && projectFilePath.extension() == RFCT_PROJECT_EXTENSION)) {
@@ -52,25 +55,24 @@ namespace Refraction::Engine {
 			Log::SWarn("Invalid or missing project file at path " + pathStr);
 			return std::nullopt;
 		}
-
-		json data;
-		try {
-			auto contents = FileHandling::ReadFile(projectFilePath);
-			data = json::parse(contents);
+		
+		std::optional<ProjectData> result = std::nullopt;
+		auto contents = FileHandling::ReadFile(projectFilePath);
+		Utilities::ClassSerialiser::TryParseJSON(contents, [&](nlohmann::json& json) {
 			ProjectData deserialised;
-			deserialised.InitSceneUUID = UUID::Deserialise(data["InitSceneUUID"]);
-			Log::SInfo("Loaded InitSceneUUID as " + deserialised.InitSceneUUID.AsString()); 
-			for (auto& sceneData : data.at("Scenes")) {
+			deserialised.InitSceneUUID = UUID::Deserialise(json["InitSceneUUID"]);
+			Log::SInfo("Loaded InitSceneUUID as " + deserialised.InitSceneUUID.AsString());
+			for (auto& sceneData : json.at("Scenes")) {
 				auto scene = Utilities::ClassSerialiser::DeserialiseObject<Objects::SceneRoot>(sceneData);
 				Log::SInfo("Loaded Scene with UUID " + scene->GetUUID().AsString());
 				deserialised.Scenes.push_back(scene);
 			}
 
-			bool cameraDefined = data.contains("ActiveCameraUUID");
+			bool cameraDefined = json.contains("ActiveCameraUUID");
 			UUID cameraUUID;
-			if (cameraDefined) cameraUUID = UUID::Deserialise(data["ActiveCameraUUID"]);
+			if (cameraDefined) cameraUUID = UUID::Deserialise(json["ActiveCameraUUID"]);
 
-			for (auto& globalObjData : data.at("GlobalObjects")) {
+			for (auto& globalObjData : json.at("GlobalObjects")) {
 				auto object = Utilities::ClassSerialiser::DeserialiseObject(globalObjData);
 				deserialised.GlobalObjects.push_back(object);
 				if (cameraDefined && (object->GetUUID() == cameraUUID)) {
@@ -82,17 +84,15 @@ namespace Refraction::Engine {
 
 			if (!cameraDefined || !deserialised.ActiveCamera) {
 				Log::SWarn("No active camera set, creating new camera");
-				auto camera = Common::NewRef<Objects::Camera>();
+				auto camera = Common::NewShared<Objects::Camera>();
 				Objects::Camera::ActiveCamera = camera;
 				deserialised.ActiveCamera = camera;
 				deserialised.GlobalObjects.push_back(camera);
 			}
+			result = std::make_optional(deserialised);
+		});
 
-			return std::make_optional(deserialised);
-		} catch (const json::parse_error& err) {
-			Log::SError("JSON parse error while loading project data at path " + pathStr + ": " + err.what());
-			return std::nullopt;
-		}
+		return result;
 	}
 
 	std::filesystem::path GetProjectFilePath(const std::filesystem::path& projectPath) {
@@ -112,7 +112,6 @@ namespace Refraction::Engine {
 		return projectPath / (projectName + RFCT_PROJECT_EXTENSION);
 	}
 
-
 	bool Project::New(const std::filesystem::path& projectPath, bool eraseExisting) {
 		auto pathStr = projectPath.string();
 		if (!std::filesystem::is_directory(projectPath)) {
@@ -122,8 +121,16 @@ namespace Refraction::Engine {
 
 		if (std::filesystem::exists(projectPath) && !std::filesystem::is_empty(projectPath)) {
 			if (!eraseExisting) {
-				Log::SError(pathStr + " already exists and eraseExisting is false");
-				return false;
+				if (FileHandling::GetFirstFileOfExtInFolder(projectPath, RFCT_PROJECT_EXTENSION).exists()) {
+					// TODO: TEMP: ignore !eraseExisting if there is a project file inside
+					auto items = FileHandling::GetItemsInFolder(projectPath);
+					for (auto& item : items) {
+						if(!std::filesystem::remove_all(item)) Log::SWarn("Failed to erase " + item.path().filename().string());
+					}
+				} else {
+					Log::SError(pathStr + " already exists and eraseExisting is false");
+					return false;
+				}
 			} else {
 				std::filesystem::remove_all(projectPath);
 			}
@@ -133,21 +140,40 @@ namespace Refraction::Engine {
 				return false;
 			}
 		}
+		if (!std::filesystem::create_directory(projectPath / "Assets")) {
+			Log::SError("Failed to create project assets directory at " + pathStr);
+			return false;
+		}
 
 		Log::SInfo("Creating project at " + pathStr);
 
-		mRootObject = Common::NewRef<Objects::AObject>();
+		// Placeholder project file
+		auto projectFilePath = GetProjectFilePath(projectPath);
+		std::ofstream dataFile(projectFilePath);
+		if (!dataFile.is_open()) {
+			Log::SError("Could not open path " + pathStr + " for writing.");
+			return false;
+		}
+		dataFile << "hi";
+		dataFile.close();
+
+		mRootObject = Common::NewShared<Objects::AObject>();
 		mProjectPath = projectPath;
 		mProjectData = ProjectData{};
 
+		// Import default assets
+		SetCurrent(this);
+		mAssetManager = Common::NewShared<AssetManager>(projectPath);
+		AssetImporter::Import(FileHandling::GetResourcesPath() / "textures" / "Basic.png");
+
 		// Default global objects
-		auto camera = Common::NewRef<Objects::Camera>();
+		auto camera = Common::NewShared<Objects::Camera>();
 		Objects::Camera::ActiveCamera = camera;
 		mRootObject->AddChild(camera);
 		mProjectData.ActiveCamera = camera;
 		mProjectData.GlobalObjects.push_back(camera);
 
-		auto testMesh = Common::NewRef<Objects::BasicObject>();
+		auto testMesh = Common::NewShared<Objects::BasicObject>();
 		camera->AddChild(testMesh);
 		testMesh->GetComponent<Components::Mesh>()->LoadModel(FileHandling::GetResourcesPath() / "models/nyen/nyen plush.obj");
 
@@ -174,10 +200,8 @@ namespace Refraction::Engine {
 		// Close any active project
 		if (IsLoaded()) Close();
 
-		mAssetManager = Common::NewRef<AssetManager>();
-
 		// Create new root
-		mRootObject = Common::NewRef<Objects::AObject>();
+		mRootObject = Common::NewShared<Objects::AObject>();
 
 		auto projectFolderPath = projectFilePath.parent_path();
 		mProjectPath = projectFolderPath;
@@ -187,6 +211,8 @@ namespace Refraction::Engine {
 		mProjectData = projectData.value_or(ProjectData{});
 
 		if (!projectData) Log::SWarn("Failed to load project data at " + pathStr);
+
+		mAssetManager->RegisterAllAssets();
 
 		for (auto& scene : mProjectData.Scenes) {
 			mRootObject->AddChild(scene);
@@ -207,7 +233,7 @@ namespace Refraction::Engine {
 		}
 
 		Log::SInfo("Opened project at " + pathStr);
-		mCurrentProject = this;
+		SetCurrent(this);
 		return true;
 	}
 
@@ -245,9 +271,8 @@ namespace Refraction::Engine {
 		mProjectPath.clear();
 		mProjectData = ProjectData{};
 
-		mAssetManager.reset();
-
-		mCurrentProject = nullptr;
+		mAssetManager = nullptr;
+		CurrentProject = nullptr;
 		Log::SInfo("Closed project successfully");
 	}
 
@@ -470,22 +495,22 @@ namespace Refraction::Engine {
 		});
 	}
 
-	Common::Ref<Objects::SceneRoot> Project::NewScene() {
+	Common::Shared<Objects::SceneRoot> Project::NewScene() {
 		Log::SInfo("Creating a new scene");
-		auto newScene = Common::NewRef<Objects::SceneRoot>();
+		auto newScene = Common::NewShared<Objects::SceneRoot>();
 		mRootObject->AddChild(newScene);
 		mProjectData.Scenes.push_back(newScene);
 
 		// Instantiate default objects/components
 		///
 
-		auto nyenObj = Common::NewRef<Objects::BasicObject>();
+		auto nyenObj = Common::NewShared<Objects::BasicObject>();
 		nyenObj->mInstanceName = "Nyen";
 		nyenObj->GetComponent<Components::Mesh>()->LoadModel(FileHandling::GetResourcesPath() / "models/nyen/nyen plush.obj");
 		nyenObj->GetComponent<Components::APhysics>()->mAngularVelocity = Math::Vector3(0, 64, 0);
 		newScene->AddChild(nyenObj);
 
-		auto backpackObj = Common::NewRef<Objects::BasicObject>();
+		auto backpackObj = Common::NewShared<Objects::BasicObject>();
 		backpackObj->mInstanceName = "Backpack";
 		backpackObj->GetComponent<Components::Mesh>()->LoadModel(FileHandling::GetResourcesPath() / "models/survivalBackpack/backpack.obj");
 		backpackObj->mTransform = Math::Transform::FromLookAt(Math::Vector3(0, 14, 10), Math::Vector3::Zero());
@@ -497,7 +522,7 @@ namespace Refraction::Engine {
 		if (mProjectData.InitSceneUUID == UUID::Null()) {
 			mProjectData.InitSceneUUID = newScene->GetUUID();
 			// Add baseplate for convenience
-			auto baseplate = Common::NewRef<Objects::AObject>();
+			auto baseplate = Common::NewShared<Objects::AObject>();
 			baseplate->mInstanceName = "Baseplate";
 			auto comp = baseplate->AddComponent<Components::Mesh>();
 			comp->LoadModel(FileHandling::GetResourcesPath() / "models/Basic/Cube.obj");
@@ -509,7 +534,7 @@ namespace Refraction::Engine {
 	}
 
 	bool Project::OpenScene(UUID sceneUUID) {
-		Common::Ref<Objects::SceneRoot> targetScene;
+		Common::Shared<Objects::SceneRoot> targetScene;
 		for (auto& scene : mProjectData.Scenes) {
 			if (scene->GetUUID().AsInt() == sceneUUID.AsInt()) {
 				targetScene = scene;

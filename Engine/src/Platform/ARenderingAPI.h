@@ -13,7 +13,7 @@ namespace Refraction::Engine::Platform {
 
 	class ARenderingAPI {
 	public:
-		static Common::Ref<ARenderingAPI> Get();
+		static Common::Shared<ARenderingAPI> Get();
 		static RenderingAPI GetAPI() { return CurrentAPI; }
 
 		virtual void Init() = 0;

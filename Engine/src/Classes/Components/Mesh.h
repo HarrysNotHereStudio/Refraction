@@ -7,7 +7,7 @@
 #include <Math/Vector.h>
 #include <Math/Transform.h>
 #include <Classes/Assets/Material.h>
-#include <Classes/Assets/Image.h>
+#include <Classes/Assets/Model.h>
 #include <Platform/AMeshFragment.h>
 
 #include "AComponent.h"
@@ -16,7 +16,7 @@ namespace Refraction::Components {
 	class Mesh : public AComponent {
 	public:
 		Math::Transform mTransform;
-		std::vector<Common::Ref<Assets::Material>> mMaterials;
+		std::vector<Common::Shared<Assets::Material>> mMaterials;
 
 		static int FrameMeshCount;
 		static int FrameVertexCount;
@@ -32,8 +32,6 @@ namespace Refraction::Components {
 		std::string Serialise() override;
 		void Deserialise(std::string serialised) override;
 	private:
-		std::filesystem::path mSourcePath;
-		std::vector<Common::Ref<Engine::Platform::AMeshFragment>> mFragments;
-		std::vector<Common::Ref<Assets::Image>> mTextures;
+		Common::Shared<Assets::Model> mModel;
 	};
 }

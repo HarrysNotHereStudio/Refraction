@@ -23,9 +23,6 @@ namespace Refraction::Assets {
 
 	class Shader : public Asset {
 	public:
-		static Common::Ref<Shader> GetShaderByName(const std::string& name);
-		static void LoadAllShaders();
-
 		Shader() = default;
 		virtual ~Shader();
 
@@ -44,12 +41,11 @@ namespace Refraction::Assets {
 
 		std::string GetName() const { return mName; };
 
-		AssetMetadata& GetMetadata() override { return mMetadata; }
-		void LoadAsset(const std::filesystem::path& source) override;
+	protected:
+		void InternalLoadAsset(Common::Shared<AssetMetadata> metadata) override;
 	private:
 		static std::unordered_map<std::string, uint64_t> LoadedShaders;
 
-		ShaderMetadata mMetadata;
 		unsigned int mID = 0;
 		std::string mName;
 

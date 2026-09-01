@@ -34,21 +34,10 @@ namespace Refraction::Engine {
 
 		auto result = glfwGetCurrentContext();
 
-		Log::Render.Info("Loading shaders...");
-		Assets::Shader::LoadAllShaders();
-
-		mGeomPassShader = Assets::Shader::GetShaderByName("gbufferShader");
-		mLightingPassShader = Assets::Shader::GetShaderByName("lightingShader");
-
-		mLightingPassShader->Activate();
-		mLightingPassShader->SetUniformVec3("ambient", Math::Vector3(0.2f));
-
 		Log::Render.Info("Creating G-Buffer...");
 		mGBuffer = Platform::AGBuffer::CreateGBuffer();
 		if (!mGBuffer->Init(mViewportRect.w, mViewportRect.h)) throw;
 		mFinalOutput = mGBuffer->GetLastRenderedFrame();
-
-		mGBuffer->SetShaderTextureIDs();
 
 		Log::Render.Info("Creating uniform buffer object...");
 		projectionMatrix = Math::Matrix4::Perspective(defaultProjection);
@@ -57,9 +46,6 @@ namespace Refraction::Engine {
 			Utilities::NativeToGLMMat4(projectionMatrix)
 		};
 		mUBO = new UniformBufferObject(initData);
-
-		Log::Render.Info("Loading test scene...");
-		mLoadedScene = new BaseScene();
 
 		mStartTickTime = std::chrono::steady_clock::now();
 		mStartRenderTime = std::chrono::steady_clock::now();
@@ -100,7 +86,7 @@ namespace Refraction::Engine {
 		glBindVertexArray(0);
 	}
 
-	void Renderer::RenderFrame(Common::Ref<Project> projectInstance) {
+	void Renderer::RenderFrame(Common::Shared<Project> projectInstance) {
 		auto timeNow = std::chrono::steady_clock::now();
 		mDeltaRenderTime = std::chrono::duration<double>(timeNow - timeRenderLast).count();
 		Time::RenderDelta = mDeltaRenderTime;
@@ -115,6 +101,22 @@ namespace Refraction::Engine {
 		if (!projectInstance->GetActiveScene()) return;
 		if (!Objects::Camera::ActiveCamera) return;
 
+		auto assetManager = Project::GetCurrent()->GetAssetManager();
+		if (!mGeomPassShader) {
+			mGeomPassShader = assetManager->GetAsset<Assets::Shader>("gbufferShader");
+		}
+		if (!mLightingPassShader) {
+			mLightingPassShader = assetManager->GetAsset<Assets::Shader>("lightingShader");
+			mLightingPassShader->Activate();
+			mLightingPassShader->SetUniformVec3("ambient", Math::Vector3(0.2f));
+			mGBuffer->SetShaderTextureIDs();
+		}
+		if (!mLoadedScene) {
+			Log::Render.Info("Loading test scene...");
+			mLoadedScene = new BaseScene();
+		}
+
+
 		UpdateUniformBuffers(projectInstance);
 
 		mGBuffer->StartFrame();
@@ -125,7 +127,7 @@ namespace Refraction::Engine {
 		DSPassFinal();
 	}
 
-	void Renderer::UpdateUniformBuffers(Common::Ref<Project> projectInstance) {
+	void Renderer::UpdateUniformBuffers(Common::Shared<Project> projectInstance) {
 		auto& camera = Objects::Camera::ActiveCamera;
 		if (!camera) return;
 		sUBO newData{};
@@ -160,8 +162,9 @@ namespace Refraction::Engine {
 
 	// Deferred Shading
 
-	void Renderer::DSPassGeometry(Common::Ref<Project> projectInstance) {
+	void Renderer::DSPassGeometry(Common::Shared<Project> projectInstance) {
 		auto& graphicsSettings = Settings::CurrentSettings->Graphics;
+		auto assetManager = Project::GetCurrent()->GetAssetManager();
 		mGBuffer->BindGeometryPass();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -171,7 +174,7 @@ namespace Refraction::Engine {
 
 		if (graphicsSettings.CFAAEnabled) {
 			// CFAA prepass
-			auto cfaaPrepass = Assets::Shader::GetShaderByName("CFAAPrepass");
+			auto cfaaPrepass = assetManager->GetAsset<Assets::Shader>("CFAAPrepass");
 			cfaaPrepass->Activate();
 			projectInstance->GetActiveScene()->RenderScene(projectInstance->GetGlobalObjects());
 		}
@@ -187,8 +190,9 @@ namespace Refraction::Engine {
 		}
 	}
 
-	void Renderer::DSPassLighting(Common::Ref<Project> projectInstance) {
+	void Renderer::DSPassLighting(Common::Shared<Project> projectInstance) {
 		auto& graphicsSettings = Settings::CurrentSettings->Graphics;
+		auto assetManager = Project::GetCurrent()->GetAssetManager();
 		mGBuffer->BindLightingPass();
 
 		mLightingPassShader->Activate();
@@ -203,7 +207,7 @@ namespace Refraction::Engine {
 
 		glDepthMask(GL_FALSE);
 		// Render sky
-		Assets::Shader::GetShaderByName("DefaultSky")->Activate();
+		assetManager->GetAsset<Assets::Shader>("DefaultSky")->Activate();
 		renderQuad();
 		// Render grid
 		//Assets::Shader::GetShaderByName("EditorGrid")->Activate();

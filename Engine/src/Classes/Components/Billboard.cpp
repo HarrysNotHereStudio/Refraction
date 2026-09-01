@@ -3,6 +3,7 @@
 #include <Classes/ClassSerialiser.h>
 #include <Classes/Objects/Camera.h>
 #include <Classes/Components/Mesh.h>
+#include <Interface/AssetManager.h>
 
 #include "Billboard.h"
 
@@ -15,7 +16,8 @@ namespace Refraction::Components {
 	void Billboard::Render() {
 		if (!mImage) return;
 
-		auto shader = Assets::Shader::GetShaderByName("baseShader");
+		auto assetManager = Engine::AssetManager::GetInstance();
+		auto shader = assetManager->GetAsset<Assets::Shader>("baseShader");
 		if (!shader) return;
 
 		using Math::Vector2, Math::Vector3;
@@ -59,15 +61,16 @@ namespace Refraction::Components {
 
 	std::string Billboard::Serialise() {
 		return Utilities::ClassSerialiser::TryAppendJSON(AComponent::Serialise(), [&](nlohmann::json& json) {
-			json["TexturePath"] = mImage->GetMetadata().AssetPath;
+			json["ImageUUID"] = mImage->GetUUID();
 		});
 	}
 
 	void Billboard::Deserialise(std::string serialised) {
+		auto assetManager = Engine::AssetManager::GetInstance();
 		AComponent::Deserialise(serialised);
 		Utilities::ClassSerialiser::TryParseJSON(serialised, [&](nlohmann::json& json) {
-			if (json.contains("TexturePath")) {
-				mImage = Assets::Image::FromPath(json.at("TexturePath").get<std::string>());
+			if (json.contains("ImageUUID")) {
+				mImage = assetManager->GetAsset<Assets::Image>(json.at("ImageUUID").get<uint64_t>());
 			}
 		});
 	}

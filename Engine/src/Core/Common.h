@@ -13,11 +13,20 @@ namespace Refraction {
 	namespace Common {
 		// Shared pointer wrapper
 		template<typename T>
-		using Ref = std::shared_ptr<T>;
-		// Creates a new Ref (shared pointer)
+		using Shared = std::shared_ptr<T>;
+		// Creates a new Shared (shared pointer)
 		template<typename T, typename... Args>
-		constexpr Ref<T> NewRef(Args&&... args) {
+		constexpr Shared<T> NewShared(Args&&... args) {
 			return std::make_shared<T>(std::forward<Args>(args)...);
+		}
+
+		// Weak pointer wrapper
+		template<typename T>
+		using Ref = std::weak_ptr<T>;
+		// Creates a new Ref (weak pointer)
+		template<typename T, typename... Args>
+		constexpr Ref<T> NewRef(Shared<T> shared) {
+			return std::weak_ptr<T>(shared);
 		}
 
 		// Unique pointer wrapper
@@ -38,13 +47,21 @@ namespace Refraction {
 			return dynamic_cast<T*>(object) != 0;
 		}
 		template<typename T, typename O>
-		constexpr T* AsA(Ref<O> object) {
+		constexpr T* AsA(Shared<O> object) {
 			return dynamic_cast<T*>(object.get());
 		}
 		template<typename T, typename O>
-		constexpr bool IsA(Ref<O> object) {
+		constexpr bool IsA(Shared<O> object) {
 			return dynamic_cast<T*>(object.get()) != 0;
 		}
+
+		template <typename Base, typename Target>
+		concept DerivesFrom = std::is_base_of<Base, Target>::value;
+
+		class RuntimeError : public std::runtime_error {
+		public:
+			RuntimeError(std::string msg);
+		};
 	}
 
 	class Log {
@@ -82,4 +99,5 @@ namespace Refraction {
 	private:
 		static void GenerateLog(std::string logName, std::string message, std::string logType, Colour printColour, bool printStack = false, Colour typeColour = { 0,0,0 });
 	};
+
 }

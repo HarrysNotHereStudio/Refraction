@@ -7,10 +7,12 @@
 namespace Refraction::Assets {
 	class Material : public Asset {
 	public:
-		Common::Ref<Shader> mShader;
-		Common::Ref<Image> mDiffuse;
-		Common::Ref<Image> mSpecular;
-		Common::Ref<Image> mNormal;
+		Common::Shared<Shader> mShader;
+		Common::Shared<Image> mDiffuse;
+		Common::Shared<Image> mSpecular;
+		Common::Shared<Image> mNormal;
+
+		Material();
 
 		void Activate();
 	};

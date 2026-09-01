@@ -207,6 +207,12 @@
     <ClInclude Include="src\Platform\OpenGL\OpenGLGBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Interface\AssetManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Classes\Assets\Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Rendering\Buffers\UniformBufferObject.cpp">
@@ -261,9 +267,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Classes\Assets\Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\include\imgui\imgui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="lib\include\imgui\imgui_demo.cpp">
@@ -366,6 +369,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLGBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Interface\AssetManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Classes\Assets\Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\include\imgui\imgui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

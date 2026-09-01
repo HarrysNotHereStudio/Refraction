@@ -4,15 +4,15 @@
 #include "ATexture.h"
 
 namespace Refraction::Engine::Platform {
-	std::map<uint64_t, Common::Ref<ATexture>> ATexture::TexturePool = {};
+	std::map<uint64_t, Common::Shared<ATexture>> ATexture::TexturePool = {};
 
-	Common::Ref<ATexture> ATexture::MakeTexture(const TextureStructure& texStruct) {
+	Common::Shared<ATexture> ATexture::MakeTexture(const TextureStructure& texStruct) {
 		switch (ARenderingAPI::GetAPI()) {
 		case RenderingAPI::NONE: default:
 			Log::Render.Warn("Attempt to create texture without an active API");
 			return nullptr;
 		case RenderingAPI::OPENGL: {
-			auto newTex = Common::NewRef<OpenGLTexture>(texStruct);
+			auto newTex = Common::NewShared<OpenGLTexture>(texStruct);
 			TexturePool[newTex->mUUID.AsInt()] = newTex;
 			return newTex;
 		}
@@ -22,7 +22,7 @@ namespace Refraction::Engine::Platform {
 		}
 	}
 
-	Common::Ref<ATexture> ATexture::FromPath(std::filesystem::path path) {
+	Common::Shared<ATexture> ATexture::FromPath(std::filesystem::path path) {
 		switch (ARenderingAPI::GetAPI()) {
 		case RenderingAPI::NONE: default:
 			Log::Render.Warn("Attempt to create texture without an active API");
@@ -35,7 +35,7 @@ namespace Refraction::Engine::Platform {
 		}
 	}
 
-	Common::Ref<ATexture> ATexture::FromID(unsigned int id) {
+	Common::Shared<ATexture> ATexture::FromID(unsigned int id) {
 		switch (ARenderingAPI::GetAPI()) {
 		case RenderingAPI::NONE: default:
 			Log::Render.Warn("Attempt to get texture without an active API");

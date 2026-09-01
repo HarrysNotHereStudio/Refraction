@@ -6,7 +6,7 @@
 #include "Camera.h"
 
 namespace Refraction::Objects {
-	Common::Ref<Camera> Camera::ActiveCamera = nullptr;
+	Common::Shared<Camera> Camera::ActiveCamera = nullptr;
 	Math::Frustum defaultFrustum = Math::Frustum(Math::Vector2(128), 70.0f, 0.001f, 10000.0f);
 
 	Camera::Camera() : mFrustum(defaultFrustum) {

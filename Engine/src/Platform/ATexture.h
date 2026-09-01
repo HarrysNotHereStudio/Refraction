@@ -30,11 +30,11 @@ namespace Refraction::Engine::Platform {
 	class ATexture : public std::enable_shared_from_this<ATexture> {
 	public:
 		// Returns a reference to a new empty texture
-		static Common::Ref<ATexture> MakeTexture(const TextureStructure& texStruct);
+		static Common::Shared<ATexture> MakeTexture(const TextureStructure& texStruct);
 		// Returns a reference to a texture made with the given path
-		static Common::Ref<ATexture> FromPath(std::filesystem::path path);
+		static Common::Shared<ATexture> FromPath(std::filesystem::path path);
 		// Returns a reference to a texture with the given ID
-		static Common::Ref<ATexture> FromID(unsigned int id);
+		static Common::Shared<ATexture> FromID(unsigned int id);
 
 		ATexture() = default;
 
@@ -50,7 +50,7 @@ namespace Refraction::Engine::Platform {
 
 		unsigned int GetBufferID() const { return mBufferID; }
 	protected:
-		static std::map<uint64_t, Common::Ref<ATexture>> TexturePool;
+		static std::map<uint64_t, Common::Shared<ATexture>> TexturePool;
 
 		TextureStructure mStructure;
 		UUID mUUID;

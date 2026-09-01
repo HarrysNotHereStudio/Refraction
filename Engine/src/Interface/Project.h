@@ -18,9 +18,9 @@ namespace Refraction::Engine {
 	struct ProjectData {
 		UUID InitSceneUUID = UUID::Null();
 
-		std::vector<Common::Ref<Objects::SceneRoot>> Scenes = {};
-		std::vector<Common::Ref<Objects::AObject>> GlobalObjects = {};
-		Common::Ref<Objects::Camera> ActiveCamera = nullptr;
+		std::vector<Common::Shared<Objects::SceneRoot>> Scenes = {};
+		std::vector<Common::Shared<Objects::AObject>> GlobalObjects = {};
+		Common::Shared<Objects::Camera> ActiveCamera = nullptr;
 		bool IsRemote = false; // Determines whether some operations should be ignored as it isn't a local project
 	};
 
@@ -39,7 +39,7 @@ namespace Refraction::Engine {
 
 	class Project {
 	public:
-		static Common::Ref<Project> GetCurrent() { return Common::Ref<Project>(mCurrentProject); }
+		static Common::Shared<Project> GetCurrent() { return CurrentProject; }
 
 		// Creates a new project at the given path, returns success
 		bool New(const std::filesystem::path& projectPath, bool eraseExisting = false);
@@ -57,30 +57,34 @@ namespace Refraction::Engine {
 		void ProcessRemoteMessage(std::string message);
 
 		// Creates a new scene under the active project, returns the new SceneRoot (empty ptr if failed)
-		Common::Ref<Objects::SceneRoot> NewScene();
+		Common::Shared<Objects::SceneRoot> NewScene();
 		// Loads a scene under the active project, returns success
 		bool OpenScene(UUID sceneUUID);
 		// Returns the currently open scene
-		inline Common::Ref<Objects::SceneRoot> GetActiveScene() const { return mActiveScene; }
-		inline Common::Ref<AssetManager> GetAssetManager() const { return mAssetManager; }
+		inline Common::Shared<Objects::SceneRoot> GetActiveScene() const { return mActiveScene; }
+		inline Common::Shared<AssetManager> GetAssetManager() const { return mAssetManager; }
 		// Returns all scenes under this project
-		inline std::vector<Common::Ref<Objects::SceneRoot>> GetScenes() const { return mProjectData.Scenes; }
+		inline std::vector<Common::Shared<Objects::SceneRoot>> GetScenes() const { return mProjectData.Scenes; }
 		// Returns all global objects under this project
-		inline std::vector<Common::Ref<Objects::AObject>> GetGlobalObjects() const { return mProjectData.GlobalObjects; }
+		inline std::vector<Common::Shared<Objects::AObject>> GetGlobalObjects() const { return mProjectData.GlobalObjects; }
 		inline std::filesystem::path GetFilePath() const { return GetProjectFilePath(mProjectPath); }
 
 		inline bool IsLoaded() const { return !mProjectPath.empty(); }
 		inline bool IsRemote() const { return mProjectData.IsRemote; }
 	private:
-		static Project* mCurrentProject;
+		static Common::Shared<Project> CurrentProject;
+
+		static void SetCurrent(Project* instance) {
+			CurrentProject = Common::Shared<Project>(instance);
+		}
 
 		std::filesystem::path mProjectPath;
 		ProjectData mProjectData;
 
 		// Contains all the scenes and global objects
-		Common::Ref<Objects::AObject> mRootObject = nullptr;
-		Common::Ref<Objects::SceneRoot> mActiveScene = nullptr;
-		Common::Ref<Engine::AssetManager> mAssetManager = nullptr;
+		Common::Shared<Objects::AObject> mRootObject = nullptr;
+		Common::Shared<Objects::SceneRoot> mActiveScene = nullptr;
+		Common::Shared<Engine::AssetManager> mAssetManager = nullptr;
 	};
 }
 

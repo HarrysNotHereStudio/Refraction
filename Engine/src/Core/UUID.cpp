@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <chrono>
 
+#include <Core/Common.h>
 #include <Core/Time.h>
 #include <Core/Utilities.h>
 
@@ -15,9 +16,9 @@ static std::string IntToHex(int i, uint16_t width) {
 }
 
 namespace Refraction {
-	std::unordered_set<uint64_t> UUID::UUIDHistory = { 0 };
+	std::unordered_set<UUIDValue> UUID::UUIDHistory = { 0 };
 
-	UUID UUID::FromExisting(uint64_t id, bool ignoreExisting) {
+	UUID UUID::FromExisting(UUIDValue id, bool ignoreExisting) {
 		UUID newID;
 		newID.mElapsedSeconds = uint16_t(id >> 48);
 		newID.mElapsedMilliseconds = uint16_t(id >> 32);
@@ -25,14 +26,17 @@ namespace Refraction {
 		newID.mRandomSecond = uint16_t(id);
 
 		if (!ignoreExisting) {
-			if (UUIDHistory.count(newID.AsInt())) return UUID::Null();
+			if (UUIDHistory.count(newID.AsInt())) {
+				Log::SError("UUID " + newID.AsString() + " already exists, returning Null UUID");
+				return UUID::Null();
+			}
 			UUIDHistory.insert(newID.AsInt());
 		}
 		return newID;
 	}
 
 	UUID UUID::Deserialise(std::string serialised) {
-		return UUID::FromExisting((uint64_t)std::stoull(serialised));
+		return UUID::FromExisting((UUIDValue)std::stoull(serialised));
 	}
 
 	UUID::UUID() {
@@ -64,12 +68,12 @@ namespace Refraction {
 		return IntToHex((int)mElapsedSeconds, 4) + "-" + IntToHex((int)mElapsedMilliseconds, 4) + "-" + IntToHex(mRandomFirst, 4) + "-" + IntToHex(mRandomSecond, 4);
 	}
 
-	uint64_t UUID::AsInt() const {
-		uint64_t result = 0;
-		result += ((uint64_t)mElapsedSeconds << 48);
-		result += ((uint64_t)mElapsedMilliseconds << 32);
-		result += ((uint64_t)mRandomFirst << 16);
-		result += ((uint64_t)mRandomSecond);
+	UUIDValue UUID::AsInt() const {
+		UUIDValue result = 0;
+		result += ((UUIDValue)mElapsedSeconds << 48);
+		result += ((UUIDValue)mElapsedMilliseconds << 32);
+		result += ((UUIDValue)mRandomFirst << 16);
+		result += ((UUIDValue)mRandomSecond);
 		return result;
 	}
 
@@ -94,15 +98,15 @@ namespace Refraction {
 	}
 
 	namespace Utilities {
-		std::vector<uint64_t> ToInts(std::vector<UUID> uuids) {
-			std::vector<uint64_t> result;
+		std::vector<UUIDValue> ToInts(std::vector<UUID> uuids) {
+			std::vector<UUIDValue> result;
 			for (auto& uuid : uuids) {
 				result.push_back(uuid.AsInt());
 			}
 			return result;
 		}
 
-		std::vector<UUID> FromInts(std::vector<uint64_t> uuids) {
+		std::vector<UUID> FromInts(std::vector<UUIDValue> uuids) {
 			std::vector<UUID> result;
 			for (auto& uuid : uuids) {
 				result.push_back(UUID::FromExisting(uuid));

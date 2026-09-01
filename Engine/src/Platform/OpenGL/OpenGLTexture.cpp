@@ -6,7 +6,7 @@
 #include "OpenGLTexture.h"
 
 namespace Refraction::Engine::Platform {
-	Common::Ref<ATexture> OpenGLTexture::GetFromPath(std::filesystem::path path) {
+	Common::Shared<ATexture> OpenGLTexture::GetFromPath(std::filesystem::path path) {
 		stbi_set_flip_vertically_on_load(true);
 		int w, h, c;
 		unsigned char* data = stbi_load(path.string().c_str(), &w, &h, &c, 0);
@@ -17,7 +17,7 @@ namespace Refraction::Engine::Platform {
 				.Format = TextureFormat::RGB8,
 				.MipsEnabled = true
 			};
-			auto newTex = Common::NewRef<OpenGLTexture>(texStruct);
+			auto newTex = Common::NewShared<OpenGLTexture>(texStruct);
 			newTex->Activate(0);
 
 			// Enable wrapping (repeat)
@@ -28,16 +28,16 @@ namespace Refraction::Engine::Platform {
 
 			return newTex;
 		} else {
-			Log::Render.Error("Failed to create texture from path " + path.string());
+			Log::Render.Error("Failed to create texture from path " + path.string() + ": " + stbi_failure_reason());
 			stbi_image_free(data);
 		}
 		return nullptr;
 	}
 
-	Common::Ref<ATexture> OpenGLTexture::GetFromID(unsigned int id) {
+	Common::Shared<ATexture> OpenGLTexture::GetFromID(unsigned int id) {
 		if (!glIsTexture(id)) return nullptr;
 
-		auto newTexture = Common::NewRef<OpenGLTexture>(id);
+		auto newTexture = Common::NewShared<OpenGLTexture>(id);
 
 		return newTexture;
 	}

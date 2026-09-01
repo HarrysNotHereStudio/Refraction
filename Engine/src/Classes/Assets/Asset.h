@@ -7,17 +7,24 @@
 #include <Core/UUID.h>
 #include <Core/FileHandling.h>
 
-#define REFRACTION_ASSET_METADATA_EXTENSION ".rfmeta"
+#define RFCT_ASSET_METADATA_EXTENSION ".rfmeta"
 
 namespace Refraction::Assets {
 	struct AssetMetadata {
-		UUID AssetUUID;
+		UUID AssetUUID = UUID::Null();
 		std::filesystem::path SourcePath = ""; // Path to the original source file
 		std::filesystem::path AssetPath = ""; // Path to the actual asset file in the project
+		std::string AssetType = "";
 		uintmax_t FileSize = 0;
+
+		// Returns a deserialised (derived) AssetMetadata object
+		static Common::Shared<AssetMetadata> CastedDeserialise(std::string data);
 
 		AssetMetadata() = default;
 		~AssetMetadata() = default;
+
+		// Returns path to the metadata file
+		std::filesystem::path GetPath() const;
 
 		// Serialises metadata into a string
 		virtual std::string Serialise();
@@ -30,20 +37,21 @@ namespace Refraction::Assets {
 		Asset() = default;
 		virtual ~Asset();
 
-		virtual AssetMetadata& GetMetadata() { return mMetadata; }
-
-		// Loads asset from the provided source file
-		virtual void LoadAsset(const std::filesystem::path& source);
-		// Loads asset from the provided source file
-		void LoadAsset(std::string source) { return LoadAsset(std::filesystem::path(source)); }
-		// Saves the asset to disk
+		// Loads asset of the provided UUID from disk
+		void LoadAsset(UUIDValue uuid);
+		// Saves asset changes to disk
 		virtual void Save();
 
 		inline bool IsVolatile() const { return mVolatile; }
+		inline UUIDValue GetUUID() const { return mUUID; }
 	protected:
 		std::string mDisplayName;
-		bool mVolatile = false; // Asset does not have a location on disk if true
+		// Asset does not have a location on disk if true
+		bool mVolatile = false;
+
+		// Actual loading functionality of derived objects
+		virtual void InternalLoadAsset(Common::Shared<AssetMetadata> metadata) {}
 	private:
-		AssetMetadata mMetadata;
+		UUIDValue mUUID = 0;
 	};
 }

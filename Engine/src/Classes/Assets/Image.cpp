@@ -1,42 +1,40 @@
 #include <unordered_map>
 
+#include <Classes/ClassSerialiser.h>
+#include <Interface/AssetManager.h>
+
 #include "Image.h"
 
 namespace Refraction::Assets {
-	std::unordered_map<std::string, Common::Ref<Image>> LoadedImages;
-
 	std::string ImageMetadata::Serialise() {
-		auto result = AssetMetadata::Serialise();
-		return result;
+		return Utilities::ClassSerialiser::TryAppendJSON(AssetMetadata::Serialise(), [&](nlohmann::json& json) {
+			json["Width"] = Width;
+			json["Height"] = Height;
+			json["Channels"] = Channels;
+		});
 	}
 
 	void ImageMetadata::Deserialise(std::string data) {
 		AssetMetadata::Deserialise(data);
+		Utilities::ClassSerialiser::TryParseJSON(data, [&](nlohmann::json& json) {
+			Width = json.at("Width").get<int>();
+			Height = json.at("Height").get<int>();
+			Channels = json.at("Channels").get<int>();
+		});
 	}
 
-	Common::Ref<Image> Image::FromPath(std::filesystem::path texturePath) {
-		if (LoadedImages.contains(texturePath.string())) return LoadedImages.at(texturePath.string());
+	Image::~Image() {}
 
-		auto tex = Common::NewRef<Image>();
-		tex->LoadAsset(texturePath);
-		LoadedImages[texturePath.string()] = tex;
-
-		return tex;
-	}
-
-	Image::~Image() {
-		auto sourcePath = mMetadata.SourcePath.string();
-		if (LoadedImages.contains(sourcePath)) {
-			LoadedImages.erase(sourcePath);
+	void Image::InternalLoadAsset(Common::Shared<AssetMetadata> metadata) {
+		auto meta = Common::AsA<ImageMetadata>(metadata);
+		if (!meta) {
+			Log::SError("Metadata cast failed");
+			return;
 		}
-	}
 
-	void Image::LoadAsset(const std::filesystem::path& source) {
-		Asset::LoadAsset(source);
-
-		mTexture = Engine::Platform::ATexture::FromPath(source);
+		mTexture = Engine::Platform::ATexture::FromPath(meta->AssetPath);
 		auto dim = mTexture->GetSize();
-		mMetadata.Width = (int)dim.x;
-		mMetadata.Height = (int)dim.y;
+		meta->Width = (int)dim.x;
+		meta->Height = (int)dim.y;
 	}
 }

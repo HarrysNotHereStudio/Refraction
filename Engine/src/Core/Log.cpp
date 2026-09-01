@@ -196,4 +196,9 @@ namespace Refraction {
 	Log Log::Physics = Log("Physics");
 	Log Log::Runtime = Log("Runtime");
 	Log Log::Editor = Log("Editor");
+
+	Common::RuntimeError::RuntimeError(std::string msg) : std::runtime_error(msg) {
+		// Log here to produce a better stacktrace
+		Log::SError("A runtime error occured.");
+	}
 }

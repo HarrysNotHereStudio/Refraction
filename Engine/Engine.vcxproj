@@ -183,6 +183,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Classes\Assets\Model.h" />
+    <ClInclude Include="src\Interface\AssetManager.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLGBuffer.h" />
     <ClInclude Include="src\Platform\AGBuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLTexture.h" />
@@ -249,6 +251,9 @@
     <ClInclude Include="src\Core\Time.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="lib\include\imgui\imgui.cpp" />
+    <ClCompile Include="src\Classes\Assets\Model.cpp" />
+    <ClCompile Include="src\Interface\AssetManager.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLGBuffer.cpp" />
     <ClCompile Include="src\Platform\AGBuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLTexture.cpp" />
@@ -275,7 +280,6 @@
     <ClCompile Include="src\Classes\Objects\BasicObject.cpp" />
     <ClCompile Include="src\Math\Matrix.cpp" />
     <ClCompile Include="src\Math\Quaternion.cpp" />
-    <ClCompile Include="lib\include\imgui\imgui.cpp" />
     <ClCompile Include="lib\include\imgui\imgui_demo.cpp" />
     <ClCompile Include="lib\include\imgui\imgui_draw.cpp" />
     <ClCompile Include="lib\include\imgui\imgui_impl_glfw.cpp" />

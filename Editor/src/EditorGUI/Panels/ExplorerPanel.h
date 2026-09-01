@@ -10,7 +10,7 @@ namespace Refraction::Editor::GUI {
 
 		void Init() override {}
 		void OnDraw() override;
-		void OnEvent(Common::Ref<Events::Event> event) override {}
+		void OnEvent(Common::Shared<Events::Event> event) override {}
 
 	private:
 		// TODO: filter objects in Explorer

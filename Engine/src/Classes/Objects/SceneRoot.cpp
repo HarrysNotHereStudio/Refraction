@@ -4,7 +4,7 @@
 #include "SceneRoot.h"
 
 namespace Refraction::Objects {
-	void SceneRoot::TickScene(std::vector<Common::Ref<AObject>> globalObjects) {
+	void SceneRoot::TickScene(std::vector<Common::Shared<AObject>> globalObjects) {
 		PreTick(this);
 		for (auto& obj : globalObjects) PreTick(obj.get());
 		Tick(this);
@@ -13,7 +13,7 @@ namespace Refraction::Objects {
 		for (auto& obj : globalObjects) PostTick(obj.get());
 	}
 
-	void SceneRoot::RenderScene(std::vector<Common::Ref<AObject>> globalObjects) {
+	void SceneRoot::RenderScene(std::vector<Common::Shared<AObject>> globalObjects) {
 		PreRender(this);
 		for (auto& obj : globalObjects) PreRender(obj.get());
 		Render(this);
