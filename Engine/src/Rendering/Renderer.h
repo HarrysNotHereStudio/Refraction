@@ -38,7 +38,7 @@ namespace Refraction::Engine {
 		void SetViewport(Math::Rect rect) { mViewportRect = rect; };
 
 		RendererState GetState() { return mState; }
-		Common::Shared<Assets::Image> GetFinalOutput() const { return mFinalOutput; }
+		Common::Ref<Assets::Image> GetFinalOutput() const { return mFinalOutput; }
 	private:
 		void UpdateUniformBuffers(Common::Shared<Project> projectInstance);
 		void Cleanup();
@@ -51,12 +51,14 @@ namespace Refraction::Engine {
 		RendererState mState = RendererState::NONE;
 
 		UniformBufferObject* mUBO = nullptr;
-		Common::Shared<Assets::Shader> mGeomPassShader = nullptr;
-		Common::Shared<Assets::Shader> mLightingPassShader = nullptr;
+		Common::Ref<Assets::Shader> mGeomPassShader = {};
+		Common::Ref<Assets::Shader> mLightingPassShader = {};
+		Common::Ref<Assets::Shader> mCFAAPrepassShader = {};
+		Common::Ref<Assets::Shader> mSkyShader = {};
 		Common::Shared<Platform::AGBuffer> mGBuffer = nullptr;
 		Math::Rect mViewportRect;
 		Math::Rect mViewportRectLast = mViewportRect;
-		Common::Shared<Assets::Image> mFinalOutput;
+		Common::Ref<Assets::Image> mFinalOutput;
 
 		BaseScene* mLoadedScene = nullptr;
 

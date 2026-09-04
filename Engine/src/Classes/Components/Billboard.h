@@ -7,7 +7,7 @@ namespace Refraction::Components {
 	class Billboard : public AComponent {
 	public:
 		Math::Transform mTransform;
-		Common::Shared<Assets::Image> mImage;
+		Common::Ref<Assets::Image> mImage;
 		bool mRenderOnTop = false;
 
 		Billboard();

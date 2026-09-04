@@ -59,7 +59,7 @@ namespace Refraction::Editor {
 	}
 
 	void EditorLayer::OnPass() {
-		auto activeScene = mProjectInstance->GetActiveScene();
+		auto activeScene = mProjectInstance->GetActiveScene().lock();
 		if (activeScene) {
 			auto sceneChildren = activeScene->GetChildren();
 			if (sceneChildren->size() > 0) {

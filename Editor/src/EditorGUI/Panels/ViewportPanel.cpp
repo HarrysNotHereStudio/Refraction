@@ -21,10 +21,11 @@ namespace Refraction::Editor::GUI {
 		}
 		// Skip if no frame or no project is open
 		auto& project = EditorState::Temp.ProjectInstance;
-		if (!project || mFrame == nullptr || mFrame->mTexture == nullptr || !project->IsLoaded()) {
+		if (!project || mFrame == nullptr || mFrame->mTexture.expired() || !project->IsLoaded()) {
 			ImGui::End();
 			return;
 		}
+		auto frameTex = mFrame->mTexture.lock();
 
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 
@@ -39,10 +40,13 @@ namespace Refraction::Editor::GUI {
 		const float windowHeight = ImGui::GetContentRegionAvail().y;
 
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
-		auto frameMeta = project->GetAssetManager()->FetchMetadata<Assets::ImageMetadata>(mFrame->GetUUID());
+		Common::Ref<Assets::ImageMetadata> frameMeta;
+		Engine::AssetManager::Try([&](Common::Shared<Engine::AssetManager> manager) {
+			frameMeta = manager->FetchMetadata<Assets::ImageMetadata>(mFrame->GetUUID());
+		});
 		//ImVec2 imageSize = ImVec2((float)frameMeta->Width, (float)frameMeta->Height);
 		ImVec2 pos = ImGui::GetCursorScreenPos();
-		drawList->AddImage((ImTextureID)mFrame->mTexture->GetBufferID(), ImVec2(pos.x, pos.y), ImVec2(pos.x + windowWidth, pos.y + windowHeight), ImVec2(0, 1), ImVec2(1, 0));
+		drawList->AddImage((ImTextureID)frameTex->GetBufferID(), ImVec2(pos.x, pos.y), ImVec2(pos.x + windowWidth, pos.y + windowHeight), ImVec2(0, 1), ImVec2(1, 0));
 		
 
 		// Don't update if RMB is down

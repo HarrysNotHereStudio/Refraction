@@ -21,14 +21,14 @@ namespace Refraction::Assets {
 
 	class Model : public Asset {
 	public:
+		std::vector<Common::Shared<Engine::Platform::AMeshFragment>> mFragments;
+
 		Model() = default;
 		virtual ~Model() = default;
-
 	protected:
-		std::vector<Common::Shared<Engine::Platform::AMeshFragment>> mFragments;
-		std::vector<Common::Ref<Assets::Image>> mTextures;
+		std::vector<Common::Ref<Assets::Material>> mMaterials;
 
-		void InternalLoadAsset(Common::Ref<AssetMetadata> metadata) override;
+		void OnLoadAsset(Common::Shared<AssetMetadata> metadata) override;
 	private:
 		unsigned int mID = 0;
 	};

@@ -10,8 +10,13 @@ using nlohmann::json;
 
 namespace Refraction::Assets {
 	Common::Shared<Objects::AObject> Assembly::Get() {
-		auto meta = Engine::AssetManager::GetInstance()->FetchMetadata(GetUUID());
-		return Deserialise(FileHandling::ReadFile(meta->AssetPath));
+		Common::Ref<AssetMetadata> metaWeak;
+		Engine::AssetManager::Try([&](Common::Shared<Engine::AssetManager> assetManager) {
+			metaWeak = assetManager->FetchMetadata(GetUUID());
+		});
+		if (auto meta = metaWeak.lock()) {
+			return Deserialise(FileHandling::ReadFile(meta->AssetPath));
+		}
 	}
 
 	std::string Assembly::Serialise(Common::Shared<Objects::AObject> root) {

@@ -184,6 +184,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Classes\Assets\Model.h" />
+    <ClInclude Include="src\Core\Singleton.h" />
     <ClInclude Include="src\Interface\AssetManager.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLGBuffer.h" />
     <ClInclude Include="src\Platform\AGBuffer.h" />

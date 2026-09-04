@@ -25,7 +25,7 @@ namespace Refraction::Assets {
 
 	Image::~Image() {}
 
-	void Image::InternalLoadAsset(Common::Shared<AssetMetadata> metadata) {
+	void Image::OnLoadAsset(Common::Shared<AssetMetadata> metadata) {
 		auto meta = Common::AsA<ImageMetadata>(metadata);
 		if (!meta) {
 			Log::SError("Metadata cast failed");
@@ -33,7 +33,8 @@ namespace Refraction::Assets {
 		}
 
 		mTexture = Engine::Platform::ATexture::FromPath(meta->AssetPath);
-		auto dim = mTexture->GetSize();
+		if (mTexture.expired()) throw Common::RuntimeError("Failed to generate texture from path");
+		auto dim = mTexture.lock()->GetSize();
 		meta->Width = (int)dim.x;
 		meta->Height = (int)dim.y;
 	}

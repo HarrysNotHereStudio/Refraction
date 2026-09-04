@@ -10,7 +10,7 @@ namespace Refraction::Engine::Platform {
 		// Creates a new GBuffer using the active rendering API
 		static Common::Shared<AGBuffer> CreateGBuffer();
 
-		Common::Shared<Assets::Image> GetLastRenderedFrame() const;
+		Common::Ref<Assets::Image> GetLastRenderedFrame() const;
 
 		// Initialises the GBuffer textures
 		virtual bool Init(unsigned int viewWidth, unsigned int viewHeight) = 0;
@@ -31,18 +31,18 @@ namespace Refraction::Engine::Platform {
 		static const unsigned int TextureCount = 6;
 
 		unsigned int mFBID = 0;
-		Common::Shared<Platform::ATexture> mDiffuse;
-		Common::Shared<Platform::ATexture> mNormal;
-		Common::Shared<Platform::ATexture> mPosition;
-		Common::Shared<Platform::ATexture> mSMR; // Specular R, Metallic G, Roughness B
-		Common::Shared<Platform::ATexture> mDepth;
-		Common::Shared<Platform::ATexture> mCFAAData;
-		Common::Shared<Platform::ATexture> mFinal;
+		Common::Ref<Platform::ATexture> mDiffuse;
+		Common::Ref<Platform::ATexture> mNormal;
+		Common::Ref<Platform::ATexture> mPosition;
+		Common::Ref<Platform::ATexture> mSMR; // Specular R, Metallic G, Roughness B
+		Common::Ref<Platform::ATexture> mDepth;
+		Common::Ref<Platform::ATexture> mCFAAData;
+		Common::Ref<Platform::ATexture> mFinal;
 
 		AGBuffer();
 		virtual ~AGBuffer();
 
-		inline std::vector<Common::Shared<Platform::ATexture>> GetTextureArray() {
+		inline std::vector<Common::Ref<Platform::ATexture>> GetTextureArray() {
 			return { mDiffuse, mNormal, mPosition, mSMR, mDepth, mCFAAData, mFinal };
 		};
 

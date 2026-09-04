@@ -40,7 +40,10 @@ namespace Refraction::Assets {
 		// Loads asset of the provided UUID from disk
 		void LoadAsset(UUIDValue uuid);
 		// Saves asset changes to disk
-		virtual void Save();
+		void Save();
+		// Initialises the asset as a volatile asset (no data on disk)
+		// Note: Will reset the data of the asset in memory
+		void MakeVolatile();
 
 		inline bool IsVolatile() const { return mVolatile; }
 		inline UUIDValue GetUUID() const { return mUUID; }
@@ -49,8 +52,12 @@ namespace Refraction::Assets {
 		// Asset does not have a location on disk if true
 		bool mVolatile = false;
 
-		// Actual loading functionality of derived objects
-		virtual void InternalLoadAsset(Common::Shared<AssetMetadata> metadata) {}
+		// DERIVED METHOD: Load data into memory based on the provided metadata
+		virtual void OnLoadAsset(Common::Shared<AssetMetadata> metadata) {}
+		// DERIVED METHOD: Re-initialise asset when made volatile
+		virtual void OnMakeVolatile() {}
+		// DERIVED METHOD: Save any changes to disk
+		void OnSave() {}
 	private:
 		UUIDValue mUUID = 0;
 	};

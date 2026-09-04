@@ -8,9 +8,10 @@
 namespace Refraction::Engine {
 	void AssetImporter::Import(std::filesystem::path sourcePath) {
 		if (!sourcePath.has_filename()) throw Common::RuntimeError("Cannot import anything other than a file");
-		auto currentProject = Project::GetCurrent();
+		auto currentProject = Project::GetCurrent().lock();
+		if (!currentProject) throw Common::RuntimeError("Cannot import without an active project");
 		auto importPath = currentProject->GetFilePath().parent_path() / "Assets";
-		
+
 		// Import
 		auto dstName = importPath / sourcePath.filename();
 		Log::SInfo("Importing file from " + sourcePath.string() + " to " + dstName.string());
@@ -46,15 +47,13 @@ namespace Refraction::Engine {
 		if (!dataFile.is_open()) throw Common::RuntimeError(std::format("Could not open {} for writing", metaPath.string()));
 		dataFile << serialised;
 		dataFile.close();
-		
+
 		// Erase UUID before registering or the deserialisation will cause issues
 		meta.AssetUUID.Reset();
 
 		// Register asset
-		if (auto assetManager = currentProject->GetAssetManager()) {
-			assetManager->RegisterAsset(metaPath);
-		} else {
-			Log::SWarn("Could not register asset after importing");
-		}
+		AssetManager::Try([&](Common::Shared<AssetManager> manager) {
+			manager->RegisterAsset(metaPath);
+		});
 	}
 }

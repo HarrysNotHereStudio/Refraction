@@ -14,11 +14,13 @@ namespace Refraction::Components {
 	}
 
 	void Billboard::Render() {
-		if (!mImage) return;
+		if (mImage.expired()) return;
 
-		auto assetManager = Engine::AssetManager::GetInstance();
-		auto shader = assetManager->GetAsset<Assets::Shader>("baseShader");
-		if (!shader) return;
+		Common::Ref<Assets::Shader> shaderWeak;
+		Engine::AssetManager::Try([&](Common::Shared<Engine::AssetManager> assetManager) {
+			shaderWeak = assetManager->GetAsset<Assets::Shader>("baseShader");
+		});
+		if (shaderWeak.expired()) return;
 
 		using Math::Vector2, Math::Vector3;
 		auto& camera = Objects::Camera::ActiveCamera;
@@ -50,8 +52,13 @@ namespace Refraction::Components {
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Engine::sVertex), (void*)offsetof(Engine::sVertex, texCoord));
 		glEnableVertexAttribArray(2);
 
+		if (shaderWeak.expired() || mImage.expired()) return;
+		auto img = mImage.lock();
+		if (img->mTexture.expired()) return;
+		auto shader = shaderWeak.lock();
+		auto tex = img->mTexture.lock();
 		shader->Activate();
-		mImage->mTexture->Activate(0);
+		tex->Activate(0);
 		glActiveTexture(GL_TEXTURE0);
 
 		glBindVertexArray(quadVAO);
@@ -60,18 +67,21 @@ namespace Refraction::Components {
 	}
 
 	std::string Billboard::Serialise() {
-		return Utilities::ClassSerialiser::TryAppendJSON(AComponent::Serialise(), [&](nlohmann::json& json) {
-			json["ImageUUID"] = mImage->GetUUID();
-		});
+		if (auto image = mImage.lock()) {
+			return Utilities::ClassSerialiser::TryAppendJSON(AComponent::Serialise(), [&](nlohmann::json& json) {
+				json["ImageUUID"] = image->GetUUID();
+			});
+		} else throw Common::RuntimeError("Could not serialise, failed to lock reference");
 	}
 
 	void Billboard::Deserialise(std::string serialised) {
-		auto assetManager = Engine::AssetManager::GetInstance();
-		AComponent::Deserialise(serialised);
-		Utilities::ClassSerialiser::TryParseJSON(serialised, [&](nlohmann::json& json) {
-			if (json.contains("ImageUUID")) {
-				mImage = assetManager->GetAsset<Assets::Image>(json.at("ImageUUID").get<uint64_t>());
-			}
+		Engine::AssetManager::Try([&](Common::Shared<Engine::AssetManager> assetManager) {
+			AComponent::Deserialise(serialised);
+			Utilities::ClassSerialiser::TryParseJSON(serialised, [&](nlohmann::json& json) {
+				if (json.contains("ImageUUID")) {
+					mImage = assetManager->GetAsset<Assets::Image>(json.at("ImageUUID").get<uint64_t>());
+				}
+			});
 		});
 	}
 }

@@ -29,9 +29,13 @@ namespace Refraction::Utilities {
 	}
 
 	std::string ClassSerialiser::Serialise(Common::Shared<Assets::Asset> asset) {
-		auto meta = Engine::AssetManager::GetInstance()->FetchMetadata(asset->GetUUID());
-		return meta->Serialise();
-
+		Common::Ref<Assets::AssetMetadata> metaWeak;
+		Engine::AssetManager::Try([&](Common::Shared<Engine::AssetManager> assetManager) {
+			metaWeak = assetManager->FetchMetadata(asset->GetUUID());
+		});
+		if (auto meta = metaWeak.lock()) {
+			return meta->Serialise();
+		} else throw Common::RuntimeError("Failed to fetch metadata to serialise");
 	}
 	std::string ClassSerialiser::Serialise(Common::Shared<Objects::AObject> object) {
 		return object->Serialise();

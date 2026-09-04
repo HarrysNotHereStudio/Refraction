@@ -10,7 +10,7 @@ public:
 	float mLightIntensity = 1.0f;
 	Refraction::Math::Vector3 mLightColor = Refraction::Math::Vector3(1.0f);
 
-	Refraction::Common::Shared<Refraction::Assets::Shader> mLightShader = nullptr;
+	Refraction::Common::Ref<Refraction::Assets::Shader> mLightShader = {};
 	Refraction::Math::Transform* mTransform = nullptr;
 
 	BaseLight();

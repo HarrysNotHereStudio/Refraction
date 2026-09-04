@@ -1,5 +1,6 @@
 #include <Platform/OpenGL/OpenGLGBuffer.h>
 #include <Platform/ARenderingAPI.h>
+#include <Interface/AssetManager.h>
 
 #include "AGBuffer.h"
 
@@ -17,8 +18,13 @@ namespace Refraction::Engine::Platform {
 		}
 	}
 
-	Common::Shared<Assets::Image> AGBuffer::GetLastRenderedFrame() const {
-		auto img = Common::NewShared<Assets::Image>();
+	Common::Ref<Assets::Image> AGBuffer::GetLastRenderedFrame() const {
+		Common::Ref<Assets::Image> imgWeak;
+		AssetManager::Try([&](Common::Shared<AssetManager> manager) {
+			imgWeak = manager->MakeVolatile<Assets::Image>();
+		});
+		if (imgWeak.expired()) return {};
+		auto img = imgWeak.lock();
 		img->mTexture = mFinal;
 		return img;
 	}

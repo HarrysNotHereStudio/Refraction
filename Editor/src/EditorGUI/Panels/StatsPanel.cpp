@@ -73,7 +73,7 @@ namespace Refraction::Editor::GUI {
 			ImGui::TreePop();
 		}
 		if (!camera) ImGui::EndDisabled();
-		if (!scene) {
+		if (scene.expired()) {
 			ImGui::BeginDisabled();
 			ImGui::SetNextItemOpen(false);
 		}
@@ -82,7 +82,7 @@ namespace Refraction::Editor::GUI {
 			ImGui::Text(std::format("Vertex count: {}", Components::Mesh::FrameVertexCount));
 			ImGui::TreePop();
 		}
-		if (!scene) ImGui::EndDisabled();
+		if (scene.expired()) ImGui::EndDisabled();
 
 		ImGui::End();
 	}

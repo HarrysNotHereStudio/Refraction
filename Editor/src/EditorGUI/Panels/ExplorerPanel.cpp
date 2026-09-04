@@ -44,26 +44,29 @@ namespace Refraction::Editor::GUI {
 		if (!project->IsLoaded()) {
 			ImGui::Text("No project loaded");
 		} else {
-			for (auto& scene : project->GetScenes()) {
-				MakeTree(scene);
+			for (auto& sceneWeak : project->GetScenes()) {
+				if (sceneWeak.expired()) continue;
+				MakeTree(sceneWeak.lock());
 			}
-			for (auto& globalObj : project->GetGlobalObjects()) {
-				MakeTree(globalObj);
+			for (auto& globalObjWeak : project->GetGlobalObjects()) {
+				if (globalObjWeak.expired()) continue;
+				MakeTree(globalObjWeak.lock());
 			}
 		}
-		if (ImGui::BeginPopupContextWindow("ExplorerPopup")) {
+		auto activeScene = project->GetActiveScene().lock();
+		if (activeScene && ImGui::BeginPopupContextWindow("ExplorerPopup")) {
 			if (!project->IsLoaded()) ImGui::BeginDisabled();
 			if (ImGui::BeginMenu("Add Object...")) {
 				if (ImGui::MenuItem("Empty Object")) {
 					auto newObj = Common::NewShared<Objects::AObject>();
-					EditorState::Temp.ProjectInstance->GetActiveScene()->AddChild(newObj);
+					activeScene->AddChild(newObj);
 				}
 				if (ImGui::MenuItem("Basic Object")) {
 					auto newObj = Common::NewShared<Objects::BasicObject>();
-					EditorState::Temp.ProjectInstance->GetActiveScene()->AddChild(newObj);
+					activeScene->AddChild(newObj);
 				}
 				if (ImGui::MenuItem("Scene")) {
-					EditorState::Temp.ProjectInstance->NewScene();
+					project->NewScene();
 				}
 				ImGui::EndMenu();
 			}

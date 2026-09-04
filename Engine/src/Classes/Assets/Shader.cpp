@@ -67,7 +67,7 @@ namespace Refraction::Assets {
 		glUniformMatrix4fv(glGetUniformLocation(mID, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
 	}
 
-	void Shader::InternalLoadAsset(Common::Shared<AssetMetadata> metadata) {
+	void Shader::OnLoadAsset(Common::Shared<AssetMetadata> metadata) {
 		auto meta = Common::AsA<ShaderMetadata>(metadata);
 		if (!meta) {
 			Log::SError("Metadata cast failed");

@@ -98,24 +98,34 @@ namespace Refraction::Engine {
 
 		// Skip if no project or scene loaded (projects may load asynchronously so this prevents issues) or no active camera
 		if (!projectInstance->IsLoaded()) return;
-		if (!projectInstance->GetActiveScene()) return;
+		if (projectInstance->GetActiveScene().expired()) return;
 		if (!Objects::Camera::ActiveCamera) return;
 
-		auto assetManager = Project::GetCurrent()->GetAssetManager();
-		if (!mGeomPassShader) {
-			mGeomPassShader = assetManager->GetAsset<Assets::Shader>("gbufferShader");
-		}
-		if (!mLightingPassShader) {
-			mLightingPassShader = assetManager->GetAsset<Assets::Shader>("lightingShader");
-			mLightingPassShader->Activate();
-			mLightingPassShader->SetUniformVec3("ambient", Math::Vector3(0.2f));
-			mGBuffer->SetShaderTextureIDs();
-		}
-		if (!mLoadedScene) {
-			Log::Render.Info("Loading test scene...");
-			mLoadedScene = new BaseScene();
-		}
 
+		AssetManager::Try([&](Common::Shared<AssetManager> assetManager) {
+			auto& graphicsSettings = Settings::CurrentSettings->Graphics;
+			if (mGeomPassShader.expired()) {
+				mGeomPassShader = assetManager->GetAsset<Assets::Shader>("gbufferShader");
+			}
+			if (mLightingPassShader.expired()) {
+				mLightingPassShader = assetManager->GetAsset<Assets::Shader>("lightingShader");
+				auto shader = mLightingPassShader.lock();
+				shader->Activate();
+				shader->SetUniformVec3("ambient", Math::Vector3(0.2f));
+				mGBuffer->SetShaderTextureIDs();
+			}
+			if (graphicsSettings.CFAAEnabled && mCFAAPrepassShader.expired()) {
+				mCFAAPrepassShader = assetManager->GetAsset<Assets::Shader>("CFAAPrepass");
+			}
+			if (mSkyShader.expired()) {
+				mSkyShader = assetManager->GetAsset<Assets::Shader>("DefaultSky");
+			}
+
+			if (!mLoadedScene) {
+				Log::Render.Info("Loading test scene...");
+				mLoadedScene = new BaseScene();
+			}
+		});
 
 		UpdateUniformBuffers(projectInstance);
 
@@ -164,7 +174,6 @@ namespace Refraction::Engine {
 
 	void Renderer::DSPassGeometry(Common::Shared<Project> projectInstance) {
 		auto& graphicsSettings = Settings::CurrentSettings->Graphics;
-		auto assetManager = Project::GetCurrent()->GetAssetManager();
 		mGBuffer->BindGeometryPass();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -172,18 +181,21 @@ namespace Refraction::Engine {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		}
 
+		auto scene = projectInstance->GetActiveScene().lock();
+
 		if (graphicsSettings.CFAAEnabled) {
 			// CFAA prepass
-			auto cfaaPrepass = assetManager->GetAsset<Assets::Shader>("CFAAPrepass");
-			cfaaPrepass->Activate();
-			projectInstance->GetActiveScene()->RenderScene(projectInstance->GetGlobalObjects());
+			auto shader = mCFAAPrepassShader.lock();
+			shader->Activate();
+			scene->RenderScene(projectInstance->GetGlobalObjects());
 		}
 
 		// Draw models
-		mGeomPassShader->Activate();
-		mGeomPassShader->SetUniformBool("usingCFAA", graphicsSettings.CFAAEnabled);
-		mGeomPassShader->SetUniformInt("CFAAScale", graphicsSettings.CFAAScale);
-		projectInstance->GetActiveScene()->RenderScene(projectInstance->GetGlobalObjects());
+		auto shader = mGeomPassShader.lock();
+		shader->Activate();
+		shader->SetUniformBool("usingCFAA", graphicsSettings.CFAAEnabled);
+		shader->SetUniformInt("CFAAScale", graphicsSettings.CFAAScale);
+		scene->RenderScene(projectInstance->GetGlobalObjects());
 
 		if (graphicsSettings.WireframeEnabled) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -192,30 +204,32 @@ namespace Refraction::Engine {
 
 	void Renderer::DSPassLighting(Common::Shared<Project> projectInstance) {
 		auto& graphicsSettings = Settings::CurrentSettings->Graphics;
-		auto assetManager = Project::GetCurrent()->GetAssetManager();
 		mGBuffer->BindLightingPass();
 
-		mLightingPassShader->Activate();
+		auto lightShader = mLightingPassShader.lock();
+
+		lightShader->Activate();
 		for (auto i = 0; i < mLoadedScene->mLights.size(); i++) {
 			const auto light = mLoadedScene->mLights[i];
 			light->UpdateShaderUniforms(i);
 		}
-		mLightingPassShader->SetUniformVec3("viewPos", Objects::Camera::ActiveCamera->mTransform.GetWorldPosition());
-		mLightingPassShader->SetUniformInt("dataView", graphicsSettings.ViewportDataView);
-		mLightingPassShader->SetUniformBool("usingCFAA", graphicsSettings.CFAAEnabled);
-		mLightingPassShader->SetUniformInt("CFAAScale", graphicsSettings.CFAAScale);
+		lightShader->SetUniformVec3("viewPos", Objects::Camera::ActiveCamera->mTransform.GetWorldPosition());
+		lightShader->SetUniformInt("dataView", graphicsSettings.ViewportDataView);
+		lightShader->SetUniformBool("usingCFAA", graphicsSettings.CFAAEnabled);
+		lightShader->SetUniformInt("CFAAScale", graphicsSettings.CFAAScale);
 
 		glDepthMask(GL_FALSE);
 		// Render sky
-		assetManager->GetAsset<Assets::Shader>("DefaultSky")->Activate();
+		auto skyShader = mSkyShader.lock();
+		skyShader->Activate();
 		renderQuad();
 		// Render grid
 		//Assets::Shader::GetShaderByName("EditorGrid")->Activate();
 		//renderQuad();
 		glDepthMask(GL_TRUE);
 
-		mLightingPassShader->Activate();
 		// Render lit objects
+		lightShader->Activate();
 		renderQuad();
 	}
 

@@ -4,23 +4,32 @@
 
 namespace Refraction::Assets {
 	Material::Material() {
-		auto assetManager = Engine::AssetManager::GetInstance();
-		if (assetManager) {
+		Engine::AssetManager::Try([&](Common::Shared<Engine::AssetManager> assetManager) {
 			mDiffuse = assetManager->GetAsset<Assets::Image>("Basic.png");
 			mSpecular = assetManager->GetAsset<Assets::Image>("Basic.png");
 			mShader = assetManager->GetAsset<Assets::Shader>("gbufferShader");
-		}
+		});
 	}
 
 	void Material::Activate() {
-		if (mDiffuse && mDiffuse->mTexture) mDiffuse->mTexture->Activate(0);
-		if (mSpecular && mSpecular->mTexture) mSpecular->mTexture->Activate(1);
+		if (auto img = mDiffuse.lock()) {
+			if (auto tex = img->mTexture.lock()) {
+				tex->Activate(0);
+			}
+		}
+		if (auto img = mSpecular.lock()) {
+			if (auto tex = img->mTexture.lock()) {
+				tex->Activate(1);
+			}
+		}
 		//mNormal->Activate(2);
 
-		mShader->SetUniformInt(RFCT_TEXTURE_TYPE_DIFFUSE, 0);
-		mShader->SetUniformInt(RFCT_TEXTURE_TYPE_SPECULAR, 1);
+		if (auto shader = mShader.lock()) {
+			shader->SetUniformInt(RFCT_TEXTURE_TYPE_DIFFUSE, 0);
+			shader->SetUniformInt(RFCT_TEXTURE_TYPE_SPECULAR, 1);
 
-		mShader->Activate();
+			shader->Activate();
+		}
 	}
 
 }

@@ -1,26 +1,18 @@
 #include <Classes/ClassSerialiser.h>
-#include <Interface/Project.h>
 
 #include "AssetManager.h"
 
 namespace Refraction::Engine {
-	Common::Shared<AssetManager> AssetManager::GetInstance() {
-		if (auto project = Project::GetCurrent()) {
-			return project->GetAssetManager();
-		}
-		return nullptr;
-	}
-
 	void AssetManager::RegisterAllAssets() {
 		Log::SInfo("Registering all assets in project...");
 		RecursiveRegisterAssets(mProjectPath / "Assets");
 	}
 
-	Common::Shared<Assets::Asset> AssetManager::RegisterAsset(std::filesystem::path metadataPath) {
+	Common::Ref<Assets::Asset> AssetManager::RegisterAsset(std::filesystem::path metadataPath) {
 		auto pathStr = metadataPath.string();
 		if (!(std::filesystem::exists(metadataPath) && std::filesystem::is_regular_file(metadataPath) && metadataPath.has_extension() && metadataPath.extension() == RFCT_ASSET_METADATA_EXTENSION)) {
 			Log::SError("Invalid metadata file at path " + pathStr);
-			return nullptr;
+			return Common::Ref<Assets::Asset>();
 		}
 
 		auto meta = LoadMetadata(metadataPath);
@@ -32,6 +24,21 @@ namespace Refraction::Engine {
 		} else {
 			Log::SWarn("Asset with UUID " + uuid.AsString() + " already exists, returning existing asset");
 			return mAssetMap.at(uuid);
+		}
+	}
+
+	void AssetManager::UnloadAll() {
+		for (auto& asset : mAssetMap) {
+			if (asset.second) {
+				asset.second.reset();
+			}
+			mAssetMap.erase(asset.first);
+		}
+		for (auto& metadata : mMetadataMap) {
+			if (metadata.second) {
+				metadata.second.reset();
+			}
+			mAssetMap.erase(metadata.first);
 		}
 	}
 

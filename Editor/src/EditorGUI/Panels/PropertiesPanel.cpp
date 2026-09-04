@@ -48,7 +48,20 @@ namespace Refraction::Editor::GUI {
 		ImGui::Text("UUID: " + component->GetUUID().AsString());
 
 		if (auto casted = Common::AsA<Components::Mesh>(component)) {
-			ImGui::Text("Mesh Source: " + casted->GetSource().string());
+			auto model = casted->mModel.lock();
+			if (model) {
+				Common::Ref<Assets::ModelMetadata> metaWeak;
+				Engine::AssetManager::Try([&](Common::Shared<Engine::AssetManager> manager) {
+					metaWeak = manager->FetchMetadata<Assets::ModelMetadata>(model->GetUUID());
+				});
+				if (auto meta = metaWeak.lock()) {
+					ImGui::Text("Mesh Source: " + meta->AssetPath.string());
+				} else {
+					ImGui::Text("Mesh Source:");
+				}
+			} else {
+				ImGui::Text("Mesh Source:");
+			}
 			ImGui::Spacing();
 			DrawTransformControls(casted->mTransform, "Mesh");
 		} else if (auto casted = Common::AsA<Components::APhysics>(component)) {

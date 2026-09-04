@@ -10,8 +10,6 @@
 
 #include "Project.h"
 
-using nlohmann::json;
-
 namespace Refraction::Engine {
 	Common::Shared<Project> Project::CurrentProject = nullptr;
 
@@ -26,17 +24,25 @@ namespace Refraction::Engine {
 			return false;
 		}
 
-		json serialised;
+		nlohmann::json serialised;
 		serialised["InitSceneUUID"] = projectData.InitSceneUUID.Serialise();
 		serialised["ActiveCameraUUID"] = projectData.ActiveCamera->GetUUID().Serialise();
 		serialised["Scenes"] = {};
-		for (auto& scene : projectData.Scenes) {
-			serialised["Scenes"][scene->GetUUID().Serialise()] = Utilities::ClassSerialiser::Serialise(scene);
-			Log::SInfo("Serialised scene with UUID " + scene->GetUUID().AsString());
+		for (auto& sceneWeak : projectData.Scenes) {
+			if (auto scene = sceneWeak.lock()) {
+				serialised["Scenes"][scene->GetUUID().Serialise()] = Utilities::ClassSerialiser::Serialise(scene);
+				Log::SInfo("Serialised scene with UUID " + scene->GetUUID().AsString());
+			} else {
+				Log::SError("Could not serialise scene, failed to lock reference");
+			}
 		}
 		serialised["GlobalObjects"] = {};
-		for (auto& globalObj : projectData.GlobalObjects) {
-			serialised["GlobalObjects"][globalObj->GetUUID().Serialise()] = Utilities::ClassSerialiser::Serialise(globalObj);
+		for (auto& globalObjWeak : projectData.GlobalObjects) {
+			if (auto globalObj = globalObjWeak.lock()) {
+				serialised["GlobalObjects"][globalObj->GetUUID().Serialise()] = Utilities::ClassSerialiser::Serialise(globalObj);
+			} else {
+				Log::SError("Could not serialise global object, failed to lock reference");
+			}
 		}
 		std::ofstream dataFile(projectFilePath);
 		if (!dataFile.is_open()) {
@@ -163,7 +169,7 @@ namespace Refraction::Engine {
 
 		// Import default assets
 		SetCurrent(this);
-		mAssetManager = Common::NewShared<AssetManager>(projectPath);
+		AssetManager::MakeInstance(projectPath);
 		AssetImporter::Import(FileHandling::GetResourcesPath() / "textures" / "Basic.png");
 
 		// Default global objects
@@ -212,13 +218,23 @@ namespace Refraction::Engine {
 
 		if (!projectData) Log::SWarn("Failed to load project data at " + pathStr);
 
-		mAssetManager->RegisterAllAssets();
+		AssetManager::Try([&](Common::Shared<AssetManager> assetManager) {
+			assetManager->RegisterAllAssets();
+		});
 
-		for (auto& scene : mProjectData.Scenes) {
-			mRootObject->AddChild(scene);
+		for (auto& sceneWeak : mProjectData.Scenes) {
+			if (auto scene = sceneWeak.lock()) {
+				mRootObject->AddChild(scene);
+			} else {
+				Log::SError("Could not load scene, failed to lock reference");
+			}
 		}
-		for (auto& globalObj : mProjectData.GlobalObjects) {
-			mRootObject->AddChild(globalObj);
+		for (auto& globalObjWeak : mProjectData.GlobalObjects) {
+			if (auto globalObj = globalObjWeak.lock()) {
+				mRootObject->AddChild(globalObj);
+			} else {
+				Log::SError("Could not load global object, failed to lock reference");
+			}
 		}
 
 		// Open init scene
@@ -226,8 +242,13 @@ namespace Refraction::Engine {
 			if (!OpenScene(mProjectData.InitSceneUUID)) {
 				Log::SWarn("Failed to open specified InitScene, using first scene found instead");
 				if (mProjectData.Scenes.size() > 0) {
-					mProjectData.InitSceneUUID = mProjectData.Scenes[0]->GetUUID();
-					OpenScene(mProjectData.InitSceneUUID);
+					auto& sceneWeak = mProjectData.Scenes[0];
+					if (auto scene = sceneWeak.lock()) {
+						mProjectData.InitSceneUUID = scene->GetUUID();
+						OpenScene(mProjectData.InitSceneUUID);
+					} else {
+						Log::SError("Could not open scene, failed to lock reference");
+					}
 				}
 			}
 		}
@@ -271,7 +292,9 @@ namespace Refraction::Engine {
 		mProjectPath.clear();
 		mProjectData = ProjectData{};
 
-		mAssetManager = nullptr;
+		AssetManager::Try([&](Common::Shared<AssetManager> assetManager) {
+			assetManager->UnloadAll();
+		});
 		CurrentProject = nullptr;
 		Log::SInfo("Closed project successfully");
 	}
@@ -302,18 +325,22 @@ namespace Refraction::Engine {
 
 				// Get target with given UUID
 				Objects::AObject* parent = nullptr;
-				for (auto& obj : mProjectData.GlobalObjects) {
-					if (obj->GetUUID() == uuid) {
-						parent = obj.get();
-						break;
-					}
-					parent = Objects::AObject::GetInstanceWithUUID(uuid, obj.get());
-					if (parent) break;
+				for (auto& objWeak : mProjectData.GlobalObjects) {
+					if (auto obj = objWeak.lock()) {
+						if (obj->GetUUID() == uuid) {
+							parent = obj.get();
+							break;
+						}
+						parent = Objects::AObject::GetInstanceWithUUID(uuid, obj.get());
+						if (parent) break;
+					} else throw Common::RuntimeError("Failed to lock reference");
 				}
 				if (!parent) {
-					for (auto& scene : mProjectData.Scenes) {
-						parent = Objects::AObject::GetInstanceWithUUID(uuid, scene.get());
-						if (parent) break;
+					for (auto& sceneWeak : mProjectData.Scenes) {
+						if (auto scene = sceneWeak.lock()) {
+							parent = Objects::AObject::GetInstanceWithUUID(uuid, scene.get());
+							if (parent) break;
+						} else throw Common::RuntimeError("Failed to lock reference");
 					}
 				}
 
@@ -342,18 +369,22 @@ namespace Refraction::Engine {
 
 				// Get target with given UUID
 				Objects::AObject* parent = nullptr;
-				for (auto& obj : mProjectData.GlobalObjects) {
-					if (obj->GetUUID() == uuid) {
-						parent = obj.get();
-						break;
-					}
-					parent = Objects::AObject::GetInstanceWithUUID(uuid, obj.get());
-					if (parent) break;
+				for (auto& objWeak : mProjectData.GlobalObjects) {
+					if (auto obj = objWeak.lock()) {
+						if (obj->GetUUID() == uuid) {
+							parent = obj.get();
+							break;
+						}
+						parent = Objects::AObject::GetInstanceWithUUID(uuid, obj.get());
+						if (parent) break;
+					} else throw Common::RuntimeError("Failed to lock reference");
 				}
 				if (!parent) {
-					for (auto& scene : mProjectData.Scenes) {
-						parent = Objects::AObject::GetInstanceWithUUID(uuid, scene.get());
-						if (parent) break;
+					for (auto& sceneWeak : mProjectData.Scenes) {
+						if (auto scene = sceneWeak.lock()) {
+							parent = Objects::AObject::GetInstanceWithUUID(uuid, scene.get());
+							if (parent) break;
+						} else throw Common::RuntimeError("Failed to lock reference");
 					}
 				}
 
@@ -382,18 +413,22 @@ namespace Refraction::Engine {
 
 				// Get target with given UUID
 				Objects::AObject* target = nullptr;
-				for (auto& obj : mProjectData.GlobalObjects) {
-					if (obj->GetUUID() == uuid) {
-						target = obj.get();
-						break;
-					}
-					target = Objects::AObject::GetInstanceWithUUID(uuid, obj.get());
-					if (target) break;
+				for (auto& objWeak : mProjectData.GlobalObjects) {
+					if (auto obj = objWeak.lock()) {
+						if (obj->GetUUID() == uuid) {
+							target = obj.get();
+							break;
+						}
+						target = Objects::AObject::GetInstanceWithUUID(uuid, obj.get());
+						if (target) break;
+					} else throw Common::RuntimeError("Failed to lock reference");
 				}
 				if (!target) {
-					for (auto& scene : mProjectData.Scenes) {
-						target = Objects::AObject::GetInstanceWithUUID(uuid, scene.get());
-						if (target) break;
+					for (auto& sceneWeak : mProjectData.Scenes) {
+						if (auto scene = sceneWeak.lock()) {
+							target = Objects::AObject::GetInstanceWithUUID(uuid, scene.get());
+							if (target) break;
+						} else throw Common::RuntimeError("Failed to lock reference");
 					}
 				}
 
@@ -422,14 +457,18 @@ namespace Refraction::Engine {
 				// Get target with given UUID
 				Objects::AObject* targetParent = nullptr;
 				Components::AComponent* target = nullptr;
-				for (auto& obj : mProjectData.GlobalObjects) {
-					targetParent = Objects::AObject::GetInstanceWithUUID(uuid, obj.get());
-					if (targetParent) break;
+				for (auto& objWeak : mProjectData.GlobalObjects) {
+					if (auto obj = objWeak.lock()) {
+						targetParent = Objects::AObject::GetInstanceWithUUID(uuid, obj.get());
+						if (targetParent) break;
+					} else throw Common::RuntimeError("Failed to lock reference");
 				}
 				if (!target) {
-					for (auto& scene : mProjectData.Scenes) {
-						targetParent = Objects::AObject::GetInstanceWithUUID(uuid, scene.get());
-						if (targetParent) break;
+					for (auto& sceneWeak : mProjectData.Scenes) {
+						if (auto scene = sceneWeak.lock()) {
+							targetParent = Objects::AObject::GetInstanceWithUUID(uuid, scene.get());
+							if (targetParent) break;
+						} else throw Common::RuntimeError("Failed to lock reference");
 					}
 				}
 
@@ -459,28 +498,33 @@ namespace Refraction::Engine {
 				// Get target with given UUID
 				Objects::AObject* target = nullptr;
 				for (size_t i = 0; i < mProjectData.GlobalObjects.size(); i++) {
-					auto& obj = mProjectData.GlobalObjects[i];
-					// Test if this object is the target
-					if (obj->GetUUID() == uuid) {
-						mProjectData.GlobalObjects.erase(std::next(mProjectData.GlobalObjects.begin(), i - 1));
-						break;
-					}
-					// Test descendants
-					target = Objects::AObject::GetInstanceWithUUID(uuid, obj.get());
-					if (target) break;
-				}
-
-				if (!target) {
-					for (size_t i = 0; i < mProjectData.Scenes.size(); i++) {
-						auto& obj = mProjectData.Scenes[i];
+					auto& objWeak = mProjectData.GlobalObjects[i];
+					if (auto obj = objWeak.lock()) {
 						// Test if this object is the target
 						if (obj->GetUUID() == uuid) {
-							mProjectData.Scenes.erase(std::next(mProjectData.Scenes.begin(), i - 1));
+							mProjectData.GlobalObjects.erase(std::next(mProjectData.GlobalObjects.begin(), i - 1));
 							break;
 						}
 						// Test descendants
 						target = Objects::AObject::GetInstanceWithUUID(uuid, obj.get());
 						if (target) break;
+					} else throw Common::RuntimeError("Failed to lock reference");
+				}
+
+				if (!target) {
+					for (size_t i = 0; i < mProjectData.Scenes.size(); i++) {
+						auto& objWeak = mProjectData.Scenes[i];
+
+						if (auto obj = objWeak.lock()) {
+							// Test if this object is the target
+							if (obj->GetUUID() == uuid) {
+								mProjectData.Scenes.erase(std::next(mProjectData.Scenes.begin(), i - 1));
+								break;
+							}
+							// Test descendants
+							target = Objects::AObject::GetInstanceWithUUID(uuid, obj.get());
+							if (target) break;
+						} else throw Common::RuntimeError("Failed to lock reference");
 					}
 				}
 
@@ -495,7 +539,7 @@ namespace Refraction::Engine {
 		});
 	}
 
-	Common::Shared<Objects::SceneRoot> Project::NewScene() {
+	Common::Ref<Objects::SceneRoot> Project::NewScene() {
 		Log::SInfo("Creating a new scene");
 		auto newScene = Common::NewShared<Objects::SceneRoot>();
 		mRootObject->AddChild(newScene);
@@ -504,6 +548,7 @@ namespace Refraction::Engine {
 		// Instantiate default objects/components
 		///
 
+		auto nyenMesh = AssetImporter::Import(FileHandling::GetResourcesPath() / "models/nyen/nyen plush.obj");
 		auto nyenObj = Common::NewShared<Objects::BasicObject>();
 		nyenObj->mInstanceName = "Nyen";
 		nyenObj->GetComponent<Components::Mesh>()->LoadModel(FileHandling::GetResourcesPath() / "models/nyen/nyen plush.obj");
@@ -525,6 +570,7 @@ namespace Refraction::Engine {
 			auto baseplate = Common::NewShared<Objects::AObject>();
 			baseplate->mInstanceName = "Baseplate";
 			auto comp = baseplate->AddComponent<Components::Mesh>();
+			comp->mModel = 
 			comp->LoadModel(FileHandling::GetResourcesPath() / "models/Basic/Cube.obj");
 			comp->mTransform.Translate(Math::Vector3(0, -8, 0));
 			comp->mTransform.mScale = Math::Vector3(128, 8, 128);
@@ -535,11 +581,13 @@ namespace Refraction::Engine {
 
 	bool Project::OpenScene(UUID sceneUUID) {
 		Common::Shared<Objects::SceneRoot> targetScene;
-		for (auto& scene : mProjectData.Scenes) {
-			if (scene->GetUUID().AsInt() == sceneUUID.AsInt()) {
-				targetScene = scene;
-				break;
-			}
+		for (auto& sceneWeak : mProjectData.Scenes) {
+			if (auto scene = sceneWeak.lock()) {
+				if (scene->GetUUID().AsInt() == sceneUUID.AsInt()) {
+					targetScene = scene;
+					break;
+				}
+			} else throw Common::RuntimeError("Failed to lock reference");
 		}
 		if (!targetScene) {
 			Log::SError("Invalid Scene UUID provided (" + sceneUUID.AsString() + ")");

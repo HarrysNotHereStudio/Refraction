@@ -4,22 +4,40 @@
 #include "SceneRoot.h"
 
 namespace Refraction::Objects {
-	void SceneRoot::TickScene(std::vector<Common::Shared<AObject>> globalObjects) {
+	void SceneRoot::TickScene(std::vector<Common::Ref<AObject>> globalObjects) {
 		PreTick(this);
-		for (auto& obj : globalObjects) PreTick(obj.get());
+		for (auto& objWeak : globalObjects) {
+			if (objWeak.expired()) continue;
+			PreTick(objWeak.lock().get());
+		}
 		Tick(this);
-		for (auto& obj : globalObjects) Tick(obj.get());
+		for (auto& objWeak : globalObjects) {
+			if (objWeak.expired()) continue;
+			Tick(objWeak.lock().get());
+		}
 		PostTick(this);
-		for (auto& obj : globalObjects) PostTick(obj.get());
+		for (auto& objWeak : globalObjects) {
+			if (objWeak.expired()) continue;
+			PostTick(objWeak.lock().get());
+		}
 	}
 
-	void SceneRoot::RenderScene(std::vector<Common::Shared<AObject>> globalObjects) {
+	void SceneRoot::RenderScene(std::vector<Common::Ref<AObject>> globalObjects) {
 		PreRender(this);
-		for (auto& obj : globalObjects) PreRender(obj.get());
+		for (auto& objWeak : globalObjects) {
+			if (objWeak.expired()) continue;
+			PreRender(objWeak.lock().get());
+		}
 		Render(this);
-		for (auto& obj : globalObjects) Render(obj.get());
+		for (auto& objWeak : globalObjects) {
+			if (objWeak.expired()) continue;
+			Render(objWeak.lock().get());
+		}
 		PostRender(this);
-		for (auto& obj : globalObjects) PostRender(obj.get());
+		for (auto& objWeak : globalObjects) {
+			if (objWeak.expired()) continue;
+			PostRender(objWeak.lock().get());
+		}
 	}
 
 	void SceneRoot::Remove(UUID target) {

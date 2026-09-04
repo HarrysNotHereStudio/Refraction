@@ -58,14 +58,30 @@ namespace Refraction::Assets {
 	Asset::~Asset() {}
 
 	void Asset::LoadAsset(UUIDValue uuid) {
-		auto meta = Engine::AssetManager::GetInstance()->FetchMetadata(uuid);
-		if (!meta) throw Common::RuntimeError("Failed to load asset with UUID " + UUID::AsString(uuid) + ", could not fetch metadata");
-		mUUID = uuid;
-		if (!std::filesystem::exists(meta->SourcePath) && !std::filesystem::exists(meta->AssetPath)) throw std::runtime_error("Failed to load asset with provided metadata, no asset path exists.");
+		Common::Ref<AssetMetadata> metaWeak;
+		Engine::AssetManager::Try([&](Common::Shared<Engine::AssetManager> assetManager) {
+			metaWeak = assetManager->FetchMetadata(uuid);
+		});
 
-		// Derived object actually loads asset
-		InternalLoadAsset(meta);
+		if (auto meta = metaWeak.lock()) {
+			mUUID = uuid;
+			if (!std::filesystem::exists(meta->SourcePath) && !std::filesystem::exists(meta->AssetPath)) throw std::runtime_error("Failed to load asset with provided metadata, no asset path exists.");
+
+			// Derived object actually loads asset
+			OnLoadAsset(meta);
+		} else {
+			throw Common::RuntimeError("Failed to load asset with UUID " + UUID::AsString(uuid) + ", could not fetch metadata");
+		}
 	}
 
-	void Asset::Save() {}
+	void Asset::Save() {
+		OnSave();
+	}
+
+	void Asset::MakeVolatile() {
+		mVolatile = true;
+		mUUID = UUID::UUID();
+
+		OnMakeVolatile();
+	}
 }

@@ -25,12 +25,12 @@ namespace Refraction::Assets {
 
 	class Image : public Asset {
 	public:
-		Common::Shared<Engine::Platform::ATexture> mTexture = nullptr;
+		Common::Ref<Engine::Platform::ATexture> mTexture = {};
 
 		Image() = default;
 		virtual ~Image();
 	protected:
-		void InternalLoadAsset(Common::Shared<AssetMetadata> metadata) override;
+		void OnLoadAsset(Common::Shared<AssetMetadata> metadata) override;
 	private:
 		unsigned int mID = 0;
 	};

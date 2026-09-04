@@ -6,11 +6,11 @@
 namespace Refraction::Engine::Platform {
 	std::map<uint64_t, Common::Shared<ATexture>> ATexture::TexturePool = {};
 
-	Common::Shared<ATexture> ATexture::MakeTexture(const TextureStructure& texStruct) {
+	Common::Ref<ATexture> ATexture::MakeTexture(const TextureStructure& texStruct) {
 		switch (ARenderingAPI::GetAPI()) {
 		case RenderingAPI::NONE: default:
 			Log::Render.Warn("Attempt to create texture without an active API");
-			return nullptr;
+			return {};
 		case RenderingAPI::OPENGL: {
 			auto newTex = Common::NewShared<OpenGLTexture>(texStruct);
 			TexturePool[newTex->mUUID.AsInt()] = newTex;
@@ -18,33 +18,33 @@ namespace Refraction::Engine::Platform {
 		}
 		case RenderingAPI::VULKAN:
 			Log::Render.Warn("Attempt to create texture with Vulkan. Not implemented yet.");
-			return nullptr;
+			return {};
 		}
 	}
 
-	Common::Shared<ATexture> ATexture::FromPath(std::filesystem::path path) {
+	Common::Ref<ATexture> ATexture::FromPath(std::filesystem::path path) {
 		switch (ARenderingAPI::GetAPI()) {
 		case RenderingAPI::NONE: default:
 			Log::Render.Warn("Attempt to create texture without an active API");
-			return nullptr;
+			return {};
 		case RenderingAPI::OPENGL:
 			return OpenGLTexture::GetFromPath(path);
 		case RenderingAPI::VULKAN:
 			Log::Render.Warn("Attempt to create texture with Vulkan. Not implemented yet.");
-			return nullptr;
+			return {};
 		}
 	}
 
-	Common::Shared<ATexture> ATexture::FromID(unsigned int id) {
+	Common::Ref<ATexture> ATexture::FromID(unsigned int id) {
 		switch (ARenderingAPI::GetAPI()) {
 		case RenderingAPI::NONE: default:
 			Log::Render.Warn("Attempt to get texture without an active API");
-			return nullptr;
+			return {};
 		case RenderingAPI::OPENGL:
 			return OpenGLTexture::GetFromID(id);	
 		case RenderingAPI::VULKAN:
 			Log::Render.Warn("Attempt to get texture with Vulkan. Not implemented yet.");
-			return nullptr;
+			return {};
 		}
 	}
 }

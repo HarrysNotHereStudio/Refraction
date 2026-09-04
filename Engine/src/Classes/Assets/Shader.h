@@ -42,7 +42,7 @@ namespace Refraction::Assets {
 		std::string GetName() const { return mName; };
 
 	protected:
-		void InternalLoadAsset(Common::Shared<AssetMetadata> metadata) override;
+		void OnLoadAsset(Common::Shared<AssetMetadata> metadata) override;
 	private:
 		static std::unordered_map<std::string, uint64_t> LoadedShaders;
 
