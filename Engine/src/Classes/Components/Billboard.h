@@ -14,7 +14,7 @@ namespace Refraction::Components {
 
 		void Render() override;
 
-		std::string Serialise() override;
+		nlohmann::json Serialise() override;
 		void Deserialise(std::string serialised) override;
 	private:
 	};

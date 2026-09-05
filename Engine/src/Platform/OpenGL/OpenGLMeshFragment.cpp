@@ -27,7 +27,7 @@ namespace Refraction::Engine::Platform {
 	}
 
 	void OpenGLMeshFragment::Draw() {
-		mMaterial->Activate();
+		if(auto mat = mMaterial.lock()) mat->Activate();
 		glActiveTexture(GL_TEXTURE0);
 
 		glBindVertexArray(mVAO);

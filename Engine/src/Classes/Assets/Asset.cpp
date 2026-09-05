@@ -9,20 +9,30 @@
 
 namespace Refraction::Assets {
 	Common::Shared<AssetMetadata> AssetMetadata::CastedDeserialise(std::string data) {
-		std::string metaType;
+		MetadataType metaType;
 		Utilities::ClassSerialiser::TryParseJSON(data, [&](nlohmann::json& json) {
-			metaType = json.at("MetadataType").get<std::string>();
+			for (int i = 0; i < (int)MetadataType::COUNT; i++) {
+				if (json["MetadataType"] == MetadataTypeName[i]) {
+					metaType = (MetadataType)i;
+					break;
+				}
+			}
 		});
 
 		Common::Shared<AssetMetadata> result;
-		if (metaType == typeid(AssetMetadata).name()) {
+		switch (metaType) {
+		default: case MetadataType::Asset:
 			result = Common::NewShared<AssetMetadata>();
-		} else if (metaType == typeid(ImageMetadata).name()) {
+			break;
+		case MetadataType::Image:
 			result = Common::NewShared<ImageMetadata>();
-		} else if (metaType == typeid(ShaderMetadata).name()) {
-			result = Common::NewShared<ShaderMetadata>();
-		} else if (metaType == typeid(ModelMetadata).name()) {
+			break;
+		case MetadataType::Model:
 			result = Common::NewShared<ModelMetadata>();
+			break;
+		case MetadataType::Shader:
+			result = Common::NewShared<ShaderMetadata>();
+			break;
 		}
 
 		result->Deserialise(data);
@@ -34,10 +44,10 @@ namespace Refraction::Assets {
 		return AssetPath.stem().string() + RFCT_ASSET_METADATA_EXTENSION;
 	}
 
-	std::string AssetMetadata::Serialise() {
-		return Utilities::ClassSerialiser::TryAppendJSON("{}", [&](nlohmann::json& json) {
-			json["MetadataType"] = typeid(*this).name();
+	nlohmann::json AssetMetadata::Serialise() {
+		return Utilities::ClassSerialiser::AppendJSON({}, [&](nlohmann::json& json) {
 			json["AssetType"] = AssetType;
+			json["MetadataType"] = MetadataTypeName[(int)MetaType];
 			json["AssetUUID"] = AssetUUID.Serialise();
 			json["SourcePath"] = SourcePath.string();
 			json["AssetPath"] = AssetPath.string();
@@ -47,8 +57,14 @@ namespace Refraction::Assets {
 
 	void AssetMetadata::Deserialise(std::string data) {
 		Utilities::ClassSerialiser::TryParseJSON(data, [&](nlohmann::json& json) {
-			AssetType = json["AssetType"].get<std::string>();
 			AssetUUID = UUID::Deserialise(json["AssetUUID"]);
+			for (int i = 0; i < (int)MetadataType::COUNT; i++) {
+				if (json["MetadataType"] == MetadataTypeName[i]) {
+					MetaType = (MetadataType)i;
+					break;
+				}
+			}
+			AssetType = json["AssetType"].get<std::string>();
 			SourcePath = std::filesystem::path(json["SourcePath"].get<std::string>());
 			AssetPath = std::filesystem::path(json["AssetPath"].get<std::string>());
 			FileSize = json["FileSize"].get<uintmax_t>();

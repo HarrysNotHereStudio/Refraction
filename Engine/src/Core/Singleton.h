@@ -20,7 +20,7 @@ namespace Refraction::Engine {
 		static inline Common::Ref<Derived> GetInstance() { return Instance; }
 
 		// Access wrapper which handles some errors
-		static inline void Try(std::function<void(Common::Shared<Derived>)> f) {
+		static inline void Try(std::function<void(Common::Shared<Derived> ptr)> f) {
 			if (Instance) {
 				f(Instance);
 			} else {

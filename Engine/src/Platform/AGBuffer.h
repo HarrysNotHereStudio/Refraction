@@ -10,7 +10,7 @@ namespace Refraction::Engine::Platform {
 		// Creates a new GBuffer using the active rendering API
 		static Common::Shared<AGBuffer> CreateGBuffer();
 
-		Common::Ref<Assets::Image> GetLastRenderedFrame() const;
+		Common::Ref<Assets::Image> GetLastRenderedFrame();
 
 		// Initialises the GBuffer textures
 		virtual bool Init(unsigned int viewWidth, unsigned int viewHeight) = 0;
@@ -38,6 +38,7 @@ namespace Refraction::Engine::Platform {
 		Common::Ref<Platform::ATexture> mDepth;
 		Common::Ref<Platform::ATexture> mCFAAData;
 		Common::Ref<Platform::ATexture> mFinal;
+		UUIDValue mFinalImageUUID = 0;
 
 		AGBuffer();
 		virtual ~AGBuffer();

@@ -19,14 +19,16 @@
 namespace Refraction::Utilities {
 	class ClassSerialiser {
 	public:
-		// Tries to parse a json dump and outputs any error
+		// Tries to parse a JSON dump, handles JSON errors
 		static void TryParseJSON(std::string dump, std::function<void(nlohmann::json&)> fn);
-		// Tries to append to a parsed json dump and outputs any error
+		// Appends to a parsed JSON dump, handles JSON errors
 		static std::string TryAppendJSON(std::string dump, std::function<void(nlohmann::json&)> fn);
+		// Appends to a JSON object, handles JSON errors
+		static nlohmann::json AppendJSON(nlohmann::json json, std::function<void(nlohmann::json&)> fn);
 
-		static std::string Serialise(Common::Shared<Assets::Asset> asset);
-		static std::string Serialise(Common::Shared<Objects::AObject> object);
-		static std::string Serialise(Common::Shared<Components::AComponent> comp);
+		static nlohmann::json Serialise(Common::Shared<Assets::Asset> asset);
+		static nlohmann::json Serialise(Common::Shared<Objects::AObject> object);
+		static nlohmann::json Serialise(Common::Shared<Components::AComponent> comp);
 		static Common::Shared<Assets::Asset> DeserialiseAsset(Common::Shared<Assets::AssetMetadata> metadata);
 		static Common::Shared<Objects::AObject> DeserialiseObject(std::string serialisedData);
 		static Common::Shared<Components::AComponent> DeserialiseComponent(std::string serialisedData);
@@ -42,22 +44,29 @@ namespace Refraction::Utilities {
 			return dynamic_pointer_cast<ComponentType>(comp);
 		}
 
-
-		static std::string Serialise(Math::Vector2 vec);
-		static std::string Serialise(Math::Vector3 vec);
-		static std::string Serialise(Math::Vector4 vec);
-		static std::string Serialise(Math::Quaternion quat);
-		static std::string Serialise(Math::Orientation orient);
-		static std::string Serialise(Math::Rect rect);
-		static std::string Serialise(Math::Frustum frustum);
-		static std::string Serialise(Math::Transform transform);
+		static nlohmann::json Serialise(Math::Vector2 vec);
+		static nlohmann::json Serialise(Math::Vector3 vec);
+		static nlohmann::json Serialise(Math::Vector4 vec);
+		static nlohmann::json Serialise(Math::Quaternion quat);
+		static nlohmann::json Serialise(Math::Orientation orient);
+		static nlohmann::json Serialise(Math::Rect rect);
+		static nlohmann::json Serialise(Math::Frustum frustum);
+		static nlohmann::json Serialise(Math::Transform transform);
+		static Math::Vector2 DeserialiseVector2(nlohmann::json data);
 		static Math::Vector2 DeserialiseVector2(std::string serialisedData);
+		static Math::Vector3 DeserialiseVector3(nlohmann::json data);
 		static Math::Vector3 DeserialiseVector3(std::string serialisedData);
+		static Math::Vector4 DeserialiseVector4(nlohmann::json data);
 		static Math::Vector4 DeserialiseVector4(std::string serialisedData);
+		static Math::Quaternion DeserialiseQuaternion(nlohmann::json data);
 		static Math::Quaternion DeserialiseQuaternion(std::string serialisedData);
+		static Math::Orientation DeserialiseOrientation(nlohmann::json data);
 		static Math::Orientation DeserialiseOrientation(std::string serialisedData);
+		static Math::Rect DeserialiseRect(nlohmann::json data);
 		static Math::Rect DeserialiseRect(std::string serialisedData);
+		static Math::Frustum DeserialiseFrustum(nlohmann::json data);
 		static Math::Frustum DeserialiseFrustum(std::string serialisedData);
+		static Math::Transform DeserialiseTransform(nlohmann::json data);
 		static Math::Transform DeserialiseTransform(std::string serialisedData);
 	};
 }

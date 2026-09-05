@@ -11,8 +11,8 @@
 namespace Refraction::Events {
 	class FrameRenderedEvent : public Events::Event {
 	public:
-		Common::Shared<Assets::Image> mFrame;
-		FrameRenderedEvent(Common::Shared<Assets::Image> newFrame) : mFrame(newFrame) {
+		Common::Ref<Assets::Image> mFrame;
+		FrameRenderedEvent(Common::Ref<Assets::Image> newFrame) : mFrame(newFrame) {
 			mName = "FrameRendered";
 		}
 	};

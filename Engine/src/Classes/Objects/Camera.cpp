@@ -42,8 +42,8 @@ namespace Refraction::Objects {
 		mCameraTarget = mTransform.GetWorldPosition() + mTransform.GetForwardVector();
 	}
 
-	std::string Camera::Serialise() {
-		return Utilities::ClassSerialiser::TryAppendJSON(AObject::Serialise(), [&](nlohmann::json& json) {
+	nlohmann::json Camera::Serialise() {
+		return Utilities::ClassSerialiser::AppendJSON(AObject::Serialise(), [&](nlohmann::json& json) {
 			json["Frustum"] = Utilities::ClassSerialiser::Serialise(mFrustum);
 		});
 	}

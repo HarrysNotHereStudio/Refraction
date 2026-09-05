@@ -14,8 +14,8 @@ namespace Refraction::Components {
 		if (mAngularVelocity.Magnitude() > 0) mParent->mTransform.Rotate(mAngularVelocity * delta);
 	}
 
-	std::string APhysics::Serialise() {
-		return Utilities::ClassSerialiser::TryAppendJSON(AComponent::Serialise(), [&](nlohmann::json& json) {
+	nlohmann::json APhysics::Serialise() {
+		return Utilities::ClassSerialiser::AppendJSON(AComponent::Serialise(), [&](nlohmann::json& json) {
 			json["LinearVelocity"] = Utilities::ClassSerialiser::Serialise(mLinearVelocity);
 			json["AngularVelocity"] = Utilities::ClassSerialiser::Serialise(mAngularVelocity);
 		});

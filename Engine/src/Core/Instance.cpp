@@ -9,7 +9,8 @@ namespace Refraction::Engine {
 			mWindow = Platform::AWindow::Get();
 			mWindow->Init();
 			mLayerStack = Common::NewShared<LayerStack>();
-			mProjectInstance = Common::NewShared<Project>();
+			mProjectInstance = Project::MakeInstance().lock();
+			if (!mProjectInstance) throw Common::RuntimeError("Failed to create Project singleton");
 			mRenderingAPI = Platform::ARenderingAPI::Get();
 			mRenderingAPI->Init();
 			mRenderLayer = Common::NewShared<RenderLayer>(mLayerStack, mProjectInstance);

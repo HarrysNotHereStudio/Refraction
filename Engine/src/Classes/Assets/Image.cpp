@@ -6,8 +6,8 @@
 #include "Image.h"
 
 namespace Refraction::Assets {
-	std::string ImageMetadata::Serialise() {
-		return Utilities::ClassSerialiser::TryAppendJSON(AssetMetadata::Serialise(), [&](nlohmann::json& json) {
+	nlohmann::json ImageMetadata::Serialise() {
+		return Utilities::ClassSerialiser::AppendJSON(AssetMetadata::Serialise(), [&](nlohmann::json& json) {
 			json["Width"] = Width;
 			json["Height"] = Height;
 			json["Channels"] = Channels;
@@ -17,9 +17,9 @@ namespace Refraction::Assets {
 	void ImageMetadata::Deserialise(std::string data) {
 		AssetMetadata::Deserialise(data);
 		Utilities::ClassSerialiser::TryParseJSON(data, [&](nlohmann::json& json) {
-			Width = json.at("Width").get<int>();
-			Height = json.at("Height").get<int>();
-			Channels = json.at("Channels").get<int>();
+			if(json.contains("Width")) Width = json.at("Width").get<int>();
+			if (json.contains("Height")) Height = json.at("Height").get<int>();
+			if (json.contains("Channels")) Channels = json.at("Channels").get<int>();
 		});
 	}
 

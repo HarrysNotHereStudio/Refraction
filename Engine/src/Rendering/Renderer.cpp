@@ -37,7 +37,6 @@ namespace Refraction::Engine {
 		Log::Render.Info("Creating G-Buffer...");
 		mGBuffer = Platform::AGBuffer::CreateGBuffer();
 		if (!mGBuffer->Init(mViewportRect.w, mViewportRect.h)) throw;
-		mFinalOutput = mGBuffer->GetLastRenderedFrame();
 
 		Log::Render.Info("Creating uniform buffer object...");
 		projectionMatrix = Math::Matrix4::Perspective(defaultProjection);
@@ -101,6 +100,9 @@ namespace Refraction::Engine {
 		if (projectInstance->GetActiveScene().expired()) return;
 		if (!Objects::Camera::ActiveCamera) return;
 
+		if (mFinalOutput.expired()) {
+			mFinalOutput = mGBuffer->GetLastRenderedFrame();
+		}
 
 		AssetManager::Try([&](Common::Shared<AssetManager> assetManager) {
 			auto& graphicsSettings = Settings::CurrentSettings->Graphics;

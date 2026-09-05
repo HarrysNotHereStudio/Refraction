@@ -10,15 +10,15 @@ namespace Refraction::Editor {
 	PersistentEditorState EditorState::Persistent{};
 	
 	bool EditorState::Serialise() {
-		using nlohmann::json;
-		json serialised;
-		serialised["ResourcesDir"] = Persistent.ResourcesDir;
-		serialised["WindowRect"] = Utilities::ClassSerialiser::Serialise(Persistent.WindowRect);
-		serialised["RecentProjects"] = {};
-		std::erase_if(Persistent.RecentProjects, [&](std::filesystem::path path) {
-			if (!std::filesystem::is_regular_file(path)) return true;
-			serialised["RecentProjects"].push_back(path.string());
-			return false;
+		auto serialised = Utilities::ClassSerialiser::AppendJSON({}, [&](nlohmann::json& json) {
+			json["ResourcesDir"] = Persistent.ResourcesDir;
+			json["WindowRect"] = Utilities::ClassSerialiser::Serialise(Persistent.WindowRect);
+			json["RecentProjects"] = {};
+			std::erase_if(Persistent.RecentProjects, [&](std::filesystem::path path) {
+				if (!std::filesystem::is_regular_file(path)) return true;
+				json["RecentProjects"].push_back(path.string());
+				return false;
+			});
 		});
 
 		auto stateFilePath = Persistent.ExecutableDir / "EditorState.rfc";
@@ -27,7 +27,7 @@ namespace Refraction::Editor {
 			Log::SError("Could not open path " + stateFilePath.string() + " for writing.");
 			return false;
 		}
-		dataFile << serialised;
+		dataFile << serialised.dump(RFCT_JSON_INDENT);
 		return true;
 	}
 	

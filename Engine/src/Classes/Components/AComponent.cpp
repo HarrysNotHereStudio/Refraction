@@ -1,5 +1,3 @@
-#include <json.hpp>
-
 #include <Core/Utilities.h>
 #include <Classes/ClassSerialiser.h>
 
@@ -14,17 +12,14 @@ namespace Refraction::Components {
 		mUUID.Reset();
 	}
 
-	std::string AComponent::Serialise() {
-		using nlohmann::json;
-		//Log::SInfo("Serialising as " + std::string(typeid(*this).name()));
-		json serialised;
-		serialised["UUID"] = mUUID.Serialise();
-		serialised["TypeName"] = typeid(*this).name();
-		serialised["ClassName"] = mClassName;
-		serialised["ParentUUID"] = mParent ? mParent->GetUUID().Serialise() : UUID::Null().Serialise();
-		serialised["Required"] = mRequired;
-
-		return serialised.dump();
+	nlohmann::json AComponent::Serialise() {
+		return Utilities::ClassSerialiser::AppendJSON({}, [&](nlohmann::json& json) {
+			json["UUID"] = mUUID.Serialise();
+			json["TypeName"] = typeid(*this).name();
+			json["ClassName"] = mClassName;
+			json["ParentUUID"] = mParent ? mParent->GetUUID().Serialise() : UUID::Null().Serialise();
+			json["Required"] = mRequired;
+		});
 	}
 
 	void AComponent::Deserialise(std::string serialised) {

@@ -17,6 +17,7 @@ namespace Refraction::Assets {
 		if (auto meta = metaWeak.lock()) {
 			return Deserialise(FileHandling::ReadFile(meta->AssetPath));
 		}
+		return nullptr;
 	}
 
 	std::string Assembly::Serialise(Common::Shared<Objects::AObject> root) {

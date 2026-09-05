@@ -13,7 +13,7 @@ namespace Refraction::Assets {
 	Common::Shared<Engine::Platform::AMeshFragment> ProcessMesh(std::string& sourcePath, std::vector<Common::Ref<Assets::Material>>& materials, aiMesh* mesh, const aiScene* scene);
 	std::vector<Common::Ref<Assets::Image>> LoadMaterialTextures(std::string& sourcePath, aiMaterial* mat, aiTextureType type, std::string typeName);
 
-	static void ProcessNode(std::string sourcePath, std::vector<Common::Shared<Assets::Material>>& materials, std::vector<Common::Shared<Engine::Platform::AMeshFragment>>& fragments, aiNode* node, const aiScene* scene) {
+	static void ProcessNode(std::string sourcePath, std::vector<Common::Ref<Assets::Material>>& materials, std::vector<Common::Shared<Engine::Platform::AMeshFragment>>& fragments, aiNode* node, const aiScene* scene) {
 		for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 			fragments.push_back(ProcessMesh(sourcePath, materials, mesh, scene));
@@ -24,7 +24,7 @@ namespace Refraction::Assets {
 		}
 	}
 
-	static Common::Shared<Engine::Platform::AMeshFragment> ProcessMesh(std::string& sourcePath, std::vector<Common::Shared<Assets::Material>>& materials, aiMesh* mesh, const aiScene* scene) {
+	static Common::Shared<Engine::Platform::AMeshFragment> ProcessMesh(std::string& sourcePath, std::vector<Common::Ref<Assets::Material>>& materials, aiMesh* mesh, const aiScene* scene) {
 		std::vector<Engine::sVertex> vertices;
 		std::vector<unsigned int> indices;
 		std::vector<Common::Shared<Assets::Image>> diffuseMaps;
@@ -74,8 +74,8 @@ namespace Refraction::Assets {
 		return textures;
 	}
 
-	std::string ModelMetadata::Serialise() {
-		return Utilities::ClassSerialiser::TryAppendJSON(AssetMetadata::Serialise(), [&](nlohmann::json& json) {
+	nlohmann::json ModelMetadata::Serialise() {
+		return Utilities::ClassSerialiser::AppendJSON(AssetMetadata::Serialise(), [&](nlohmann::json& json) {
 			json["VertexCount"] = VertexCount;
 			json["PolyCount"] = PolyCount;
 		});
@@ -84,8 +84,8 @@ namespace Refraction::Assets {
 	void ModelMetadata::Deserialise(std::string data) {
 		AssetMetadata::Deserialise(data);
 		Utilities::ClassSerialiser::TryParseJSON(data, [&](nlohmann::json& json) {
-			VertexCount = json.at("VertexCount").get<int>();
-			PolyCount = json.at("PolyCount").get<int>();
+			if (json.contains("VertexCount")) VertexCount = json.at("VertexCount").get<int>();
+			if (json.contains("PolyCount")) PolyCount = json.at("PolyCount").get<int>();
 		});
 	}
 

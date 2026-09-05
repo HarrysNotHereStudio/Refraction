@@ -14,7 +14,7 @@ namespace Refraction::Objects {
 		}
 		virtual ~BasicObject();
 
-		std::string Serialise() override;
+		nlohmann::json Serialise() override;
 		void Deserialise(std::string serialised) override;
 	};
 }

@@ -19,7 +19,7 @@ namespace Refraction::Assets {
 		ImageMetadata() = default;
 		~ImageMetadata() = default;
 
-		std::string Serialise() override;
+		nlohmann::json Serialise() override;
 		void Deserialise(std::string data) override;
 	};
 
@@ -29,6 +29,8 @@ namespace Refraction::Assets {
 
 		Image() = default;
 		virtual ~Image();
+
+		MetadataType GetMetadataType() override { return MetadataType::Image; }
 	protected:
 		void OnLoadAsset(Common::Shared<AssetMetadata> metadata) override;
 	private:

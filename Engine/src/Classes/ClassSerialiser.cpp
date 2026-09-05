@@ -13,22 +13,39 @@ namespace Refraction::Utilities {
 			json data = json::parse(dump);
 			fn(data);
 		} catch (const json::parse_error& err) {
-			throw std::runtime_error("JSON Parse Error: " + std::string(err.what()));
-		} catch (const std::out_of_range& err) {
-			throw std::runtime_error("JSON Index Error: " + std::string(err.what()));
+			throw Common::RuntimeError("JSON Parse Error: " + std::string(err.what()));
+		} catch (const json::out_of_range& err) {
+			throw Common::RuntimeError("JSON Index Error: " + std::string(err.what()));
+		} catch (const json::exception& err) {
+			throw Common::RuntimeError("JSON Error: " + std::string(err.what()));
 		}
 	}
 
 	std::string ClassSerialiser::TryAppendJSON(std::string dump, std::function<void(json&)> fn) {
+		// Replace empty string with empty json to prevent errors
+		if (dump.empty()) dump = "{}";
 		std::string result;
 		TryParseJSON(dump, [&](json& data) {
 			fn(data);
-			result = data.dump();
+			result = data.dump(RFCT_JSON_INDENT);
 		});
 		return result;
 	}
 
-	std::string ClassSerialiser::Serialise(Common::Shared<Assets::Asset> asset) {
+	nlohmann::json ClassSerialiser::AppendJSON(nlohmann::json json, std::function<void(nlohmann::json&)> fn) {
+		try {
+			fn(json);
+		} catch (const json::parse_error& err) {
+			throw Common::RuntimeError("JSON Parse Error: " + std::string(err.what()));
+		} catch (const json::out_of_range& err) {
+			throw Common::RuntimeError("JSON Index Error: " + std::string(err.what()));
+		} catch (const json::exception& err) {
+			throw Common::RuntimeError("JSON Error: " + std::string(err.what()));
+		}
+		return json;
+	}
+
+	nlohmann::json ClassSerialiser::Serialise(Common::Shared<Assets::Asset> asset) {
 		Common::Ref<Assets::AssetMetadata> metaWeak;
 		Engine::AssetManager::Try([&](Common::Shared<Engine::AssetManager> assetManager) {
 			metaWeak = assetManager->FetchMetadata(asset->GetUUID());
@@ -37,11 +54,11 @@ namespace Refraction::Utilities {
 			return meta->Serialise();
 		} else throw Common::RuntimeError("Failed to fetch metadata to serialise");
 	}
-	std::string ClassSerialiser::Serialise(Common::Shared<Objects::AObject> object) {
+	nlohmann::json ClassSerialiser::Serialise(Common::Shared<Objects::AObject> object) {
 		return object->Serialise();
 	}
 
-	std::string ClassSerialiser::Serialise(Common::Shared<Components::AComponent> component) {
+	nlohmann::json ClassSerialiser::Serialise(Common::Shared<Components::AComponent> component) {
 		return component->Serialise();
 	}
 
@@ -51,6 +68,8 @@ namespace Refraction::Utilities {
 			deserialised = Common::NewShared<Assets::Asset>();
 		} else if (metadata->AssetType == typeid(Assets::Image).name()) {
 			deserialised = Common::NewShared<Assets::Image>();
+		} else if (metadata->AssetType == typeid(Assets::Model).name()) {
+			deserialised = Common::NewShared<Assets::Model>();
 		} else if (metadata->AssetType == typeid(Assets::Shader).name()) {
 			deserialised = Common::NewShared<Assets::Shader>();
 		} else if (metadata->AssetType == typeid(Assets::Material).name()) {
@@ -87,7 +106,6 @@ namespace Refraction::Utilities {
 	Common::Shared<Components::AComponent> ClassSerialiser::DeserialiseComponent(std::string serialisedData) {
 		Common::Shared<Components::AComponent> deserialised;
 		TryParseJSON(serialisedData, [&](nlohmann::json& data) {
-
 			auto className = data.at("TypeName").get<std::string>();
 			if (className == typeid(Components::AComponent).name()) {
 				deserialised = Common::NewShared<Components::AComponent>();
@@ -103,15 +121,15 @@ namespace Refraction::Utilities {
 		return deserialised;
 	}
 
-	std::string ClassSerialiser::Serialise(Math::Vector2 vec) {
+	nlohmann::json ClassSerialiser::Serialise(Math::Vector2 vec) {
 		json result;
 		if (vec.x != vec.x) vec.x = 0;
 		if (vec.y != vec.y) vec.y = 0;
 		result["X"] = vec.x;
 		result["Y"] = vec.y;
-		return result.dump();
+		return result;
 	}
-	std::string ClassSerialiser::Serialise(Math::Vector3 vec) {
+	nlohmann::json ClassSerialiser::Serialise(Math::Vector3 vec) {
 		json result;
 		if (vec.x != vec.x) vec.x = 0;
 		if (vec.y != vec.y) vec.y = 0;
@@ -119,9 +137,9 @@ namespace Refraction::Utilities {
 		result["X"] = vec.x;
 		result["Y"] = vec.y;
 		result["Z"] = vec.z;
-		return result.dump();
+		return result;
 	}
-	std::string ClassSerialiser::Serialise(Math::Vector4 vec) {
+	nlohmann::json ClassSerialiser::Serialise(Math::Vector4 vec) {
 		json result;
 		if (vec.x != vec.x) vec.x = 0;
 		if (vec.y != vec.y) vec.y = 0;
@@ -131,9 +149,9 @@ namespace Refraction::Utilities {
 		result["Y"] = vec.y;
 		result["Z"] = vec.z;
 		result["W"] = vec.w;
-		return result.dump();
+		return result;
 	}
-	std::string ClassSerialiser::Serialise(Math::Quaternion quat) {
+	nlohmann::json ClassSerialiser::Serialise(Math::Quaternion quat) {
 		json result;
 		if (quat.x != quat.x) quat.x = 0;
 		if (quat.y != quat.y) quat.y = 0;
@@ -143,9 +161,9 @@ namespace Refraction::Utilities {
 		result["Y"] = quat.y;
 		result["Z"] = quat.z;
 		result["W"] = quat.w;
-		return result.dump();
+		return result;
 	}
-	std::string ClassSerialiser::Serialise(Math::Orientation orient) {
+	nlohmann::json ClassSerialiser::Serialise(Math::Orientation orient) {
 		json result;
 		if (orient.mPitch != orient.mPitch) orient.mPitch = 0;
 		if (orient.mYaw != orient.mYaw) orient.mYaw = 0;
@@ -153,100 +171,116 @@ namespace Refraction::Utilities {
 		result["Pitch"] = orient.mPitch;
 		result["Yaw"] = orient.mYaw;
 		result["Roll"] = orient.mRoll;
-		return result.dump();
+		return result;
 	}
-	std::string ClassSerialiser::Serialise(Math::Rect rect) {
+	nlohmann::json ClassSerialiser::Serialise(Math::Rect rect) {
 		json result;
 		result["X"] = rect.x;
 		result["Y"] = rect.y;
 		result["W"] = rect.w;
 		result["H"] = rect.h;
-		return result.dump();
+		return result;
 	}
-	std::string ClassSerialiser::Serialise(Math::Frustum frustum) {
+	nlohmann::json ClassSerialiser::Serialise(Math::Frustum frustum) {
 		json result;
 		result["FovY"] = frustum.fovY;
 		result["W"] = frustum.w;
 		result["H"] = frustum.h;
 		result["ZNear"] = frustum.zNear;
 		result["ZFar"] = frustum.zFar;
-		return result.dump();
+		return result;
 	}
-	std::string ClassSerialiser::Serialise(Math::Transform transform) {
+	nlohmann::json ClassSerialiser::Serialise(Math::Transform transform) {
 		json result;
 		result["SpatialPosition"]["GridIndex"] = Serialise(transform.mSpatialPosition.GridIndex);
 		result["SpatialPosition"]["CellPosition"] = Serialise(transform.mSpatialPosition.CellPosition);
 		result["Orientation"] = Serialise(transform.mOrientation);
 		result["Scale"] = Serialise(transform.mScale);
-		return result.dump();
+		return result;
+	}
+	Math::Vector2 ClassSerialiser::DeserialiseVector2(json data) {
+		return Math::Vector2(data.at("X").get<float>(), data.at("Y").get<float>());
 	}
 	Math::Vector2 ClassSerialiser::DeserialiseVector2(std::string serialisedData) {
-		try {
-			json data = json::parse(serialisedData);
-			return Math::Vector2(data.at("X").get<float>(), data.at("Y").get<float>());
-		} catch (const json::parse_error& err) {
-			throw std::runtime_error("JSON Parse Error: " + std::string(err.what()));
-		}
+		Math::Vector2 result;
+		TryParseJSON(serialisedData, [&](nlohmann::json& json) {
+			result = DeserialiseVector2(json);
+		});
+		return result;
+	}
+	Math::Vector3 ClassSerialiser::DeserialiseVector3(json data) {
+		return Math::Vector3(data.at("X").get<float>(), data.at("Y").get<float>(), data.at("Z").get<float>());
 	}
 	Math::Vector3 ClassSerialiser::DeserialiseVector3(std::string serialisedData) {
-		try {
-			json data = json::parse(serialisedData);
-			return Math::Vector3(data.at("X").get<float>(), data.at("Y").get<float>(), data.at("Z").get<float>());
-		} catch (const json::parse_error& err) {
-			throw std::runtime_error("JSON Parse Error: " + std::string(err.what()));
-		}
+		Math::Vector3 result;
+		TryParseJSON(serialisedData, [&](nlohmann::json& json) {
+			result = DeserialiseVector3(json);
+		});
+		return result;
+	}
+	Math::Vector4 ClassSerialiser::DeserialiseVector4(json data) {
+		return Math::Vector4(data.at("X").get<float>(), data.at("Y").get<float>(), data.at("Z").get<float>(), data.at("W").get<float>());
 	}
 	Math::Vector4 ClassSerialiser::DeserialiseVector4(std::string serialisedData) {
-		try {
-			json data = json::parse(serialisedData);
-			return Math::Vector4(data.at("X").get<float>(), data.at("Y").get<float>(), data.at("Z").get<float>(), data.at("W").get<float>());
-		} catch (const json::parse_error& err) {
-			throw std::runtime_error("JSON Parse Error: " + std::string(err.what()));
-		}
+		Math::Vector4 result;
+		TryParseJSON(serialisedData, [&](nlohmann::json& json) {
+			result = DeserialiseVector4(json);
+		});
+		return result;
+	}
+	Math::Quaternion ClassSerialiser::DeserialiseQuaternion(json data) {
+		return Math::Quaternion(data.at("X").get<float>(), data.at("Y").get<float>(), data.at("Z").get<float>(), data.at("W").get<float>());
 	}
 	Math::Quaternion ClassSerialiser::DeserialiseQuaternion(std::string serialisedData) {
-		try {
-			json data = json::parse(serialisedData);
-			return Math::Quaternion(data.at("X").get<float>(), data.at("Y").get<float>(), data.at("Z").get<float>(), data.at("W").get<float>());
-		} catch (const json::parse_error& err) {
-			throw std::runtime_error("JSON Parse Error: " + std::string(err.what()));
-		}
+		Math::Quaternion result;
+		TryParseJSON(serialisedData, [&](nlohmann::json& json) {
+			result = DeserialiseQuaternion(json);
+		});
+		return result;
+	}
+	Math::Orientation ClassSerialiser::DeserialiseOrientation(json data) {
+		return Math::Vector3(data.at("Pitch").get<float>(), data.at("Yaw").get<float>(), data.at("Roll").get<float>());
 	}
 	Math::Orientation ClassSerialiser::DeserialiseOrientation(std::string serialisedData) {
-		try {
-			json data = json::parse(serialisedData);
-			return Math::Vector3(data.at("Pitch").get<float>(), data.at("Yaw").get<float>(), data.at("Roll").get<float>());
-		} catch (const json::parse_error& err) {
-			throw std::runtime_error("JSON Parse Error: " + std::string(err.what()));
-		}
+		Math::Orientation result;
+		TryParseJSON(serialisedData, [&](nlohmann::json& json) {
+			result = DeserialiseOrientation(json);
+		});
+		return result;
+	}
+	Math::Rect ClassSerialiser::DeserialiseRect(json data) {
+		return Math::Rect(data.at("X").get<int>(), data.at("Y").get<int>(), data.at("W").get<int>(), data.at("H").get<int>());
 	}
 	Math::Rect ClassSerialiser::DeserialiseRect(std::string serialisedData) {
-		try {
-			json data = json::parse(serialisedData);
-			return Math::Rect(data.at("X").get<int>(), data.at("Y").get<int>(), data.at("W").get<int>(), data.at("H").get<int>());
-		} catch (const json::parse_error& err) {
-			throw std::runtime_error("JSON Parse Error: " + std::string(err.what()));
-		}
+		Math::Rect result;
+		TryParseJSON(serialisedData, [&](nlohmann::json& json) {
+			result = DeserialiseRect(json);
+		});
+		return result;
+	}
+	Math::Frustum ClassSerialiser::DeserialiseFrustum(json data) {
+		return Math::Frustum(Math::Vector2(data.at("W").get<float>(), data.at("H").get<float>()), data.at("FovY").get<float>(), data.at("ZNear").get<float>(), data.at("ZFar").get<float>());
 	}
 	Math::Frustum ClassSerialiser::DeserialiseFrustum(std::string serialisedData) {
-		try {
-			json data = json::parse(serialisedData);
-			return Math::Frustum(Math::Vector2(data.at("W").get<float>(), data.at("H").get<float>()), data.at("FovY").get<float>(), data.at("ZNear").get<float>(), data.at("ZFar").get<float>());
-		} catch (const json::parse_error& err) {
-			throw std::runtime_error("JSON Parse Error: " + std::string(err.what()));
-		}
+		Math::Frustum result;
+		TryParseJSON(serialisedData, [&](nlohmann::json& json) {
+			result = DeserialiseFrustum(json);
+		});
+		return result;
+	}
+	Math::Transform ClassSerialiser::DeserialiseTransform(json data) {
+		Math::Transform result;
+		result.mSpatialPosition.GridIndex = DeserialiseVector3(data.at("SpatialPosition").at("GridIndex"));
+		result.mSpatialPosition.CellPosition = DeserialiseVector3(data.at("SpatialPosition").at("CellPosition"));
+		result.mOrientation = DeserialiseOrientation(data.at("Orientation"));
+		result.mScale = DeserialiseVector3(data.at("Scale"));
+		return result;
 	}
 	Math::Transform ClassSerialiser::DeserialiseTransform(std::string serialisedData) {
-		try {
-			Math::Transform result;
-			json data = json::parse(serialisedData);
-			result.mSpatialPosition.GridIndex = DeserialiseVector3(data.at("SpatialPosition").at("GridIndex"));
-			result.mSpatialPosition.CellPosition = DeserialiseVector3(data.at("SpatialPosition").at("CellPosition"));
-			result.mOrientation = DeserialiseOrientation(data.at("Orientation"));
-			result.mScale = DeserialiseVector3(data.at("Scale"));
-			return result;
-		} catch (const json::parse_error& err) {
-			throw std::runtime_error("JSON Parse Error: " + std::string(err.what()));
-		}
+		Math::Transform result;
+		TryParseJSON(serialisedData, [&](nlohmann::json& json) {
+			result = DeserialiseTransform(json);
+		});
+		return result;
 	}
 }

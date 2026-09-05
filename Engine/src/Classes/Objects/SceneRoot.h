@@ -17,7 +17,7 @@ namespace Refraction::Objects {
 		// Removes the object/component with the specified UUID
 		void Remove(UUID target);
 
-		std::string Serialise() override;
+		nlohmann::json Serialise() override;
 		void Deserialise(std::string serialised) override;
 	private:
 		void PreTick(AObject* object);

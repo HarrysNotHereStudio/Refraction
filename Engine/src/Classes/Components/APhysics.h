@@ -13,7 +13,7 @@ namespace Refraction::Components {
 
 		void Tick(float delta) override;
 
-		std::string Serialise() override;
+		nlohmann::json Serialise() override;
 		void Deserialise(std::string serialised) override;
 	};
 

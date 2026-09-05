@@ -46,8 +46,8 @@ namespace Refraction::Components {
 		}
 	}
 
-	std::string Mesh::Serialise() {
-		return Utilities::ClassSerialiser::TryAppendJSON(AComponent::Serialise(), [&](nlohmann::json& json) {
+	nlohmann::json Mesh::Serialise() {
+		return Utilities::ClassSerialiser::AppendJSON(AComponent::Serialise(), [&](nlohmann::json& json) {
 			json["Transform"] = Utilities::ClassSerialiser::Serialise(mTransform);
 			if (auto model = mModel.lock()) {
 				json["ModelUUID"] = model->GetUUID();
@@ -60,7 +60,7 @@ namespace Refraction::Components {
 		Utilities::ClassSerialiser::TryParseJSON(serialised, [&](nlohmann::json& json) {
 			mTransform = Utilities::ClassSerialiser::DeserialiseTransform(json.at("Transform"));
 			Engine::AssetManager::Try([&](Common::Shared<Engine::AssetManager> manager) {
-				mModel = manager->GetAsset<Assets::Model>(json.at("ModelUUID").get<UUIDValue>());
+				if(json.contains("ModelUUID")) mModel = manager->GetAsset<Assets::Model>(json.at("ModelUUID").get<UUIDValue>());
 			});
 		});
 	}

@@ -4,7 +4,7 @@
 #include "AMeshFragment.h"
 
 namespace Refraction::Engine::Platform {
-	Common::Shared<AMeshFragment> Platform::AMeshFragment::MakeMeshFragment(std::vector<sVertex> vertices, std::vector<unsigned int> indices, Common::Shared<Assets::Material> material) {
+	Common::Shared<AMeshFragment> Platform::AMeshFragment::MakeMeshFragment(std::vector<sVertex> vertices, std::vector<unsigned int> indices, Common::Ref<Assets::Material> material) {
 		switch (ARenderingAPI::GetAPI()) {
 		case RenderingAPI::NONE: default:
 			Log::Render.Warn("Attempt to create mesh fragment without an active API");
@@ -18,7 +18,7 @@ namespace Refraction::Engine::Platform {
 
 	Platform::AMeshFragment::~AMeshFragment() {}
 
-	AMeshFragment::AMeshFragment(std::vector<sVertex> vertices, std::vector<unsigned int> indices, Common::Shared<Assets::Material> material) {
+	AMeshFragment::AMeshFragment(std::vector<sVertex> vertices, std::vector<unsigned int> indices, Common::Ref<Assets::Material> material) {
 		mVertices = vertices;
 		mIndices = indices;
 		mMaterial = material;

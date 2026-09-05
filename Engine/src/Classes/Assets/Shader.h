@@ -17,7 +17,7 @@ namespace Refraction::Assets {
 		ShaderMetadata() = default;
 		~ShaderMetadata() = default;
 
-		std::string Serialise() override;
+		nlohmann::json Serialise() override;
 		void Deserialise(std::string data) override;
 	};
 
@@ -41,6 +41,7 @@ namespace Refraction::Assets {
 
 		std::string GetName() const { return mName; };
 
+		MetadataType GetMetadataType() override { return MetadataType::Shader; }
 	protected:
 		void OnLoadAsset(Common::Shared<AssetMetadata> metadata) override;
 	private:

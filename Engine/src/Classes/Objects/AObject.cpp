@@ -85,26 +85,25 @@ namespace Refraction::Objects {
 		return Common::Shared<AObject>(new AObject(*this));
 	}
 
-	std::string AObject::Serialise() {
-		using nlohmann::json;
-		json serialised;
-		serialised["UUID"] = mUUID.Serialise();
-		serialised["TypeName"] = typeid(*this).name();
-		Log::SInfo("Serialising as " + std::string(typeid(*this).name()));
-		serialised["ClassName"] = mClassName;
-		serialised["InstanceName"] = mInstanceName;
-		serialised["Transform"] = Utilities::ClassSerialiser::Serialise(mTransform);
-		serialised["Components"] = {};
-		for (auto& comp : mComponents) {
-			serialised["Components"][comp->GetUUID().Serialise()] = comp->Serialise();
-		}
-		serialised["Children"] = {};
-		for (auto& child : mChildren) {
-			serialised["Children"][child->GetUUID().Serialise()] = child->Serialise();
-		}
+	nlohmann::json AObject::Serialise() {
+		return Utilities::ClassSerialiser::AppendJSON({}, [&](nlohmann::json& json) {
+			json["UUID"] = mUUID.Serialise();
+			json["TypeName"] = typeid(*this).name();
+			Log::SInfo("Serialising as " + std::string(typeid(*this).name()));
+			json["ClassName"] = mClassName;
+			json["InstanceName"] = mInstanceName;
+			json["Transform"] = Utilities::ClassSerialiser::Serialise(mTransform);
+			json["Components"] = {};
+			for (auto& comp : mComponents) {
+				json["Components"][comp->GetUUID().Serialise()] = comp->Serialise();
+			}
+			json["Children"] = {};
+			for (auto& child : mChildren) {
+				json["Children"][child->GetUUID().Serialise()] = child->Serialise();
+			}
 
-		Log::SInfo("Serialised object " + mInstanceName + " with UUID " + mUUID.AsString());
-		return serialised.dump();
+			Log::SInfo("Serialised object " + mInstanceName + " with UUID " + mUUID.AsString());
+		});
 	}
 	void AObject::Deserialise(std::string serialised) {
 		Utilities::ClassSerialiser::TryParseJSON(serialised, [&](nlohmann::json& json) {
@@ -114,13 +113,13 @@ namespace Refraction::Objects {
 			mTransform = Utilities::ClassSerialiser::DeserialiseTransform(json.at("Transform"));
 			mComponents.clear();
 			for (auto& compData : json.at("Components")) {
-				auto newComp = Utilities::ClassSerialiser::DeserialiseComponent(compData);
+				auto newComp = Utilities::ClassSerialiser::DeserialiseComponent(compData.dump());
 				newComp->mParent = this;
 				mComponents.push_back(newComp);
 			}
 			mChildren.clear();
 			for (auto& childData : json.at("Children")) {
-				auto newChild = Utilities::ClassSerialiser::DeserialiseObject(childData);
+				auto newChild = Utilities::ClassSerialiser::DeserialiseObject(childData.dump());
 				newChild->mParent = this;
 				mChildren.push_back(newChild);
 			}

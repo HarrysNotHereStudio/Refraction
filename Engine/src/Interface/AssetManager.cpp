@@ -3,6 +3,8 @@
 #include "AssetManager.h"
 
 namespace Refraction::Engine {
+	Common::Shared<AssetManager> AssetManager::Instance = nullptr;
+
 	void AssetManager::RegisterAllAssets() {
 		Log::SInfo("Registering all assets in project...");
 		RecursiveRegisterAssets(mProjectPath / "Assets");
@@ -28,32 +30,32 @@ namespace Refraction::Engine {
 	}
 
 	void AssetManager::UnloadAll() {
-		for (auto& asset : mAssetMap) {
-			if (asset.second) {
-				asset.second.reset();
-			}
-			mAssetMap.erase(asset.first);
+		for (auto it = mAssetMap.begin(); it != mAssetMap.end(); ) {
+			auto& [uuid, asset] = *it;
+			Log::SInfo("Unloading asset with UUID " + UUID::AsString(uuid));
+			asset.reset();
+			it = mAssetMap.erase(it);
 		}
-		for (auto& metadata : mMetadataMap) {
-			if (metadata.second) {
-				metadata.second.reset();
-			}
-			mAssetMap.erase(metadata.first);
+
+		for (auto it = mMetadataMap.begin(); it != mMetadataMap.end(); ) {
+			auto& [uuid, asset] = *it;
+			Log::SInfo("Unloading metadata with UUID " + UUID::AsString(uuid));
+			asset.reset();
+			it = mMetadataMap.erase(it);
 		}
 	}
 
 	bool AssetManager::IsValidAsset(std::filesystem::path assetPath) {
-		auto metaPath = GetMetadataPath(assetPath);
-		if (!metaPath) return false;
-		// too lazy to figure out if assetPath is within mProjectPath
-		// just pray for the best bro
+		auto metaPathOpt = GetMetadataPath(assetPath);
+		if (!metaPathOpt) return false;
+		auto metaPath = metaPathOpt.value();
 		return true;
 	}
 
 	std::optional<std::filesystem::path> AssetManager::GetMetadataPath(std::filesystem::path assetPath) {
 		auto assetName = assetPath.filename().string();
 		// Make sure it's a full path before searching it
-		if (!std::filesystem::exists(assetPath)) assetPath = mProjectPath / "Assets" / assetPath;
+		if (assetPath.string().find(mProjectPath.string()) == std::string::npos) assetPath = mProjectPath / "Assets" / assetPath;
 		auto files = FileHandling::GetFilesOfExtInFolder(assetPath.parent_path(), RFCT_ASSET_METADATA_EXTENSION);
 		for (auto& file : files) {
 			if (file.path().filename().string() == assetName) return std::make_optional(file.path());

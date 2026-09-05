@@ -61,7 +61,7 @@ namespace Refraction::Editor::GUI {
 
 	void ViewportPanel::OnEvent(Common::Shared<Events::Event> event) {
 		if (auto e = Common::AsA<Events::FrameRenderedEvent>(event)) {
-			mFrame = e->mFrame;
+			mFrame = e->mFrame.lock();
 		}
 	}
 }

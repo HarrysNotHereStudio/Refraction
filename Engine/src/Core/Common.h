@@ -5,9 +5,12 @@
 #include <functional>
 #include <stdexcept>
 #include <memory>
+#include <format>
 
 #define INVALID_UNIFORM_LOCATION 0xffffffff
 #define GLCheckError() (glGetError() == GL_NO_ERROR)
+
+constexpr int RFCT_JSON_INDENT = 1;
 
 namespace Refraction {
 	namespace Common {
@@ -73,7 +76,7 @@ namespace Refraction {
 			}
 		};
 		// Takes the colour, the body, and whether to put this on a new line
-		typedef std::function<void(Colour, std::string, bool)> LogCallback;
+		typedef std::function<void(Colour colour, std::string body, bool newline)> LogCallback;
 
 		static std::string GenerateTimestamp();
 		static void SInfo(std::string message);
@@ -91,8 +94,20 @@ namespace Refraction {
 		Log(std::string name) : mName(name) {}
 
 		void Info(std::string message);
+		template<typename... Args>
+		void Info(std::string format, Args&&... args) {
+			Info(std::format(format, args));
+		}
 		void Warn(std::string message);
+		template<typename... Args>
+		void Warn(std::string format, Args&&... args) {
+			Warn(std::format(format, args));
+		}
 		void Error(std::string message);
+		template<typename... Args>
+		void Error(std::string format, Args&&... args) {
+			Error(std::format(format, args));
+		}
 	protected:
 		static std::vector<LogCallback> Callbacks;
 		std::string mName;

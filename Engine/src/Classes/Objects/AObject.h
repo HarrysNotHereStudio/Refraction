@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 
+#include <json.hpp>
+
 #include <Core/Common.h>
 #include <Core/UUID.h>
 #include <Math/Transform.h>
@@ -85,7 +87,7 @@ namespace Refraction::Objects {
 		Math::Transform GetWorldTransform();
 
 		// Returns a serialised copy of the object and its Components and children
-		virtual std::string Serialise();
+		virtual nlohmann::json Serialise();
 		// Loads data from the provided serialised object
 		virtual void Deserialise(std::string serialised);
 	protected:

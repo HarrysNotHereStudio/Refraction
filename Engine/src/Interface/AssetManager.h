@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 
 #include <Core/Common.h>
 #include <Core/Singleton.h>
@@ -17,12 +17,11 @@ namespace Refraction::Engine {
 		// Get asset by UUID
 		template <typename AssetType> requires Common::DerivesFrom<Assets::Asset, AssetType>
 		Common::Ref<AssetType> GetAsset(UUIDValue uuid) {
-			auto& ref = mAssetMap.at(uuid);
-			if (ref) return Common::NewRef<AssetType>(std::dynamic_pointer_cast<AssetType>(ref));
+			if (mAssetMap.contains(uuid)) return Common::NewRef<AssetType>(std::dynamic_pointer_cast<AssetType>(mAssetMap.at(uuid)));
 			// Asset isn't in memory, try finding and loading it
 			if (auto metaPath = FindMetadataFile(uuid); std::filesystem::exists(metaPath)) {
 				Log::SInfo("Asset with UUID " + std::to_string(uuid) + " is unloaded, registering now");
-				return Common::NewRef<AssetType>(std::dynamic_pointer_cast<AssetType>(RegisterAsset(metaPath)));
+				return Common::NewRef<AssetType>(std::dynamic_pointer_cast<AssetType>(RegisterAsset(metaPath).lock()));
 			}
 			return {};
 		}
@@ -38,7 +37,6 @@ namespace Refraction::Engine {
 				if (metaWeak.expired()) continue;
 				auto meta = metaWeak.lock();
 				if (meta->AssetPath == assetPath) {
-					Log::SInfo("Asset at path " + assetPath.string() + " is unloaded, registering now");
 					return Common::NewRef<AssetType>(std::dynamic_pointer_cast<AssetType>(asset));
 				}
 			}
@@ -47,10 +45,11 @@ namespace Refraction::Engine {
 				auto metaPath = GetMetadataPath(assetPath);
 				if (!metaPath) return {};
 				Log::SInfo("Asset at path " + assetPath.string() + " is unloaded, registering now");
-				return Common::NewRef<AssetType>(std::dynamic_pointer_cast<AssetType>(RegisterAsset(metaPath.value())));
+				return Common::NewRef<AssetType>(std::dynamic_pointer_cast<AssetType>(RegisterAsset(metaPath.value()).lock()));
 			}
 			return {};
 		}
+		Common::Ref<Assets::Asset> GetAsset(std::filesystem::path assetPath) { return GetAsset<Assets::Asset>(assetPath); }
 
 		// Attempts to fetch an asset's metadata with the given UUID
 		template <typename MetadataType> requires Common::DerivesFrom<Assets::AssetMetadata, MetadataType>
@@ -74,6 +73,8 @@ namespace Refraction::Engine {
 			auto newAsset = Common::NewShared<AssetType>();
 			if (Assets::Asset* base = Common::AsA<Assets::Asset>(newAsset)) {
 				base->MakeVolatile();
+				mAssetMap[base->GetUUID()] = newAsset;
+				return newAsset;
 			} else {
 				Log::SError("MakeVolatile was passed an invalid Asset type");
 				return {};
@@ -93,8 +94,8 @@ namespace Refraction::Engine {
 		// Returns path of the asset's metadata file
 		std::optional<std::filesystem::path> GetMetadataPath(std::filesystem::path assetPath);
 	private:
-		std::map<UUIDValue, Common::Shared<Assets::Asset>> mAssetMap = {};
-		std::map<UUIDValue, Common::Shared<Assets::AssetMetadata>> mMetadataMap = {};
+		std::unordered_map<UUIDValue, Common::Shared<Assets::Asset>> mAssetMap = {};
+		std::unordered_map<UUIDValue, Common::Shared<Assets::AssetMetadata>> mMetadataMap = {};
 		std::filesystem::path mProjectPath;
 
 		void RecursiveRegisterAssets(std::filesystem::path folder);

@@ -229,20 +229,21 @@ namespace Refraction::Editor {
 		}
 		Log::SInfo("Saving current theme to file " + path.string());
 
-		nlohmann::json serialised;
-		for (unsigned int i = 0; i < ColourIndex_COUNT; i++) {
-			auto& col = Palette[i];
-			serialised[std::to_string(i)] = Utilities::ClassSerialiser::Serialise(Math::Vector4(col.x, col.y, col.z, col.w));
-		}
-		serialised["DisplayFontSource"] = DisplayFontSource;
-		serialised["DisplayFontSize"] = ImGui::GetStyle().FontSizeBase;
+		auto serialised = Utilities::ClassSerialiser::AppendJSON({}, [&](nlohmann::json& json) {
+			for (unsigned int i = 0; i < ColourIndex_COUNT; i++) {
+				auto& col = Palette[i];
+				json[std::to_string(i)] = Utilities::ClassSerialiser::Serialise(Math::Vector4(col.x, col.y, col.z, col.w));
+			}
+			json["DisplayFontSource"] = DisplayFontSource;
+			json["DisplayFontSize"] = ImGui::GetStyle().FontSizeBase;
+		});
 
 		std::ofstream dataFile(path);
 		if (!dataFile.is_open()) {
 			Log::SError("Could not open path for writing");
 			return false;
 		}
-		dataFile << serialised;
+		dataFile << serialised.dump(RFCT_JSON_INDENT);
 
 		Log::SInfo("Successfully saved theme");
 		return true;

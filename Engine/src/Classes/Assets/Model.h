@@ -15,7 +15,7 @@ namespace Refraction::Assets {
 		ModelMetadata() = default;
 		~ModelMetadata() = default;
 
-		std::string Serialise() override;
+		nlohmann::json Serialise() override;
 		void Deserialise(std::string data) override;
 	};
 
@@ -24,7 +24,9 @@ namespace Refraction::Assets {
 		std::vector<Common::Shared<Engine::Platform::AMeshFragment>> mFragments;
 
 		Model() = default;
-		virtual ~Model() = default;
+		~Model() override = default;
+
+		MetadataType GetMetadataType() override { return MetadataType::Model; }
 	protected:
 		std::vector<Common::Ref<Assets::Material>> mMaterials;
 

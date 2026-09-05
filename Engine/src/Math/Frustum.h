@@ -13,6 +13,8 @@ namespace Refraction::Math {
 		Frustum(int w, int h, float fovY, float zNear, float zFar) : w(std::max(w, 0)), h(std::max(h, 0)), fovY(std::max(fovY, 10.0f)), zNear(std::max(zNear, 0.0f)), zFar(std::max(zFar, 0.0f)) {};
 		// Create a Frustum with the given width, height, FOV and Z range
 		Frustum(Vector2 size, float fovY, float zNear, float zFar) : Frustum((int)size.x, (int)size.y, fovY, zNear, zFar) {};
+		// Create a default Frustum
+		Frustum() : Frustum(1920, 1080, 70.0f, 0.01f, 10000.0f) {};
 
 		inline bool operator==(const Frustum& other) const {
 			return (w == other.w) && (h == other.h) && (zNear == other.zNear) && (zFar == other.zFar);

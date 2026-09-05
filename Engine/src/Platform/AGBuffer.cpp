@@ -18,15 +18,32 @@ namespace Refraction::Engine::Platform {
 		}
 	}
 
-	Common::Ref<Assets::Image> AGBuffer::GetLastRenderedFrame() const {
+	Common::Ref<Assets::Image> AGBuffer::GetLastRenderedFrame() {
 		Common::Ref<Assets::Image> imgWeak;
 		AssetManager::Try([&](Common::Shared<AssetManager> manager) {
-			imgWeak = manager->MakeVolatile<Assets::Image>();
+			if (!mFinalImageUUID) {
+				// Generate a new image
+				imgWeak = manager->MakeVolatile<Assets::Image>();
+				if (auto img = imgWeak.lock()) {
+					mFinalImageUUID = img->GetUUID();
+				}
+			} else {
+				// Try grabbing the image
+				imgWeak = manager->GetAsset<Assets::Image>(mFinalImageUUID);
+				if (imgWeak.expired()) {
+					// Try regenerating the image
+					imgWeak = manager->MakeVolatile<Assets::Image>();
+					if (auto img = imgWeak.lock()) {
+						mFinalImageUUID = img->GetUUID();
+					}
+				}
+			}
 		});
-		if (imgWeak.expired()) return {};
-		auto img = imgWeak.lock();
-		img->mTexture = mFinal;
-		return img;
+		if (auto img = imgWeak.lock()) {
+			img->mTexture = mFinal;
+			return img;
+		}
+		return {};
 	}
 
 	AGBuffer::AGBuffer() {}

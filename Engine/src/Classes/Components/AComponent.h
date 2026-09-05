@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include <json.hpp>
+
 #include <Core/Common.h>
 #include <Core/UUID.h>
 #include <Classes/Objects/AObject.h>
@@ -26,7 +28,7 @@ namespace Refraction::Components {
 		inline std::string GetDisplayName() const { return mClassName; };
 
 		// Returns a serialised copy of the component
-		virtual std::string Serialise();
+		virtual nlohmann::json Serialise();
 		// Loads data from the provided serialised component
 		virtual void Deserialise(std::string serialised);
 

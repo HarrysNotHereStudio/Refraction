@@ -66,9 +66,9 @@ namespace Refraction::Components {
 		glBindVertexArray(0);
 	}
 
-	std::string Billboard::Serialise() {
+	nlohmann::json Billboard::Serialise() {
 		if (auto image = mImage.lock()) {
-			return Utilities::ClassSerialiser::TryAppendJSON(AComponent::Serialise(), [&](nlohmann::json& json) {
+			return Utilities::ClassSerialiser::AppendJSON(AComponent::Serialise(), [&](nlohmann::json& json) {
 				json["ImageUUID"] = image->GetUUID();
 			});
 		} else throw Common::RuntimeError("Could not serialise, failed to lock reference");

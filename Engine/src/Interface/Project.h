@@ -18,8 +18,8 @@ namespace Refraction::Engine {
 	struct ProjectData {
 		UUID InitSceneUUID = UUID::Null();
 
-		std::vector<Common::Ref<Objects::SceneRoot>> Scenes = {};
-		std::vector<Common::Ref<Objects::AObject>> GlobalObjects = {};
+		std::vector<Common::Shared<Objects::SceneRoot>> Scenes = {};
+		std::vector<Common::Shared<Objects::AObject>> GlobalObjects = {};
 		Common::Shared<Objects::Camera> ActiveCamera = nullptr;
 		bool IsRemote = false; // Determines whether some operations should be ignored as it isn't a local project
 	};
@@ -37,10 +37,8 @@ namespace Refraction::Engine {
 		RemoveInstance,
 	};
 
-	class Project {
+	class Project : public Singleton<Project> {
 	public:
-		static Common::Ref<Project> GetCurrent() { return CurrentProject; }
-
 		// Creates a new project at the given path, returns success
 		bool New(const std::filesystem::path& projectPath, bool eraseExisting = false);
 		// Initialises as a remote project (live collaboration), returns success
@@ -63,20 +61,26 @@ namespace Refraction::Engine {
 		// Returns the currently open scene
 		inline Common::Ref<Objects::SceneRoot> GetActiveScene() const { return mActiveScene; }
 		// Returns all scenes under this project
-		inline std::vector<Common::Ref<Objects::SceneRoot>> GetScenes() const { return mProjectData.Scenes; }
+		inline std::vector<Common::Ref<Objects::SceneRoot>> GetScenes() const {
+			std::vector<Common::Ref<Objects::SceneRoot>> vec;
+			for (auto& scene : mProjectData.Scenes) {
+				vec.push_back(Common::NewRef(scene));
+			}
+			return vec;
+		}
 		// Returns all global objects under this project
-		inline std::vector<Common::Ref<Objects::AObject>> GetGlobalObjects() const { return mProjectData.GlobalObjects; }
+		inline std::vector<Common::Ref<Objects::AObject>> GetGlobalObjects() const {
+			std::vector<Common::Ref<Objects::AObject>> vec;
+			for (auto& obj : mProjectData.GlobalObjects) {
+				vec.push_back(Common::NewRef(obj));
+			}
+			return vec;
+		}
 		inline std::filesystem::path GetFilePath() const { return GetProjectFilePath(mProjectPath); }
 
 		inline bool IsLoaded() const { return !mProjectPath.empty(); }
 		inline bool IsRemote() const { return mProjectData.IsRemote; }
 	private:
-		static Common::Shared<Project> CurrentProject;
-
-		static void SetCurrent(Project* instance) {
-			CurrentProject = Common::Shared<Project>(instance);
-		}
-
 		std::filesystem::path mProjectPath;
 		ProjectData mProjectData;
 

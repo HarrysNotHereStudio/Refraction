@@ -27,8 +27,11 @@ namespace Refraction::Engine::Platform {
 		case RenderingAPI::NONE: default:
 			Log::Render.Warn("Attempt to create texture without an active API");
 			return {};
-		case RenderingAPI::OPENGL:
-			return OpenGLTexture::GetFromPath(path);
+		case RenderingAPI::OPENGL: {
+			auto newTex = OpenGLTexture::GetFromPath(path);
+			TexturePool[newTex->mUUID.AsInt()] = newTex;
+			return newTex;
+		}
 		case RenderingAPI::VULKAN:
 			Log::Render.Warn("Attempt to create texture with Vulkan. Not implemented yet.");
 			return {};

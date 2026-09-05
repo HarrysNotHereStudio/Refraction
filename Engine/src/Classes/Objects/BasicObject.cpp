@@ -2,7 +2,7 @@
 
 namespace Refraction::Objects {
 	BasicObject::~BasicObject() {}
-	std::string BasicObject::Serialise() {
+	nlohmann::json BasicObject::Serialise() {
 		return AObject::Serialise();
 	}
 	void BasicObject::Deserialise(std::string serialised) {

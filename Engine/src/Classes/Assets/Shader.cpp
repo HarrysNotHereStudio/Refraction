@@ -8,7 +8,7 @@ namespace Refraction::Assets {
 	std::unordered_map<std::string, uint64_t> Shader::LoadedShaders = {};
 
 
-	std::string ShaderMetadata::Serialise() {
+	nlohmann::json ShaderMetadata::Serialise() {
 		auto result = AssetMetadata::Serialise();
 		return result;
 	}

@@ -57,7 +57,7 @@ namespace Refraction::Objects {
 		Log::SInfo("Successfully removed " + target.AsString());
 	}
 
-	std::string SceneRoot::Serialise() {
+	nlohmann::json SceneRoot::Serialise() {
 		return AObject::Serialise();
 	}
 	void SceneRoot::Deserialise(std::string serialised) {

@@ -3,6 +3,8 @@
 #include <string>
 #include <map>
 
+#include <json.hpp>
+
 #include <Core/Common.h>
 #include <Core/UUID.h>
 #include <Core/FileHandling.h>
@@ -10,8 +12,24 @@
 #define RFCT_ASSET_METADATA_EXTENSION ".rfmeta"
 
 namespace Refraction::Assets {
+	enum class MetadataType {
+		Asset,
+		Image,
+		Model,
+		Shader,
+		COUNT
+	};
+
+	constexpr const char* MetadataTypeName[] = {
+		"Asset",
+		"Image",
+		"Model",
+		"Shader"
+	};
+
 	struct AssetMetadata {
 		UUID AssetUUID = UUID::Null();
+		MetadataType MetaType = MetadataType::Asset;
 		std::filesystem::path SourcePath = ""; // Path to the original source file
 		std::filesystem::path AssetPath = ""; // Path to the actual asset file in the project
 		std::string AssetType = "";
@@ -27,7 +45,7 @@ namespace Refraction::Assets {
 		std::filesystem::path GetPath() const;
 
 		// Serialises metadata into a string
-		virtual std::string Serialise();
+		virtual nlohmann::json Serialise();
 		// Loads metadata from the given string
 		virtual void Deserialise(std::string data);
 	};
@@ -44,6 +62,8 @@ namespace Refraction::Assets {
 		// Initialises the asset as a volatile asset (no data on disk)
 		// Note: Will reset the data of the asset in memory
 		void MakeVolatile();
+
+		virtual MetadataType GetMetadataType() { return MetadataType::Asset; }
 
 		inline bool IsVolatile() const { return mVolatile; }
 		inline UUIDValue GetUUID() const { return mUUID; }
