@@ -19,8 +19,8 @@ namespace Refraction::Engine {
 		// Returns a reference to the singleton
 		static inline Common::Ref<Derived> GetInstance() { return Instance; }
 
-		// Access wrapper which handles some errors
-		static inline void Try(std::function<void(Common::Shared<Derived> ptr)> f) {
+		// Access wrapper with some error handling
+		static inline void Try(std::function<void(Common::Shared<Derived> singleton)> f) {
 			if (Instance) {
 				f(Instance);
 			} else {
